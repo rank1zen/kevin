@@ -17,7 +17,7 @@ func (ui *ui) profileShowMatchList(w http.ResponseWriter, r *http.Request) {
 
 	newIDs, err := ui.api.GetMatchList(ctx, puuid)
 	if err != nil {
-		html.ServerError(w, r, ProfileMatchListError(), err)
+		html.ServerError(w, r, profileMatchListError(), err)
 		return
 	}
 
@@ -26,15 +26,17 @@ func (ui *ui) profileShowMatchList(w http.ResponseWriter, r *http.Request) {
 	}
 	matches, err := ui.repo.GetMatchList(ctx, puuid, page, true)
 	if err != nil {
-		html.ServerError(w, r, ProfileMatchListError(), err)
+		html.ServerError(w, r, profileMatchListError(), err)
 		return
 	}
 
-	models := make([]ProfileMatchModel, len(matches))
+	models := make([]profileMatchModel, len(matches))
 
 	for i, match := range matches {
-		models[i] = ProfileMatchModel{
+		models[i] = profileMatchModel{
 			MatchID: match.Match,
+			TeamID:  match.Team,
+			Patch:   match.Patch,
 			Name:    match.RiotIDGameName + "#" + match.RiotIDTagline,
 			Kills:   match.Kills,
 			Deaths:  match.Deaths,
@@ -42,5 +44,5 @@ func (ui *ui) profileShowMatchList(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	html.OK(w, r, ProfileMatchList(models))
+	html.OK(w, r, profileMatchListPartial(models))
 }

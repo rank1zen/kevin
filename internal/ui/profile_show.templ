@@ -3,21 +3,30 @@ package ui
 import "fmt"
 import "github.com/rank1zen/yujin/internal"
 
-type ProfileModel struct {
+type profileModel struct {
 	Puuid   internal.PUUID
 	Name    string
 	Tagline string
 	Rank    *internal.RankRecord
 }
 
-type ProfileData struct {
+func createProfileData(m profileModel) profileData {
+	return profileData{
+		Name:    m.Name + "#" + m.Tagline,
+		Rank:    m.Rank.RankString(),
+		WinLoss: fmt.Sprintf("%d-%d", m.Rank.Wins, m.Rank.Losses),
+		Puuid:   m.Puuid,
+	}
+}
+
+type profileData struct {
 	Puuid   internal.PUUID
 	Name    string
 	Rank    string
 	WinLoss string
 }
 
-templ Profile(data ProfileData) {
+templ profile(data profileData) {
 	<div class="flex flex-col">
 		<div class="text-3xl font-bold py-4 whitespace-nowrap text-ellipsis overflow-hidden">
 			{ data.Name }
@@ -39,7 +48,7 @@ templ Profile(data ProfileData) {
 			<div class="text-lg">
 				Live game
 			</div>
-			@profileLiveGame(data)
+			@profileLiveMatch(data)
 		</div>
 		<div class="mt-20">
 			@profileChampStats(data)
@@ -53,56 +62,14 @@ templ Profile(data ProfileData) {
 	</div>
 }
 
-templ ProfilePage(m ProfileModel) {
+templ profilePage(m profileModel) {
 	@page(m.Name) {
-		@Profile(ProfileData{
-			Name:    m.Name + "#" + m.Tagline,
-			Rank:    m.Rank.String(),
-			WinLoss: fmt.Sprintf("%d-%d", m.Rank.Wins, m.Rank.Losses),
-			Puuid:   m.Puuid,
-		})
+		@profile(createProfileData(m))
 	}
 }
 
-templ ProfileDoesNotExist() {
+templ profileDoesNotExist() {
 	<div>
 		ProfileDoesNotExist
 	</div>
-}
-
-templ profileLiveGame(data ProfileData) {
-	<table class="text-left w-full">
-		<thead>
-			<tr>
-				<th>
-					Player
-				</th>
-				<th>
-					Rank
-				</th>
-				<th>
-					KDA
-				</th>
-				<th>
-					CS
-				</th>
-				<th>
-					Gold
-				</th>
-				<th>
-					Damage
-				</th>
-				<th>
-					Vision
-				</th>
-			</tr>
-		</thead>
-		<tbody
-			hx-get={ fmt.Sprintf("/partials/profile/%s/livegame", data.Puuid) }
-			hx-trigger="revealed once"
-			hx-swap-oob="beforeend:#table tbody"
-		>
-			// @liveGameSkeleton() // TODO get a skeleton
-		</tbody>
-	</table>
 }

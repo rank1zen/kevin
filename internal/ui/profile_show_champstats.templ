@@ -3,10 +3,10 @@ package ui
 import "github.com/rank1zen/yujin/internal"
 import "fmt"
 
-type ProfileChampStatsModel struct {
+type profileChampStatsModel struct {
 	Puuid             internal.PUUID
 	Champion          internal.ChampionID
-	GamesPlayed       string
+	GamesPlayed       int
 	Wins              int
 	Losses            int
 	Kills             float32
@@ -26,7 +26,28 @@ type ProfileChampStatsModel struct {
 	VisionScore       float32
 }
 
-type ProfileChampStatsData struct {
+func createChampStatsData(m profileChampStatsModel) profileChampStatsData {
+	return profileChampStatsData{
+		Champion:          m.Champion,
+		GamesPlayed:       string(m.GamesPlayed),
+		LpDelta:           string(m.LpDelta),
+		WinLoss:           fmt.Sprintf("%d-%d", m.Wins, m.Losses),
+		WinPercentage:     fmt.Sprintf("%.0f%%", m.WinPercentage*100),
+		KDA:               fmt.Sprintf("%.1f / %.1f / %.1f", m.Kills, m.Deaths, m.Assists),
+		KillParticipation: fmt.Sprintf("%.1f", m.KillParticipation),
+		CreepScore:        fmt.Sprintf("%.0f", m.CreepScore),
+		CsPerMinute:       fmt.Sprintf("%.1f", m.CsPerMinute),
+		GoldEarned:        fmt.Sprintf("%.0f", m.GoldEarned),
+		GoldPercentage:    fmt.Sprintf("%.0f%%", m.GoldPercentage),
+		GoldDelta:         fmt.Sprintf("%.0f", m.GoldDelta),
+		DamageDone:        fmt.Sprintf("%.0f", m.DamageDone),
+		DamagePercentage:  fmt.Sprintf("%.0f%%", m.DamagePercentage),
+		DamageDelta:       fmt.Sprintf("%.0f", m.DamageDelta),
+		VisionScore:       fmt.Sprintf("%.0f", m.VisionScore),
+	}
+}
+
+type profileChampStatsData struct {
 	Champion          internal.ChampionID
 	GamesPlayed       string
 	WinLoss           string
@@ -45,7 +66,7 @@ type ProfileChampStatsData struct {
 	VisionScore       string
 }
 
-templ ProfileChampStatsRow(m ProfileChampStatsData) {
+templ profileChampStatsRow(m profileChampStatsData) {
 	<tr class="border-b hover:brightness-90 bg-white">
 		<td class="px-3 py-2">
 			@ChampionIcon(m.Champion)
@@ -71,7 +92,13 @@ templ ProfileChampStatsRow(m ProfileChampStatsData) {
 	</tr>
 }
 
-templ profileChampStats(data ProfileData) {
+templ profileChampStatsPartial(data []profileChampStatsModel) {
+	for _, m := range data {
+		@profileChampStatsRow(createChampStatsData(m))
+	}
+}
+
+templ profileChampStats(data profileData) {
 	<table class="table-fixed text-left w-full">
 		<thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
 			<tr>
@@ -106,31 +133,4 @@ templ profileChampStats(data ProfileData) {
 			// @matchListSkeleton() // TODO get a skeleton
 		</tbody>
 	</table>
-}
-
-func createChampStatsData(m ProfileChampStatsModel) ProfileChampStatsData {
-	return ProfileChampStatsData{
-		Champion:          m.Champion,
-		GamesPlayed:       string(m.GamesPlayed),
-		LpDelta:           string(m.LpDelta),
-		WinLoss:           fmt.Sprintf("%d-%d", m.Wins, m.Losses),
-		WinPercentage:     fmt.Sprintf("%.0f%%", m.WinPercentage*100),
-		KDA:               fmt.Sprintf("%.1f / %.1f / %.1f", m.Kills, m.Deaths, m.Assists),
-		KillParticipation: fmt.Sprintf("%.1f", m.KillParticipation),
-		CreepScore:        fmt.Sprintf("%.0f", m.CreepScore),
-		CsPerMinute:       fmt.Sprintf("%.1f", m.CsPerMinute),
-		GoldEarned:        fmt.Sprintf("%.0f", m.GoldEarned),
-		GoldPercentage:    fmt.Sprintf("%.0f%%", m.GoldPercentage),
-		GoldDelta:         fmt.Sprintf("%.0f", m.GoldDelta),
-		DamageDone:        fmt.Sprintf("%.0f", m.DamageDone),
-		DamagePercentage:  fmt.Sprintf("%.0f%%", m.DamagePercentage),
-		DamageDelta:       fmt.Sprintf("%.0f", m.DamageDelta),
-		VisionScore:       fmt.Sprintf("%.0f", m.VisionScore),
-	}
-}
-
-templ ProfileChampStatsRows(data []ProfileChampStatsModel) {
-	for _, m := range data {
-		@ProfileChampStatsRow(createChampStatsData(m))
-	}
 }

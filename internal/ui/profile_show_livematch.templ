@@ -1,0 +1,153 @@
+package ui
+
+import "github.com/rank1zen/yujin/internal"
+import "time"
+import "fmt"
+
+type profileLiveMatchModel struct {
+	Puuid             internal.PUUID
+	TeamID            internal.TeamID
+	Date              time.Time
+	Name              string
+	Tagline           string
+	Champion          internal.ChampionID
+	Runes             internal.Runes
+	Summoners         internal.SummsIDs
+	Rank              *internal.RankRecord
+	BannedChampion    *internal.ChampionID
+	Kills             int
+	Deaths            int
+	Assists           int
+	KillParticipation float32
+	CreepScore        int
+	CsPerMinute       float32
+	GoldEarned        int
+	GoldPercentage    float32
+	GoldDelta         int
+	DamageDone        int
+	DamagePercentage  float32
+	DamageDelta       int
+	VisionScore       int
+}
+
+func createProfileLiveMatchData(m profileLiveMatchModel) profileLiveMatchData {
+	return profileLiveMatchData{
+		Puuid:             m.Puuid,
+		TeamID:            m.TeamID,
+		Date:              m.Date.String(), // TODO: get a better time format
+		Name:              m.Name + "#" + m.Tagline,
+		Champion:          m.Champion,
+		Summoners:         m.Summoners,
+		Runes:             m.Runes,
+		Rank:              m.Rank.RankString(),
+		BannedChampion:    m.BannedChampion,
+		KDA:               fmt.Sprintf("%d / %d / %d", m.Kills, m.Deaths, m.Assists),
+		KillParticipation: fmt.Sprintf("%.0f%%", m.KillParticipation*100),
+		CreepScore:        fmt.Sprintf("%d", m.CreepScore),
+		CsPerMinute:       fmt.Sprintf("%.1f", m.CsPerMinute),
+		GoldEarned:        fmt.Sprintf("%d", m.GoldEarned),
+		GoldPercentage:    fmt.Sprintf("%.0f%%", m.GoldPercentage),
+		GoldDelta:         fmt.Sprintf("%d", m.GoldDelta),
+		DamageDone:        fmt.Sprintf("%d", m.DamageDone),
+		DamagePercentage:  fmt.Sprintf("%.0f%%", m.DamagePercentage),
+		DamageDelta:       fmt.Sprintf("%d", m.DamageDelta),
+		VisionScore:       fmt.Sprintf("%d", m.VisionScore),
+	}
+}
+
+type profileLiveMatchData struct {
+	Puuid             internal.PUUID
+	TeamID            internal.TeamID
+	Date              string
+	Name              string
+	Champion          internal.ChampionID
+	Summoners         internal.SummsIDs
+	Runes             internal.Runes
+	Rank              string
+	BannedChampion    *internal.ChampionID
+	KDA               string
+	KillParticipation string
+	CreepScore        string
+	CsPerMinute       string
+	GoldEarned        string
+	GoldPercentage    string
+	GoldDelta         string
+	DamageDone        string
+	DamagePercentage  string
+	DamageDelta       string
+	VisionScore       string
+}
+
+templ profileLiveMatchRow(data profileLiveMatchData) {
+	<tr>
+		<td>
+			@ChampionGrid(data.Champion, data.Summoners, data.Runes)
+		</td>
+		<td>
+			@Entry(data.Name, data.Rank)
+		</td>
+		<td>
+			@Entry(data.KDA, data.KillParticipation)
+		</td>
+		<td>
+			@Entry(data.CreepScore, data.CsPerMinute)
+		</td>
+		<td>
+			@Entry(data.GoldEarned, data.GoldPercentage, data.GoldDelta)
+		</td>
+		<td>
+			@Entry(data.DamageDone, data.DamagePercentage, data.DamageDelta)
+		</td>
+		<td>
+			@Entry(data.VisionScore)
+		</td>
+	</tr>
+}
+
+templ profileLiveMatchPartial(models [10]profileLiveMatchModel) {
+	for _, model := range models {
+		@profileLiveMatchRow(createProfileLiveMatchData(model))
+	}
+}
+
+templ profileLiveMatch(data profileData) {
+	<table class="text-left w-full">
+		<thead>
+			<tr>
+				<th>
+					Player
+				</th>
+				<th>
+					Rank
+				</th>
+				<th>
+					KDA
+				</th>
+				<th>
+					CS
+				</th>
+				<th>
+					Gold
+				</th>
+				<th>
+					Damage
+				</th>
+				<th>
+					Vision
+				</th>
+			</tr>
+		</thead>
+		<tbody
+			hx-get={ fmt.Sprintf("/partials/profile/%s/livegame", data.Puuid) }
+			hx-trigger="revealed once"
+			hx-swap-oob="beforeend:#table tbody"
+		>
+			// @liveGameSkeleton() // TODO get a skeleton
+		</tbody>
+	</table>
+}
+
+// TODO: implement me
+templ profileLiveMatchError() {
+	<div></div>
+}

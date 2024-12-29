@@ -20,7 +20,7 @@ func (ui *ui) profileShow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !exists {
-		html.BadRequest(w, r, ProfileDoesNotExist(), err)
+		html.BadRequest(w, r, profileDoesNotExist(), err)
 		return
 	}
 
@@ -30,14 +30,13 @@ func (ui *ui) profileShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	m := ProfileModel{
+	m := profileModel{
 		Puuid:   profile.Puuid,
 		Name:    profile.Name,
 		Tagline: profile.Tagline,
 		Rank:    profile.Rank,
 	}
 
-	html.OK(w, r, ProfilePage(m))
-
+	html.OK(w, r, profilePage(m))
 	return
 }

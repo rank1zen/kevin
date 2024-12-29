@@ -4,7 +4,7 @@ import "github.com/rank1zen/yujin/internal"
 import "time"
 import "fmt"
 
-type ProfileMatchModel struct {
+type profileMatchModel struct {
 	MatchID           internal.MatchID
 	TeamID            internal.TeamID
 	Patch             internal.GameVersion
@@ -14,7 +14,7 @@ type ProfileMatchModel struct {
 	Tagline           string
 	Champion          internal.ChampionID
 	ChampionLevel     int
-	Summoners         internal.SummonersIDs
+	Summoners         internal.SummsIDs
 	Runes             internal.Runes
 	Items             internal.ItemIDs
 	Rank              *internal.RankSnapshot
@@ -34,34 +34,28 @@ type ProfileMatchModel struct {
 	VisionScore       int
 }
 
-templ ProfileMatchList(m []ProfileMatchModel) {
-	for _, d := range m {
-		@ProfileMatchListRow(ProfileMatchData{
-			MatchID:           d.MatchID,
-			KDA:               fmt.Sprintf("%d / %d/ %d", d.Kills, d.Kills, d.Assists),
-			KillParticipation: fmt.Sprintf("%.1f", d.KillParticipation),
-			CreepScore:        fmt.Sprintf("%d", d.CreepScore),
-			CsPerMinute:       fmt.Sprintf("%.1f", d.CsPerMinute),
-			GoldEarned:        fmt.Sprintf("%d", d.GoldEarned),
-			GoldPercentage:    fmt.Sprintf("%.0f%%", d.GoldPercentage),
-			GoldDelta:         fmt.Sprintf("%d", d.GoldDelta),
-			DamageDone:        fmt.Sprintf("%d", d.DamageDone),
-			DamagePercentage:  fmt.Sprintf("%.0f%%", d.DamagePercentage),
-			DamageDelta:       fmt.Sprintf("%d", d.DamageDelta),
-			VisionScore:       fmt.Sprintf("%d", d.VisionScore),
-		})
+func createProfileMatchData(m profileMatchModel) profileMatchData {
+	return profileMatchData{
+		MatchID:           m.MatchID,
+		TeamID:            m.TeamID,
+		Patch:             string(m.Patch),
+		Date:              m.Date.String(),
+		Duration:          m.Duration.String(),
+		KDA:               fmt.Sprintf("%d / %d/ %d", m.Kills, m.Kills, m.Assists),
+		KillParticipation: fmt.Sprintf("%.1f", m.KillParticipation),
+		CreepScore:        fmt.Sprintf("%d", m.CreepScore),
+		CsPerMinute:       fmt.Sprintf("%.1f", m.CsPerMinute),
+		GoldEarned:        fmt.Sprintf("%d", m.GoldEarned),
+		GoldPercentage:    fmt.Sprintf("%.0f%%", m.GoldPercentage),
+		GoldDelta:         fmt.Sprintf("%d", m.GoldDelta),
+		DamageDone:        fmt.Sprintf("%d", m.DamageDone),
+		DamagePercentage:  fmt.Sprintf("%.0f%%", m.DamagePercentage),
+		DamageDelta:       fmt.Sprintf("%d", m.DamageDelta),
+		VisionScore:       fmt.Sprintf("%d", m.VisionScore),
 	}
-
-	<div
-		hx-get="/partials/profile/hi/matchlist"
-		hx-trigger="revealed"
-		hx-swap="outerHTML"
-	>
-		Loading more...
-	</div>
 }
 
-type ProfileMatchData struct {
+type profileMatchData struct {
 	MatchID           internal.MatchID
 	TeamID            internal.TeamID
 	Patch             string
@@ -70,7 +64,7 @@ type ProfileMatchData struct {
 	Name              string
 	Champion          internal.ChampionID
 	ChampionLevel     int
-	Summoners         internal.SummonersIDs
+	Summoners         internal.SummsIDs
 	Runes             internal.Runes
 	Items             internal.ItemIDs
 	Rank              string
@@ -89,10 +83,10 @@ type ProfileMatchData struct {
 	VisionScore       string
 }
 
-templ ProfileMatchListRow(m ProfileMatchData) {
+templ profileMatchListRow(m profileMatchData) {
 	<tr class="border-b hover:brightness-90 bg-white">
 		<td class="px-3 py-2">
-			@Entry(m.MatchID.String(), "19:10", "Sept, 24")
+			@Entry(m.MatchID.String(), m.Date, m.Duration)
 		</td>
 		<td class="px-3 py-2">
 			@ChampionGrid(m.Champion, m.Summoners, m.Runes)
@@ -101,7 +95,7 @@ templ ProfileMatchListRow(m ProfileMatchData) {
 			@ItemsGrid(m.Items)
 		</td>
 		<td class="px-3 py-2">
-			@Entry("Diamond 4 10LP", "19:10", "Sept, 24")
+			@Entry(m.Rank, m.LpDelta)
 		</td>
 		<td class="px-3 py-2 pl-4">
 			@Entry(m.KDA, m.KillParticipation)
@@ -110,7 +104,7 @@ templ ProfileMatchListRow(m ProfileMatchData) {
 			@Entry(m.CreepScore, m.CsPerMinute)
 		</td>
 		<td class="px-3 py-2">
-			@Entry(m.GoldEarned, m.GoldPercentage, m.GoldDelta, m.GoldPercentage, m.GoldPercentage, m.GoldPercentage, m.GoldPercentage)
+			@Entry(m.GoldEarned, m.GoldPercentage, m.GoldDelta)
 		</td>
 		<td class="px-3 py-2">
 			@Entry(m.DamageDone, m.DamagePercentage, m.DamageDelta)
@@ -121,7 +115,21 @@ templ ProfileMatchListRow(m ProfileMatchData) {
 	</tr>
 }
 
-templ profileMatchList(data ProfileData) {
+templ profileMatchListPartial(models []profileMatchModel) {
+	for _, m := range models {
+		@profileMatchListRow(createProfileMatchData(m))
+	}
+
+	<div
+		hx-get="/partials/profile/hi/matchlist"
+		hx-trigger="revealed"
+		hx-swap="outerHTML"
+	>
+		Loading more...
+	</div>
+}
+
+templ profileMatchList(data profileData) {
 	<table
 		id="matchlist"
 		class="table-fixed text-left w-full"
@@ -180,6 +188,6 @@ templ profileMatchList(data ProfileData) {
 }
 
 // TODO: implement me
-templ ProfileMatchListError() {
+templ profileMatchListError() {
 	<div></div>
 }

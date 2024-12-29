@@ -13,11 +13,16 @@ func (ui *ui) profileShowRankList(w http.ResponseWriter, r *http.Request) {
 
 	puuid := internal.PUUID(chi.URLParam(r, "puuid"))
 
-	m, err := ui.repo.GetRankList(ctx, puuid)
+	ranklist, err := ui.repo.GetRankList(ctx, puuid)
 	if err != nil {
-		html.ServerError(w, r, ProfileRankListError(), err)
+		html.ServerError(w, r, profileRankListError(), err)
 		return
 	}
 
-	html.OK(w, r, ProfileRankList(m))
+	models := make([]profileRankModel, len(ranklist))
+	for i := range len(ranklist) {
+		models[i] = profileRankModel{}
+	}
+
+	html.OK(w, r, profileRankListPartial(models))
 }

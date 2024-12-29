@@ -175,6 +175,7 @@ type MatchParticipant struct {
 	Match    MatchID
 	Team     TeamID
 	Summoner SummonerID
+	Patch    GameVersion
 
 	SummonerLevel             int
 	SummonerName              string
@@ -281,8 +282,11 @@ type RankRecord struct {
 	LP        int
 }
 
-// TODO: implement the cases for Challenger, GM, Masters, and Unranked.
-func (r RankRecord) String() string {
+// TODO: implement the cases for Challenger, GM, Masters.
+func (r *RankRecord) RankString() string {
+	if r == nil {
+		return "Unranked"
+	}
 	return fmt.Sprintf("%s %s %d", r.Tier, r.Division, r.LP)
 }
 
