@@ -1,0 +1,108 @@
+package ui
+
+import "fmt"
+import "github.com/rank1zen/yujin/internal"
+
+type ProfileModel struct {
+	Puuid   internal.PUUID
+	Name    string
+	Tagline string
+	Rank    *internal.RankRecord
+}
+
+type ProfileData struct {
+	Puuid   internal.PUUID
+	Name    string
+	Rank    string
+	WinLoss string
+}
+
+templ Profile(data ProfileData) {
+	<div class="flex flex-col">
+		<div class="text-3xl font-bold py-4 whitespace-nowrap text-ellipsis overflow-hidden">
+			{ data.Name }
+		</div>
+		<div class="text-xl pb-4 text-ellipsis overflow-hidden whitespace-nowrap">
+			{ data.Rank } { data.WinLoss }
+		</div>
+		<div class="flex">
+			<div
+				class="p-2 bg-black text-white rounded"
+				hx-post={ fmt.Sprintf("/profile/%s/refresh", data.Puuid) }
+				hx-trigger="click"
+				type="button"
+			>
+				Update
+			</div>
+		</div>
+		<div class="pt-8">
+			<div class="text-lg">
+				Live game
+			</div>
+			@profileLiveGame(data)
+		</div>
+		<div class="mt-20">
+			@profileChampStats(data)
+		</div>
+		<div class="mt-20">
+			@profileRankList(data)
+		</div>
+		<div class="mt-20">
+			@profileMatchList(data)
+		</div>
+	</div>
+}
+
+templ ProfilePage(m ProfileModel) {
+	@page(m.Name) {
+		@Profile(ProfileData{
+			Name:    m.Name + "#" + m.Tagline,
+			Rank:    m.Rank.String(),
+			WinLoss: fmt.Sprintf("%d-%d", m.Rank.Wins, m.Rank.Losses),
+			Puuid:   m.Puuid,
+		})
+	}
+}
+
+templ ProfileDoesNotExist() {
+	<div>
+		ProfileDoesNotExist
+	</div>
+}
+
+templ profileLiveGame(data ProfileData) {
+	<table class="text-left w-full">
+		<thead>
+			<tr>
+				<th>
+					Player
+				</th>
+				<th>
+					Rank
+				</th>
+				<th>
+					KDA
+				</th>
+				<th>
+					CS
+				</th>
+				<th>
+					Gold
+				</th>
+				<th>
+					Damage
+				</th>
+				<th>
+					Vision
+				</th>
+			</tr>
+		</thead>
+		<tbody
+			hx-get={ fmt.Sprintf("/partials/profile/%s/livegame", data.Puuid) }
+			hx-trigger="revealed once"
+			hx-swap-oob="beforeend:#table tbody"
+		>
+			// @liveGameSkeleton() // TODO get a skeleton
+		</tbody>
+	</table>
+}

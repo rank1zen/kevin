@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:13
+    container_name: yujin-postgres
+    environment:
+      - POSTGRES_USER=yujin
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=yujin
+    ports:
+      - "5432:5432"
+    volumes:
+      - yujin-db:/var/lib/postgresql/data
+volumes:
+  yujin-db:

@@ -1,0 +1,99 @@
+package ui
+
+import "github.com/rank1zen/yujin/internal"
+import "time"
+
+type ProfileLiveMatchModel struct {
+	Puuid             internal.PUUID
+	Team              internal.TeamID
+	Date              time.Time
+	Name              string
+	Tagline           string
+	Champion          internal.ChampionID
+	Runes             internal.Runes
+	Summoners         internal.SummonersIDs
+	Rank              *internal.RankRecord
+	BannedChampion    *internal.ChampionID
+	Kills             int
+	Deaths            int
+	Assists           int
+	KillParticipation float32
+	CreepScore        int
+	CsPerMinute       float32
+	GoldEarned        int
+	GoldPercentage    float32
+	GoldDelta         int
+	DamageDone        int
+	DamagePercentage  float32
+	DamageDelta       int
+	VisionScore       int
+}
+
+func createProfileLiveMatchData(m ProfileLiveMatchModel) ProfileLiveMatchData {
+	return ProfileLiveMatchData{
+		TeamID:            m.Team,
+		Date:              m.Date.String(),
+		Name:              m.Name,
+		Champion:          m.Champion,
+		Summoners:         m.Summoners,
+		Runes:             m.Runes,
+		Rank:              m.Rank,
+		BannedChampion:    m.BannedChampion,
+	}
+}
+
+type ProfileLiveMatchData struct {
+	TeamID            internal.TeamID
+	Date              string
+	Name              string
+	Champion          internal.ChampionID
+	Summoners         internal.SummonersIDs
+	Runes             internal.Runes
+	Rank              *internal.RankRecord
+	BannedChampion    *internal.ChampionID
+	KDA               string
+	KillParticipation string
+	CreepScore        string
+	CsPerMinute       string
+	GoldEarned        string
+	GoldPercentage    string
+	GoldDelta         string
+	DamageDone        string
+	DamagePercentage  string
+	DamageDelta       string
+	VisionScore       string
+}
+
+templ ProfileLiveMatchRow(data ProfileLiveMatchData) {
+	<tr>
+		<td>
+			@ChampionGrid(data.Champion, data.Summoners, data.Runes)
+		</td>
+		<td>
+			@Entry(data.KDA, data.KillParticipation)
+		</td>
+		<td>
+			@Entry(data.CreepScore, data.CsPerMinute)
+		</td>
+		<td>
+			@Entry(data.GoldEarned, data.GoldPercentage, data.GoldDelta)
+		</td>
+		<td>
+			@Entry(data.DamageDone, data.DamagePercentage, data.DamageDelta)
+		</td>
+		<td>
+			@Entry(data.VisionScore)
+		</td>
+	</tr>
+}
+
+templ ProfileLiveMatch(m []ProfileLiveMatchModel) {
+	for _, model := range m {
+		@ProfileLiveMatchRow(createProfileLiveMatchData(model))
+	}
+}
+
+// TODO: implement me
+templ ProfileLiveMatchError() {
+	<div></div>
+}

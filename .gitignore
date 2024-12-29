@@ -1,0 +1,6 @@
+.envrc
+
+node_modules/
+
+**/*_templ.go
+**/tern.conf

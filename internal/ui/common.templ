@@ -1,0 +1,93 @@
+package ui
+
+import "github.com/rank1zen/yujin/internal"
+
+templ Entry(h string, s ...string) {
+	<div class="block max-w-20">
+		<div class="block text-ellipsis overflow-hidden whitespace-nowrap text-sm">
+			{ h }
+		</div>
+		<div class="overflow-hidden gap-1 text-xs whitespace-nowrap">
+			for _, sub := range s {
+				<div class="rounded-sm inline-block bg-gray-200 px-0.5">
+					{ sub }
+				</div>
+			}
+		</div>
+	</div>
+}
+
+// TODO: implement
+templ NotFound() {
+}
+
+// TODO: implement
+templ ServerError() {
+}
+
+templ ChampionIcon(champion internal.ChampionID) {
+	<div class="overflow-hidden rounded-sm">
+		<img
+			class="scale-[1.135] size-full object-cover"
+			src={ champion.IconUrl() }
+		/>
+	</div>
+}
+
+templ ChampionGrid(champion internal.ChampionID, summs internal.SummsIDs, runes internal.Runes) {
+	<div class="grid grid-cols-5 grid-rows-2 gap-0.5 w-[4.5rem] h-3 grid-flow-col">
+		<div class="col-span-2 row-span-2 overflow-hidden rounded-sm">
+			<img
+				class="scale-[1.135] size-full object-cover"
+				src={ champion.IconUrl() }
+			/>
+		</div>
+		for _, id := range summs {
+			<img
+				class="rounded-sm"
+				src={ id.IconUrl() }
+			/>
+		}
+		<div class="grid col-span-2 row-span-2 grid-cols-subgrid grid-rows-subgrid bg-white">
+			<div class="col-start-1 row-start-1 col-span-2 row-span-2">
+				<img
+					class="size-full"
+					src={ runes.PrimaryKeystone.IconUrl() }
+				/>
+			</div>
+			<div class="col-start-2 row-start-2 z-10 p-1 bg-white rounded-full overflow-hidden shadow">
+				<img
+					class="size-full"
+					src={ runes.SecondaryTree.IconUrl() }
+				/>
+			</div>
+		</div>
+	</div>
+}
+
+templ ChampionBanned(champion *internal.ChampionID) {
+}
+
+templ itemIcon(id *internal.ItemID) {
+	if id == nil {
+		<div class="aspect-square object-cover bg-neutral-900 size-full rounded-sm"></div>
+	} else {
+		<div class="aspect-square size-full">
+			<img
+				class="object-cover size-full rounded-sm"
+				src={ id.IconUrl() }
+			/>
+		</div>
+	}
+}
+
+templ ItemsGrid(ids internal.ItemIDs) {
+	<div class="grid grid-cols-4 grid-rows-2 gap-0.5 w-[4.5rem] h-auto">
+		<div class="grid col-start-1 row-start-1 grid-rows-subgrid grid-cols-subgrid col-span-3 row-span-2">
+ 			for i := range 6 {
+ 				@itemIcon(ids[i])
+ 			}
+ 		</div>
+		<div class="row-start-1 col-start-4 aspect-square object-cover bg-neutral-900 size-full rounded-sm"></div>
+	</div>
+}

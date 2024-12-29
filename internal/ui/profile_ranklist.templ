@@ -1,0 +1,74 @@
+package ui
+
+import "github.com/rank1zen/yujin/internal"
+import "fmt"
+
+type ProfileRankListData struct {
+	Rank      string
+	Timestamp string
+}
+
+templ ProfileRankListRow(data ProfileRankListData) {
+	<tr>
+		<td>
+			@Entry(data.Rank)
+		</td>
+		<td>
+			@Entry(data.Timestamp)
+		</td>
+	</tr>
+}
+
+func createProfileRankListData(m internal.RankRecord) ProfileRankListData {
+	return ProfileRankListData{
+		Rank:      fmt.Sprintf("%s %s %dLP", m.Tier, m.Division, m.LP),
+		Timestamp: m.Timestamp.Format(""),
+	}
+}
+
+templ ProfileRankList(ranks []internal.RankRecord) {
+	for _, m := range ranks {
+		@ProfileRankListRow(createProfileRankListData(m))
+	}
+}
+
+templ ProfileRankListError() {
+	TODO: Implement
+}
+
+templ profileRankList(data ProfileData) {
+	<table class="table-fixed text-left w-full">
+		<thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+			<tr>
+				<th
+					class="px-3 py-2"
+					colspan="2"
+				>
+					Rank
+				</th>
+				<th class="w-24 px-3 py-2">
+					KDA
+				</th>
+				<th class="w-24 px-3 py-2">
+					CS
+				</th>
+				<th class="w-24 px-3 py-2">
+					Gold
+				</th>
+				<th class="w-24 px-3 py-2">
+					Damage
+				</th>
+				<th class="w-24 px-3 py-2">
+					Vision
+				</th>
+			</tr>
+		</thead>
+		<tbody
+			hx-get={ fmt.Sprintf("/partials/profile/%s/champstats", data.Puuid) }
+			hx-trigger="revealed once"
+			hx-swap-oob="beforeend:#table tbody"
+		>
+			// @matchListSkeleton() // TODO get a skeleton
+		</tbody>
+	</table>
+}

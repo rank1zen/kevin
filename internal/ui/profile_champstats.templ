@@ -1,0 +1,136 @@
+package ui
+
+import "github.com/rank1zen/yujin/internal"
+import "fmt"
+
+type ProfileChampStatsModel struct {
+	Puuid             internal.PUUID
+	Champion          internal.ChampionID
+	GamesPlayed       string
+	Wins              int
+	Losses            int
+	Kills             float32
+	Deaths            float32
+	Assists           float32
+	WinPercentage     float32
+	LpDelta           int
+	KillParticipation float32
+	CreepScore        float32
+	CsPerMinute       float32
+	GoldEarned        float32
+	GoldPercentage    float32
+	GoldDelta         float32
+	DamageDone        float32
+	DamagePercentage  float32
+	DamageDelta       float32
+	VisionScore       float32
+}
+
+type ProfileChampStatsData struct {
+	Champion          internal.ChampionID
+	GamesPlayed       string
+	WinLoss           string
+	WinPercentage     string
+	LpDelta           string
+	KDA               string
+	KillParticipation string
+	CreepScore        string
+	CsPerMinute       string
+	GoldEarned        string
+	GoldPercentage    string
+	GoldDelta         string
+	DamageDone        string
+	DamagePercentage  string
+	DamageDelta       string
+	VisionScore       string
+}
+
+templ ProfileChampStatsRow(m ProfileChampStatsData) {
+	<tr class="border-b hover:brightness-90 bg-white">
+		<td class="px-3 py-2">
+			@ChampionIcon(m.Champion)
+		</td>
+		<td class="px-3 py-2">
+			@Entry(m.GamesPlayed, m.WinLoss, m.WinPercentage, m.LpDelta)
+		</td>
+		<td class="px-3 py-2">
+			@Entry(m.KDA, m.KillParticipation)
+		</td>
+		<td class="px-3 py-2">
+			@Entry(m.CreepScore, m.CsPerMinute)
+		</td>
+		<td class="px-3 py-2">
+			@Entry(m.GoldEarned, m.GoldPercentage, m.GoldDelta)
+		</td>
+		<td class="px-3 py-2">
+			@Entry(m.DamageDone, m.DamagePercentage, m.DamageDelta)
+		</td>
+		<td class="px-3 py-2">
+			@Entry(m.VisionScore)
+		</td>
+	</tr>
+}
+
+templ profileChampStats(data ProfileData) {
+	<table class="table-fixed text-left w-full">
+		<thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+			<tr>
+				<th
+					class="px-3 py-2"
+					colspan="2"
+				>
+					Champion
+				</th>
+				<th class="w-24 px-3 py-2">
+					KDA
+				</th>
+				<th class="w-24 px-3 py-2">
+					CS
+				</th>
+				<th class="w-24 px-3 py-2">
+					Gold
+				</th>
+				<th class="w-24 px-3 py-2">
+					Damage
+				</th>
+				<th class="w-24 px-3 py-2">
+					Vision
+				</th>
+			</tr>
+		</thead>
+		<tbody
+			hx-get={ fmt.Sprintf("/partials/profile/%s/champstats", data.Puuid) }
+			hx-trigger="revealed once"
+			hx-swap-oob="beforeend:#table tbody"
+		>
+			// @matchListSkeleton() // TODO get a skeleton
+		</tbody>
+	</table>
+}
+
+func createChampStatsData(m ProfileChampStatsModel) ProfileChampStatsData {
+	return ProfileChampStatsData{
+		Champion:          m.Champion,
+		GamesPlayed:       string(m.GamesPlayed),
+		LpDelta:           string(m.LpDelta),
+		WinLoss:           fmt.Sprintf("%d-%d", m.Wins, m.Losses),
+		WinPercentage:     fmt.Sprintf("%.0f%%", m.WinPercentage*100),
+		KDA:               fmt.Sprintf("%.1f / %.1f / %.1f", m.Kills, m.Deaths, m.Assists),
+		KillParticipation: fmt.Sprintf("%.1f", m.KillParticipation),
+		CreepScore:        fmt.Sprintf("%.0f", m.CreepScore),
+		CsPerMinute:       fmt.Sprintf("%.1f", m.CsPerMinute),
+		GoldEarned:        fmt.Sprintf("%.0f", m.GoldEarned),
+		GoldPercentage:    fmt.Sprintf("%.0f%%", m.GoldPercentage),
+		GoldDelta:         fmt.Sprintf("%.0f", m.GoldDelta),
+		DamageDone:        fmt.Sprintf("%.0f", m.DamageDone),
+		DamagePercentage:  fmt.Sprintf("%.0f%%", m.DamagePercentage),
+		DamageDelta:       fmt.Sprintf("%.0f", m.DamageDelta),
+		VisionScore:       fmt.Sprintf("%.0f", m.VisionScore),
+	}
+}
+
+templ ProfileChampStatsRows(data []ProfileChampStatsModel) {
+	for _, m := range data {
+		@ProfileChampStatsRow(createChampStatsData(m))
+	}
+}
