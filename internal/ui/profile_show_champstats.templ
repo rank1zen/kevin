@@ -67,61 +67,75 @@ type profileChampStatsData struct {
 }
 
 templ profileChampStatsRow(m profileChampStatsData) {
-	<tr class="border-b hover:brightness-90 bg-white">
-		<td class="px-3 py-2">
+	<tr class="border-b hover:brightness-95 bg-white">
+		<td class="w-16 px-4 py-2">
 			@ChampionIcon(m.Champion)
 		</td>
-		<td class="px-3 py-2">
-			@Entry(m.GamesPlayed, m.WinLoss, m.WinPercentage, m.LpDelta)
+		<td class="w-24 px-4 py-2">
+			@Entry("190", m.WinLoss, m.WinPercentage, m.LpDelta)
 		</td>
-		<td class="px-3 py-2">
+		<td class="w-36 px-4 py-2">
 			@Entry(m.KDA, m.KillParticipation)
 		</td>
-		<td class="px-3 py-2">
+		<td class="w-16 px-4 py-2">
 			@Entry(m.CreepScore, m.CsPerMinute)
 		</td>
-		<td class="px-3 py-2">
+		<td class="w-24 px-4 py-2">
 			@Entry(m.GoldEarned, m.GoldPercentage, m.GoldDelta)
 		</td>
-		<td class="px-3 py-2">
+		<td class="w-24 px-4 py-2">
 			@Entry(m.DamageDone, m.DamagePercentage, m.DamageDelta)
 		</td>
-		<td class="px-3 py-2">
+		<td class="w-16 px-4 py-2">
 			@Entry(m.VisionScore)
 		</td>
 	</tr>
 }
 
 templ profileChampStatsPartial(data []profileChampStatsModel) {
-	for _, m := range data {
-		@profileChampStatsRow(createChampStatsData(m))
+	for i := range 5{
+		@profileChampStatsRow(createChampStatsData(data[i]))
 	}
 }
 
 templ profileChampStats(data profileData) {
-	<table class="table-fixed text-left w-full">
-		<thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
-			<tr>
+	<table class="table-fixed text-left border">
+		<thead class="text-xs text-gray-500 uppercase bg-gray-50">
+			<tr class="">
 				<th
-					class="px-3 py-2"
-					colspan="2"
+					class="px-4 py-2 text-black"
 				>
 					Champion
 				</th>
-				<th class="w-24 px-3 py-2">
+				<th
+					class="w-24 px-4 py-2"
+				>
+					Games
+				</th>
+				<th
+					class="w-36 px-4 py-2"
+				>
 					KDA
 				</th>
-				<th class="w-24 px-3 py-2">
+				<th
+					class="w-16 px-4 py-2"
+				>
 					CS
 				</th>
-				<th class="w-24 px-3 py-2">
+				<th
+					class="w-24 px-4 py-2"
+				>
 					Gold
 				</th>
-				<th class="w-24 px-3 py-2">
-					Damage
+				<th
+					class="w-24 px-4 py-2"
+				>
+					DMG
 				</th>
-				<th class="w-24 px-3 py-2">
-					Vision
+				<th
+					class="w-16 px-4 py-2"
+				>
+					VIS
 				</th>
 			</tr>
 		</thead>

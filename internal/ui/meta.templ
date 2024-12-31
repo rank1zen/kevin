@@ -11,6 +11,7 @@ templ head(title string) {
 		<script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
 		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 		<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
+		<link href="https://fonts.cdnfonts.com/css/noto-sans" rel="stylesheet">
 		<title>{ title }</title>
 
 		// TODO: favicon
@@ -23,9 +24,7 @@ templ page(title string) {
 		@head(title)
 		<body>
 			<main>
-				<div class="pt-10 mx-auto max-w-4xl">
-					{ children... }
-				</div>
+				{ children... }
 			</main>
 		</body>
 	</html>

@@ -26,45 +26,79 @@ type profileData struct {
 	WinLoss string
 }
 
+templ profileNavbar(data profileData) {
+	<nav class="flex items-center gap-4">
+		<form class="flex items-center max-w-sm mx-auto gap-4">
+			<label for="simple-search" class="sr-only">Search</label>
+			<div class="relative w-full">
+				<input
+					type="text"
+					id="simple-search"
+					class="border px-4 py-1.5 rounded text-sm"
+					placeholder="Search branch name..."
+					required
+				/>
+			</div>
+		</form>
+		<div
+			class="px-4 py-1.5 text-sm bg-gray-300 border text-gray-900 hover:brightness-90 rounded font-bold"
+			hx-post={ fmt.Sprintf("/profile/%s/refresh", data.Puuid) }
+			hx-trigger="click"
+			type="button"
+		>
+			Update
+		</div>
+	</nav>
+}
+
 templ profile(data profileData) {
 	<div class="flex flex-col">
-		<div class="text-3xl font-bold py-4 whitespace-nowrap text-ellipsis overflow-hidden">
-			{ data.Name }
+		<div class="border-b flex justify-between px-10 max-w-5xl py-4 pt-10 items-center mx-auto">
+			<div class="flex gap-6">
+				<div class="text-xl font-bold whitespace-nowrap text-ellipsis overflow-hidden">
+					{ data.Name }
+				</div>
+				<div class="text-xl text-ellipsis overflow-hidden whitespace-nowrap max-w-96">
+					{ data.Rank } { data.WinLoss }
+				</div>
+			</div>
+
+			@profileNavbar(data)
 		</div>
-		<div class="text-xl pb-4 text-ellipsis overflow-hidden whitespace-nowrap">
-			{ data.Rank } { data.WinLoss }
-		</div>
-		<div class="flex">
-			<div
-				class="p-2 bg-black text-white rounded"
-				hx-post={ fmt.Sprintf("/profile/%s/refresh", data.Puuid) }
-				hx-trigger="click"
-				type="button"
-			>
-				Update
+		<div class="flex flex-col px-10 max-w-5xl mx-auto">
+			// <div class="mt-20">
+			// 	@profileChampStats(data)
+			// </div>
+			<div class="mt-20">
+				@profileMatchList(data)
 			</div>
 		</div>
-		<div class="pt-8">
-			<div class="text-lg">
-				Live game
+	</div>
+}
+
+templ navbar() {
+	<div class="w-full border-b">
+		<div class="flex px-10 max-w-6xl mx-auto py-5 items-center justify-between">
+			YUJIN.GG
+			<div class="text-blue-400 flex gap-3 text-sm">
+				Ladder
+				<div class="text-blue-400">
+					Search
+				</div>
+				<div class="text-blue-400">
+					Search
+				</div>
 			</div>
-			@profileLiveMatch(data)
-		</div>
-		<div class="mt-20">
-			@profileChampStats(data)
-		</div>
-		<div class="mt-20">
-			@profileRankList(data)
-		</div>
-		<div class="mt-20">
-			@profileMatchList(data)
 		</div>
 	</div>
 }
 
 templ profilePage(m profileModel) {
 	@page(m.Name) {
-		@profile(createProfileData(m))
+		@navbar()
+		<div class="">
+			@profile(createProfileData(m))
+		</div>
 	}
 }
 
