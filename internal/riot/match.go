@@ -6,13 +6,13 @@ import (
 	"github.com/rank1zen/yujin/internal"
 )
 
-func (r *Riot) GetMatch(ctx context.Context, id internal.MatchID) (internal.Match, error) {
+func (r *Riot) GetMatch(ctx context.Context, id internal.MatchID) (internal.RiotMatch, error) {
 	m, err := r.client.GetMatch(ctx, id.String())
 	if err != nil {
-		return internal.Match{}, err
+		return internal.RiotMatch{}, err
 	}
 
-	return internal.Match{
+	return internal.RiotMatch{
 		ID:              internal.MatchID(m.Metadata.MatchId),
 		DataVersion:     m.Metadata.DataVersion,
 		Patch:           internal.GameVersion(m.Info.GameVersion),

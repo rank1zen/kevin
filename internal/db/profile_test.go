@@ -12,16 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type profileDB interface {
-	ProfileExists(ctx context.Context, puuid riotclient.PUUID) (bool, error)
-	ProfileGetChampionStatList(ctx context.Context, puuid riotclient.PUUID, season internal.Season) (ProfileChampionStatList, error)
-	ProfileGetHeader(ctx context.Context, puuid riotclient.PUUID) (ProfileHeader, error)
-	ProfileGetLiveGame(ctx context.Context, puuid string) (ProfileLiveGame, error)
-	ProfileGetMatchList(ctx context.Context, puuid riotclient.PUUID, page int, ensure bool) (ProfileMatchList, error)
-	ProfileGetRankHistory(ctx context.Context, puuid riotclient.PUUID) (ProfileRankHistoryList, error)
-	ProfileUpdate(ctx context.Context, puuid riotclient.PUUID) error
-}
-
 func testFetch(t testing.TB, ctx context.Context, db profileDB, puuid riotclient.PUUID) {
 	exists, err := db.ProfileExists(ctx, puuid)
 	require.NoError(t, err)

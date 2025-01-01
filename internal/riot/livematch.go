@@ -19,10 +19,10 @@ func getBan(match riotclient.SpectatorCurrentGameInfo, position int) *internal.C
 	return (*internal.ChampionID)(&match.BannedChampions[position].ChampionId)
 }
 
-func (r *Riot) GetLiveMatch(ctx context.Context, puuid internal.PUUID) (internal.LiveMatch, error) {
+func (r *Riot) GetLiveMatch(ctx context.Context, puuid internal.PUUID) (internal.RiotLiveMatch, error) {
 	gameInfo, err := r.client.GetCurrentGameInfoByPuuid(ctx, puuid.String())
 	if err != nil {
-		return internal.LiveMatch{}, err
+		return internal.RiotLiveMatch{}, err
 	}
 
 	// probably check that there is indeed some number of things
@@ -45,7 +45,7 @@ func (r *Riot) GetLiveMatch(ctx context.Context, puuid internal.PUUID) (internal
 		}
 	}
 
-	return internal.LiveMatch{
+	return internal.RiotLiveMatch{
 		StartTimestamp: riotUnixToDate(gameInfo.GameStartTime),
 		Length:         time.Duration(gameInfo.GameLength),
 		Participant:    participants,

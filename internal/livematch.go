@@ -17,7 +17,7 @@ type LiveMatchParticipantList [10]LiveMatchParticipant
 
 type LiveMatchTeamList [5]LiveMatchParticipant
 
-type LiveMatch struct {
+type RiotLiveMatch struct {
 	StartTimestamp time.Time
 	Length         time.Duration
 	IDs            [10]PUUID
@@ -25,6 +25,6 @@ type LiveMatch struct {
 }
 
 // TODO: we should further implement checking the order of the list
-func (m *LiveMatch) GetParticipants() LiveMatchParticipantList {
+func (m *RiotLiveMatch) GetParticipants() LiveMatchParticipantList {
 	return m.Participant
 }

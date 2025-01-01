@@ -39,8 +39,8 @@ func (s *mock) GetRankList(_ context.Context, _ internal.PUUID) ([]internal.Rank
 	return m, nil
 }
 
-func (s *mock) GetMatchList(_ context.Context, _ internal.PUUID, _ int, _ bool) ([]internal.MatchParticipant, error) {
-	m := make([]internal.MatchParticipant, 10)
+func (s *mock) GetMatchList(_ context.Context, _ internal.PUUID, _ int, _ bool) ([]internal.RiotMatchParticipant, error) {
+	m := make([]internal.RiotMatchParticipant, 10)
 	for i := range len(m) {
 		err := gofakeit.Struct(&(m[i]))
 		if err != nil {
@@ -58,7 +58,7 @@ func (s *mock) GetChampionList(_ context.Context, _ internal.PUUID) ([]internal.
 	return m, nil
 }
 
-func (s *mock) CreateMatch(_ context.Context, _ internal.Match) error {
+func (s *mock) CreateMatch(_ context.Context, _ internal.RiotMatch) error {
 	return nil
 }
 
@@ -70,8 +70,8 @@ func (s *mock2) GetProfile(_ context.Context, _ internal.PUUID) (_ internal.Prof
 	return m, nil
 }
 
-func (s *mock2) GetLiveMatch(_ context.Context, _ internal.PUUID) (_ internal.LiveMatch, _ error) {
-	var m internal.LiveMatch
+func (s *mock2) GetLiveMatch(_ context.Context, _ internal.PUUID) (_ internal.RiotLiveMatch, _ error) {
+	var m internal.RiotLiveMatch
 	gofakeit.Struct(&m)
 	return m, nil
 }
@@ -82,8 +82,8 @@ func (s *mock2) GetMatchList(_ context.Context, _ internal.PUUID) (_ []internal.
 	return m, nil
 }
 
-func (s *mock2) GetMatch(_ context.Context, _ internal.MatchID) (_ internal.Match, _ error) {
-	var m internal.Match
+func (s *mock2) GetMatch(_ context.Context, _ internal.MatchID) (_ internal.RiotMatch, _ error) {
+	var m internal.RiotMatch
 	gofakeit.Struct(&m)
 	return m, nil
 }

@@ -10,18 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// func TestEnsureMatchlist(t *testing.T) {
-// 	t.Parallel()
-//
-// 	ctx := context.Background()
-//
-// 	db := setupDB(t)
-//
-// 	err := ensureMatchList(ctx, db.pool, db.riot, "0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q", 0, 1)
-// 	assert.NoError(t, err)
-// }
-
-func TestCreateMatch(t *testing.T) {
+func TestCreateMatchInfo(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
@@ -31,11 +20,11 @@ func TestCreateMatch(t *testing.T) {
 
 	for _, test := range []struct {
 		desc     string
-		expected internal.Match
+		expected internal.RiotMatch
 	}{
 		{
 			"Real data",
-			internal.Match{
+			internal.RiotMatch{
 				ID:              "NA1_5011055088",
 				DataVersion:     "2",
 				Patch:           internal.GameVersion("14.11.589.9418"),
@@ -48,7 +37,7 @@ func TestCreateMatch(t *testing.T) {
 		},
 	} {
 		t.Run(test.desc, func(t *testing.T) {
-			actual, err := createMatch(ctx, db.pool, test.expected)
+			actual, err := createMatchInfo(ctx, db.pool, test.expected)
 
 			require.NoError(t, err)
 

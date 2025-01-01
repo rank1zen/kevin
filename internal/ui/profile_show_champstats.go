@@ -19,9 +19,9 @@ func (ui *ui) profileShowChampStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matches := make([]profileChampStatsModel, len(champs))
+	matches := make([]profileChampStatsModel, len(champs.List))
 
-	for i, champion := range champs {
+	for i, champion := range champs.List {
 		matches[i] = profileChampStatsModel{
 			Puuid:             champion.Puuid,
 			Champion:          champion.Champion,

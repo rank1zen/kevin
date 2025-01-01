@@ -8,7 +8,7 @@ import (
 	"github.com/rank1zen/yujin/internal/pgxutil"
 )
 
-func createMatch(ctx context.Context, conn pgxutil.Query, m internal.Match) (internal.Match, error) {
+func createMatchInfo(ctx context.Context, conn pgxutil.Query, m internal.RiotMatch) (internal.RiotMatch, error) {
 	row := pgx.NamedArgs{
 		"match_id":     m.ID,
 		"data_version": m.DataVersion,
@@ -17,7 +17,7 @@ func createMatch(ctx context.Context, conn pgxutil.Query, m internal.Match) (int
 		"patch":        m.Patch,
 	}
 
-	var result internal.Match
+	var result internal.RiotMatch
 
 	err := conn.QueryRow(ctx, `
 	INSERT INTO matches (
@@ -51,7 +51,7 @@ func createMatch(ctx context.Context, conn pgxutil.Query, m internal.Match) (int
 	return result, err
 }
 
-func createParticipant(ctx context.Context, conn pgxutil.Exec, m internal.MatchParticipant) error {
+func createParticipant(ctx context.Context, conn pgxutil.Exec, m internal.RiotMatchParticipant) error {
 	row := pgx.NamedArgs{
 		"match_id":                           m.Match,
 		"participant_id":                     m.ID,
@@ -155,7 +155,7 @@ func createParticipant(ctx context.Context, conn pgxutil.Exec, m internal.MatchP
 	return err
 }
 
-func createTeam(ctx context.Context, conn pgxutil.Exec, m internal.MatchTeam) error {
+func createTeam(ctx context.Context, conn pgxutil.Exec, m internal.RiotMatchTeam) error {
 	_, err := conn.Exec(ctx, `
 	INSERT INTO match_teams
 		(match_id, team_id, win)
@@ -166,8 +166,8 @@ func createTeam(ctx context.Context, conn pgxutil.Exec, m internal.MatchTeam) er
 	return err
 }
 
-func MatchInsert(ctx context.Context, conn pgxutil.Conn, m internal.Match) error {
-	tx, err := conn.Begin(ctx)
+func (db *DB) CreateMatch(ctx context.Context, match internal.RiotMatch) error {
+	tx, err := db.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
@@ -175,19 +175,19 @@ func MatchInsert(ctx context.Context, conn pgxutil.Conn, m internal.Match) error
 	defer tx.Rollback(ctx)
 
 	// note the other two tables depend on this one
-	createMatch(ctx, conn, m)
+	createMatchInfo(ctx, tx, match)
 	if err != nil {
 		return err
 	}
 
-	for _, participant := range m.GetParticipants() {
+	for _, participant := range match.GetParticipants() {
 		err := createParticipant(ctx, tx, participant)
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, team := range m.GetTeams() {
+	for _, team := range match.GetTeams() {
 		err := createTeam(ctx, tx, team)
 		if err != nil {
 			return err
@@ -200,4 +200,110 @@ func MatchInsert(ctx context.Context, conn pgxutil.Conn, m internal.Match) error
 	}
 
 	return nil
+}
+
+// GetMatchHistory returns a paging object for a summoner's match history.
+func (db *DB) GetMatchHistory(ctx context.Context, puuid internal.PUUID) (internal.MatchHistory, error) {
+	rows, _ := db.pool.Query(ctx, `
+	`, puuid)
+
+	collectFn := func(row pgx.CollectableRow) (internal.Participant, error) {
+		var p internal.Participant
+		err := row.Scan(
+			&p.Puuid,
+			&p.ID,
+			&p.MatchID,
+			&p.TeamID,
+			&p.StartTimestamp,
+			&p.EndTimestamp,
+			&p.Duration,
+			&p.Patch,
+			&p.Position,
+			&p.Win,
+			&p.BannedChampion,
+			&p.Champion,
+			&p.ChampionLevel,
+			&p.Summs,
+			&p.Items,
+			&p.Runes,
+			&p.Kills,
+			&p.Deaths,
+			&p.Assists,
+			&p.KillParticipation,
+			&p.CreepScore,
+			&p.CsPerMinute,
+			&p.Gold,
+			&p.GoldPercentage,
+			&p.GoldDelta,
+			&p.Damage,
+			&p.DamagePercentage,
+			&p.DamageDelta,
+			&p.VisionScore,
+			&p.PinkWards,
+		)
+
+		return p, err
+	}
+
+	matches, err := pgx.CollectRows(rows, collectFn)
+	if err != nil {
+		return internal.MatchHistory{}, err
+	}
+
+	return internal.MatchHistory{
+		List: matches,
+	}, nil
+}
+
+// GetMatchHistory returns the 10 participants in a match.
+func (db *DB) GetMatch(ctx context.Context, matchID internal.MatchID) ([10]internal.Participant, error) {
+	rows, _ := db.pool.Query(ctx, `
+	`, matchID)
+
+	collectFn := func(row pgx.CollectableRow) (internal.Participant, error) {
+		var p internal.Participant
+		err := row.Scan(
+			&p.Puuid,
+			&p.ID,
+			&p.MatchID,
+			&p.TeamID,
+			&p.StartTimestamp,
+			&p.EndTimestamp,
+			&p.Duration,
+			&p.Patch,
+			&p.Position,
+			&p.Win,
+			&p.BannedChampion,
+			&p.Champion,
+			&p.ChampionLevel,
+			&p.Summs,
+			&p.Items,
+			&p.Runes,
+			&p.Kills,
+			&p.Deaths,
+			&p.Assists,
+			&p.KillParticipation,
+			&p.CreepScore,
+			&p.CsPerMinute,
+			&p.Gold,
+			&p.GoldPercentage,
+			&p.GoldDelta,
+			&p.Damage,
+			&p.DamagePercentage,
+			&p.DamageDelta,
+			&p.VisionScore,
+			&p.PinkWards,
+		)
+
+		return p, err
+	}
+
+	matches, err := pgx.CollectRows(rows, collectFn)
+	if err != nil {
+		return [10]internal.Participant{}, err
+	}
+
+	// make sure there are ten matches
+
+	return [10]internal.Participant{matches[0]}, nil // FIXME
 }

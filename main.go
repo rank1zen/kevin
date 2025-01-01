@@ -31,9 +31,10 @@ func main() {
 	if err != nil {
 		logger.Sugar().Fatalf("connecting to db: %v", err)
 	}
+
 	defer db.Close()
 
-	ui := ui.Routes(db)
+	ui := ui.Routes(db, nil) // FIXME
 	go func() {
 		http.ListenAndServe(fmt.Sprintf(":%d", port), ui)
 	}()

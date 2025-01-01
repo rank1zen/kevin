@@ -7,7 +7,12 @@ import (
 	"github.com/rank1zen/yujin/internal"
 )
 
-func (db *DB) GetChampionStatList(ctx context.Context, puuid internal.PUUID, season internal.Season) ([]internal.ChampionStats, error) {
+func (db *DB) GetChampionStat(ctx context.Context, puuid internal.PUUID, season internal.Season) ([]internal.ChampionStats, error) {
+	panic("deprecated: remove this")
+}
+
+// GetChampionList returns a something for a summoner's stats on a specific champion.
+func (db *DB) GetChampionList(ctx context.Context, puuid internal.PUUID) (internal.ChampionStatsSeason, error) {
 	rows, _ := db.pool.Query(ctx, `
 	WITH
 	team_total AS (
@@ -28,18 +33,17 @@ func (db *DB) GetChampionStatList(ctx context.Context, puuid internal.PUUID, sea
 			champion_id,
 			count(*),
 			sum(lp_delta),
-
-			avg(mp.kills)                                                       AS kda_kills,
-			avg(mp.deaths)                                                      AS kda_deaths,
-			avg(mp.assists)                                                     AS kda_assists,
-			avg(round(mp.kills/team_stats.kills, 2))                            AS kda_participation,
-			avg(mp.creep_score)                                                 AS cs_raw,
-			avg(mp.creep_score)                                                 AS cs_per10,
-			avg(mp.total_damage_dealt_to_champions)                             AS dmg_raw,
-			avg(round(mp.total_damage_dealt_to_champions/team_total.damage, 2)) AS dmg_percentage_team,
-			avg(mp.gold_earned)                                                 AS gold_raw,
-			avg()                                                               AS gold_percentage_team,
-			avg(mp.vision_score)                                                AS vis_raw
+			avg(mp.kills),
+			avg(mp.deaths),
+			avg(mp.assists),
+			avg(round(mp.kills/team_stats.kills, 2)),
+			avg(mp.creep_score),
+			avg(mp.creep_score),
+			avg(mp.total_damage_dealt_to_champions),
+			avg(round(mp.total_damage_dealt_to_champions/team_total.damage, 2)),
+			avg(mp.gold_earned),
+			avg(),
+			avg(mp.vision_score)
 		FROM
 			match_participants mp
 		JOIN
@@ -50,17 +54,43 @@ func (db *DB) GetChampionStatList(ctx context.Context, puuid internal.PUUID, sea
 			champion_id
 		ORDER BY
 			champion_id
-	)
-	`, puuid, season)
+	);
+	`, puuid)
 
-	stats, err := pgx.CollectRows(rows, pgx.RowToStructByPos[ProfileChampionStat])
-	if err != nil {
-		return ProfileChampionStatList{}, err
+	collectFn := func(row pgx.CollectableRow) (internal.ChampionStats, error) {
+		var s internal.ChampionStats
+		err := row.Scan(
+			&s.Puuid,
+			&s.Champion,
+			&s.GamesPlayed,
+			&s.WinPercentage,
+			&s.Wins,
+			&s.Losses,
+			&s.LpDelta,
+			&s.Kills,
+			&s.Deaths,
+			&s.Assists,
+			&s.KillParticipation,
+			&s.CreepScore,
+			&s.CsPerMinute,
+			&s.Damage,
+			&s.DamagePercentage,
+			&s.DamageDelta,
+			&s.GoldEarned,
+			&s.GoldPercentage,
+			&s.GoldDelta,
+			&s.VisionScore,
+		)
+
+		return s, err
 	}
 
-	return ProfileChampionStatList{
-		Puuid:  puuid,
-		Season: season,
-		List:   stats,
+	stats, err := pgx.CollectRows(rows, collectFn)
+	if err != nil {
+		return internal.ChampionStatsSeason{}, err
+	}
+
+	return internal.ChampionStatsSeason{
+		List: stats,
 	}, nil
 }

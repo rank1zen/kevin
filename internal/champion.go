@@ -2,6 +2,7 @@ package internal
 
 // ChampionStats is an aggregate average of a players stats on a specific
 // champion over some number of games.
+// TODO: rename to Champion
 type ChampionStats struct {
 	Puuid             PUUID
 	Champion          ChampionID
@@ -23,4 +24,10 @@ type ChampionStats struct {
 	GoldPercentage    float32
 	GoldDelta         float32
 	VisionScore       float32
+}
+
+type ChampionStatsSeason struct {
+	// TODO: stats for some season, for now just include everything
+
+	List []ChampionStats
 }

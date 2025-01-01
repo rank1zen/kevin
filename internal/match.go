@@ -2,8 +2,8 @@ package internal
 
 import "time"
 
-// Match is strictly a ranked, soloq, 5v5, match on summoners rift.
-type Match struct {
+// RiotMatch is strictly a ranked, soloq, 5v5, match on summoners rift.
+type RiotMatch struct {
 	ID              MatchID
 	DataVersion     string
 	Patch           GameVersion
@@ -15,19 +15,19 @@ type Match struct {
 	Participants    MatchParticipantList
 }
 
-type MatchParticipantList [10]MatchParticipant
+type MatchParticipantList [10]RiotMatchParticipant
 
-type MatchTeamList [5]MatchParticipant
+type MatchTeamList [5]RiotMatchParticipant
 
-func (m *Match) GetParticipants() MatchParticipantList {
+func (m *RiotMatch) GetParticipants() MatchParticipantList {
 	return m.Participants
 }
 
-func (m *Match) GetTeams() [2]MatchTeam {
-	return [2]MatchTeam{}
+func (m *RiotMatch) GetTeams() [2]RiotMatchTeam {
+	return [2]RiotMatchTeam{}
 }
 
-type MatchParticipant struct {
+type RiotMatchParticipant struct {
 	ID       ParticipantID
 	Puuid    PUUID
 	Match    MatchID
@@ -98,7 +98,7 @@ type MatchParticipant struct {
 	NeutralMinionsKilled           int
 }
 
-type MatchTeam struct {
+type RiotMatchTeam struct {
 	ID      TeamID
 	MatchID MatchID
 	Win     bool

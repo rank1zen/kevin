@@ -2,23 +2,23 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/rank1zen/yujin/internal"
 	"github.com/rank1zen/yujin/internal/pgxutil"
 )
 
-// TODO: fix these types
 type summonerRecordRow struct {
-	ValidFrom     bool
-	ValidTo       bool
-	EnteredAt     bool
-	AccountId     bool
-	SummonerId    bool
-	Puuid         bool
-	RevisionDate  bool
-	SummonerLevel bool
-	ProfileIconID bool
+	ValidFrom     time.Time
+	ValidTo       time.Time
+	EnteredAt     time.Time
+	AccountId     internal.AccountID
+	SummonerId    internal.SummonerID
+	Puuid         internal.PUUID
+	RevisionDate  time.Time
+	SummonerLevel int
+	ProfileIconID int
 }
 
 func createSummonerRecord(ctx context.Context, conn pgxutil.Query, m internal.Profile) (summonerRecordRow, error) {

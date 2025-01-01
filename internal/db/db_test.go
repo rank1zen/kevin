@@ -8,7 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/rank1zen/yujin/internal/db/migrate"
+	"github.com/rank1zen/yujin/internal/migrate"
 
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 )

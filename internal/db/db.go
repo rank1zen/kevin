@@ -6,7 +6,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rank1zen/yujin/internal"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -15,7 +14,7 @@ type DB struct {
 	tracer trace.Tracer
 }
 
-func NewDB(ctx context.Context, url string) (internal.Repository, error) {
+func NewDB(ctx context.Context, url string) (*DB, error) {
 	pgxCfg, err := pgxpool.ParseConfig(url)
 	if err != nil {
 		return nil, fmt.Errorf("postgres connection string: %w", err)
@@ -37,7 +36,6 @@ func NewDB(ctx context.Context, url string) (internal.Repository, error) {
 		return nil, err
 	}
 
-	// FIXME: DB currently does not implement internal.Repository
 	return &DB{
 		pool: pool,
 	}, nil
