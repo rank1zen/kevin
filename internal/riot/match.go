@@ -38,6 +38,17 @@ func makeRunes(perks *riotclient.MatchPerks) internal.Runes {
 	}
 }
 
+func makeSumms(summ0, summ1 int) internal.SummsIDs {
+	ids := internal.SummsIDs{}
+
+	for i, summ := range []int{summ0, summ1} {
+		// maybe assert summ is zero
+		ids[i] = internal.SummsID(summ)
+	}
+
+	return ids
+}
+
 func (r *Riot) GetMatch(ctx context.Context, id internal.MatchID) (internal.RiotMatch, error) {
 	m, err := r.client.GetMatch(ctx, id.String())
 	if err != nil {
