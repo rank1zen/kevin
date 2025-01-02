@@ -14,47 +14,35 @@ func (db *DB) GetChampionStat(ctx context.Context, puuid internal.PUUID, season 
 // GetChampionList returns a something for a summoner's stats on a specific champion.
 func (db *DB) GetChampionList(ctx context.Context, puuid internal.PUUID) (internal.ChampionStatsSeason, error) {
 	rows, _ := db.pool.Query(ctx, `
-	WITH
-	team_total AS (
-		SELECT
-			team_id,
-			match_id,
-			sum(total_damage_dealt_to_champions) AS damage,
-			sum(kills)                           AS kills,
-			sum(gold_earned)                     AS gold
-		FROM
-			match_participants
-		GROUP BY
-			team_id, match_id
-	)
-	participant AS (
-		SELECT
-			puuid,
-			champion_id,
-			count(*),
-			sum(lp_delta),
-			avg(mp.kills),
-			avg(mp.deaths),
-			avg(mp.assists),
-			avg(round(mp.kills/team_stats.kills, 2)),
-			avg(mp.creep_score),
-			avg(mp.creep_score),
-			avg(mp.total_damage_dealt_to_champions),
-			avg(round(mp.total_damage_dealt_to_champions/team_total.damage, 2)),
-			avg(mp.gold_earned),
-			avg(),
-			avg(mp.vision_score)
-		FROM
-			match_participants mp
-		JOIN
-			team_stats
-		WHERE
-			puuid = $1
-		GROUP BY
-			champion_id
-		ORDER BY
-			champion_id
-	);
+	SELECT
+		puuid,
+		champion_id,
+		count(*),
+		0.6 -- &s.WinPercentage,
+		sum(win = true),
+		sum(win = false),
+		10 -- &s.LpDelta,
+		avg(participant.kils),
+		avg(participant.deaths),
+		avg(participant.assists),
+		avg((participant.kills + participant.assists) / team.kills)
+		avg(participant.creep_score),
+		avg(participant.creep_score * 60 / extract(epoch from matches.duration)),
+		avg(participant.total_damage_dealt_to_champions)
+		avg(participant.total_damage_dealt_to_champions / team.total_damage_dealt_to_champions)
+		0.1 -- &s.DamageDelta,
+		avg(participant.gold_earned),
+		avg(participant.gold_earned / team.gold_earned)
+		0.1 -- &s.GoldDelta,
+		avg(participant.vision_score)
+	FROM
+		match_participants AS participant
+	JOIN
+		match_team_stats AS team USING (match_id, team_id)
+	JOIN
+		matches USING (match_id)
+	GROUP BY
+		champion_id;
 	`, puuid)
 
 	collectFn := func(row pgx.CollectableRow) (internal.ChampionStats, error) {
