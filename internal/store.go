@@ -674,7 +674,7 @@ func (s *Store) RecordMatch(ctx context.Context, match Match, participants [10]P
 			);
 		`,
 			participant.MatchID,
-			participant.Puuid,
+			participant.PUUID,
 			participant.TeamID,
 			participant.ChampionID,
 			participant.ChampionLevel,

@@ -22,7 +22,7 @@ func TestParticipant(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := internal.Participant{
-		Puuid:         "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
+		PUUID:         "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
 		MatchID:       "NA1_5304757838",
 		TeamID:        100,
 		ChampionID:    63,
@@ -63,6 +63,34 @@ func TestParticipant(t *testing.T) {
 		"create participant from riot",
 		func(t *testing.T) {
 			actual := internal.NewParticipant(internal.RiotMatchToParticipant(riotMatch, "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"))
+			assert.Equal(t, expected, actual)
+		},
+	)
+}
+
+func TestLiveParticipant(t *testing.T) {
+	testdata := os.DirFS("../testdata")
+
+	matchFile, err := testdata.Open("spectator/aram.json")
+
+	var riotMatch riot.CurrentGameInfo
+	err = json.NewDecoder(matchFile).Decode(&riotMatch)
+	require.NoError(t, err)
+
+	t.Run(
+		"create live participant from riot",
+		func(t *testing.T) {
+			expected := internal.LiveParticipant{
+				PUUID:        "FJqkUwySDuAPRCwxS2e_WTHYJ9rCXGTE-usG_Rya-rzxDSplTW3FQ2oPp0kev2FlxKV26A3O917gvg",
+				MatchID:      "NA1_5308207011",
+				ChampionID:   107,
+				Runes:        internal.NewRunePage(internal.WithIntList([11]int{8000,8010,9111,9105,8299,8100,8143,8135,5005,5008,5001})),
+				TeamID:       100,
+				SummonersIDs: [2]int{4, 14},
+			}
+
+			actual := internal.NewLiveParticipant(internal.WithRiotCurrentGame(riotMatch, "FJqkUwySDuAPRCwxS2e_WTHYJ9rCXGTE-usG_Rya-rzxDSplTW3FQ2oPp0kev2FlxKV26A3O917gvg"))
+
 			assert.Equal(t, expected, actual)
 		},
 	)

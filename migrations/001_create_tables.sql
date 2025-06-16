@@ -119,10 +119,10 @@ create table ItemEvent (
 );
 
 create table SpellEvent (
-        level_up_type text,
+        level_up_type     text,
         puuid             riot_puuid not null,
         in_game_timestamp interval not null,
-        spell_slot           int not null
+        spell_slot        int not null
 );
 
 ---- create above / drop below ----

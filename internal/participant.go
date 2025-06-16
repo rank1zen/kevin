@@ -1,11 +1,13 @@
 package internal
 
 import (
+	"fmt"
+
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type Participant struct {
-	Puuid                  string
+	PUUID                  string
 	MatchID                string
 	TeamID                 int
 	ChampionID             int
@@ -82,7 +84,7 @@ func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {
 	)
 
 	return func(p *Participant) error {
-		p.Puuid = s.PUUID
+		p.PUUID = s.PUUID
 		p.MatchID = match.Metadata.MatchId
 		p.TeamID = s.TeamId
 		p.ChampionID = s.ChampionId
@@ -110,5 +112,44 @@ func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {
 }
 
 type LiveParticipant struct {
+	PUUID string
+	MatchID string
+	ChampionID int
+	Runes RunePage
+	TeamID int
+	SummonersIDs [2]int
+}
 
+func NewLiveParticipant(opts ...LiveParticipantOption) LiveParticipant {
+	var m LiveParticipant
+	for _, f := range opts {
+		f(&m)
+	}
+	return m
+}
+
+type LiveParticipantOption func(*LiveParticipant) error
+
+func WithRiotCurrentGame(r riot.CurrentGameInfo, puuid string) LiveParticipantOption {
+	var selected *riot.CurrentGameParticipant
+	for _, p := range r.Participants {
+		if p.PUUID == puuid {
+			selected = &p
+		}
+	}
+	if selected == nil {
+		panic("bro.")
+	}
+
+	matchID := fmt.Sprintf("%s_%d", r.PlatformID, r.GameID)
+
+	return func(m *LiveParticipant) error {
+		m.PUUID = selected.PUUID
+		m.MatchID = matchID
+		m.ChampionID = selected.ChampionID
+		m.Runes = NewRunePage(WithRiotSpectatorPerks(&selected.Perks))
+		m.TeamID = selected.TeamID
+		m.SummonersIDs = [2]int{selected.Spell1ID,selected.Spell2ID}
+		return nil
+	}
 }

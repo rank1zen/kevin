@@ -2,7 +2,7 @@ package frontend
 
 import "github.com/rank1zen/kevin/internal"
 
-templ MatchPage(id internal.MatchID, match internal.Match, participants [10]internal.MatchSummoner) {
+templ MatchPage(id string, match internal.Match, participants [10]internal.MatchSummoner) {
 	<div class="flex flex-col">
 		// @matchHeaderBar(id, match)
 		// @matchTable(participants)

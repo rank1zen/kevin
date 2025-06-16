@@ -8,13 +8,16 @@ import (
 
 type Match struct {
 	ID       string
+
+	// Date is the end timestamp
 	Date     time.Time
+
 	Duration time.Duration
+
 	Version  string
+
 	WinnerID int
 }
-
-type MatchOption func(*Match) error
 
 func NewMatch(opts ...MatchOption) Match {
 	var match Match
@@ -23,6 +26,8 @@ func NewMatch(opts ...MatchOption) Match {
 	}
 	return match
 }
+
+type MatchOption func(*Match) error
 
 func WithRiotMatch(match *riot.Match) MatchOption {
 	var winner int
@@ -39,6 +44,15 @@ func WithRiotMatch(match *riot.Match) MatchOption {
 		m.WinnerID = winner
 		return nil
 	}
+}
+
+type LiveMatch struct {
+	ID       string
+
+	// Date is game start timestamp
+	Date     time.Time
+
+	Participants [10]LiveParticipant
 }
 
 type MatchSummoner struct {

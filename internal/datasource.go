@@ -184,7 +184,7 @@ func (ds *Datasource) GetMatch(ctx context.Context, id string) (Match, [10]Match
 
 	var summoners [10]MatchSummoner
 	for i := range 10 {
-		summoner, err := ds.store.GetSummoner(ctx, participants[i].Puuid)
+		summoner, err := ds.store.GetSummoner(ctx, participants[i].PUUID)
 		if err != nil {
 			return Match{}, [10]MatchSummoner{}, err
 		}

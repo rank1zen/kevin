@@ -15,11 +15,11 @@ func TestMatch(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestGetMatchTimeline(t *testing.T) {
+func TestTimeline(t *testing.T) {
 	client := riot.NewClient(riot.WithApiKey(os.Getenv("KEVIN_RIOT_API_KEY")))
 
 	t.Run(
-		"easy",
+		"fetch riot",
 		func(t *testing.T) {
 			_, err := client.GetMatchTimeline(context.Background(), riot.RegionAmericas, "NA1_5194546103")
 			assert.NoError(t, err)

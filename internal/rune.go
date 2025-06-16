@@ -46,17 +46,34 @@ func WithRiotPerks(perks *riot.Perks) RunePageOption {
 
 func WithIntList(ids [11]int) RunePageOption {
 	return func(runes *RunePage) error {
-		runes.PrimaryTree     = ids[0]
+		runes.PrimaryTree = ids[0]
 		runes.PrimaryKeystone = ids[1]
-		runes.PrimaryA        = ids[2]
-		runes.PrimaryB        = ids[3]
-		runes.PrimaryC        = ids[4]
-		runes.SecondaryTree   = ids[5]
-		runes.SecondaryA      = ids[6]
-		runes.SecondaryB      = ids[7]
-		runes.MiniOffense     = ids[8]
-		runes.MiniFlex        = ids[9]
-		runes.MiniDefense     = ids[10]
+		runes.PrimaryA = ids[2]
+		runes.PrimaryB = ids[3]
+		runes.PrimaryC = ids[4]
+		runes.SecondaryTree = ids[5]
+		runes.SecondaryA = ids[6]
+		runes.SecondaryB = ids[7]
+		runes.MiniOffense = ids[8]
+		runes.MiniFlex = ids[9]
+		runes.MiniDefense = ids[10]
+		return nil
+	}
+}
+
+func WithRiotSpectatorPerks(perks *riot.SpectatorPerks) RunePageOption {
+	return func(runes *RunePage) error {
+		runes.PrimaryTree = perks.PerkStyle
+		runes.PrimaryKeystone = perks.PerkIDs[0]
+		runes.PrimaryA = perks.PerkIDs[1]
+		runes.PrimaryB = perks.PerkIDs[2]
+		runes.PrimaryC = perks.PerkIDs[3]
+		runes.SecondaryTree = perks.PerkSubStyle
+		runes.SecondaryA = perks.PerkIDs[4]
+		runes.SecondaryB = perks.PerkIDs[5]
+		runes.MiniOffense = perks.PerkIDs[6]
+		runes.MiniFlex = perks.PerkIDs[7]
+		runes.MiniDefense = perks.PerkIDs[8]
 		return nil
 	}
 }

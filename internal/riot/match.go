@@ -262,6 +262,29 @@ func (c *Client) GetMatchIDsByPUUID(ctx context.Context, region, puuid, query st
 	return ids, err
 }
 
+type EventType string
+
+const (
+	EventTypeAscendedEvent        EventType = "ASCENDED_EVENT"
+	EventTypeBuildingKill         EventType = "BUILDING_KILL"
+	EventTypeCapturePoint         EventType = "CAPTURE_POINT"
+	EventTypeChampionKill         EventType = "CHAMPION_KILL"
+	EventTypeChampionSpecialKill  EventType = "CHAMPION_SPECIAL_KILL"
+	EventTypeEliteMonsterKill     EventType = "ELITE_MONSTER_KILL"
+	EventTypeGameEnd              EventType = "GAME_END"
+	EventTypeItemDestroyed        EventType = "ITEM_DESTROYED"
+	EventTypeItemPurchased        EventType = "ITEM_PURCHASED"
+	EventTypeItemSold             EventType = "ITEM_SOLD"
+	EventTypeItemUndo             EventType = "ITEM_UNDO"
+	EventTypeLevelUp              EventType = "LEVEL_UP"
+	EventTypePauseEnd             EventType = "PAUSE_END"
+	EventTypePoroKingSummon       EventType = "PORO_KING_SUMMON"
+	EventTypeSkillLevelUp         EventType = "SKILL_LEVEL_UP"
+	EventTypeTurretPlateDestroyed EventType = "TURRET_PLATE_DESTROYED"
+	EventTypeWardKill             EventType = "WARD_KILL"
+	EventTypeWardPlaced           EventType = "WARD_PLACED"
+)
+
 type Timeline struct {
 	Metadata MetadataTimeline `json:"metadata"`
 	Info     InfoTimeline     `json:"info"`
@@ -293,24 +316,29 @@ type FramesTimeline struct {
 }
 
 type EventsTimeline struct {
-	RealTimestamp int64  `json:"realTimestamp"`
-	Timestamp     int    `json:"timestamp"`
-	Type          string `json:"type"`
-}
-
-type TLEventItemPurchased struct {
-	ItemID        int    `json:"itemId"`
-	ParticipantID int    `json:"participantId"`
-	Timestamp     int    `json:"timestamp"`
-	Type          string `json:"type"`
-}
-
-type TLEventSkillLevelUp struct {
-	LevelUpType   string `json:"levelUpType"`
-	ParticipantID int    `json:"participantId"`
-	SkillSlot     int    `json:"skillSlot"`
-	Timestamp     int    `json:"timestamp"`
-	Type          string `json:"type"`
+	AfterID                 *int      `json:"afterId,omitempty"`
+	AscendedType            *string   `json:"ascendedType,omitempty"`
+	AssistingParticipantIDs *[]int    `json:"assistingParticipantIds,omitempty"`
+	BeforeID                *int      `json:"beforeId,omitempty"`
+	BuildingType            *string   `json:"buildingType,omitempty"`
+	CreatorID               *int      `json:"creatorId,omitempty"`
+	ItemID                  *int      `json:"itemId,omitempty"`
+	KillerID                *int      `json:"killerId,omitempty"`
+	LaneType                *string   `json:"laneType,omitempty"`
+	LevelUpType             *string   `json:"levelUpType,omitempty"`
+	MonsterSubType          *string   `json:"monsterSubType,omitempty"`
+	MonsterType             *string   `json:"monsterType,omitempty"`
+	ParticipantID           *int      `json:"participantId,omitempty"`
+	PointCaptured           *string   `json:"pointCaptured,omitempty"`
+	Position                *Position `json:"position,omitempty"`
+	RealTimestamp           int64     `json:"realTimestamp"`
+	SkillSlot               *int      `json:"skillSlot,omitempty"`
+	TeamID                  *int      `json:"teamId,omitempty"`
+	Timestamp               int       `json:"timestamp"`
+	TowerType               *string   `json:"towerType,omitempty"`
+	Type                    EventType `json:"type"`
+	VictimID                *int      `json:"victimId,omitempty"`
+	WardType                *string   `json:"wardType,omitempty"`
 }
 
 type ParticipantFrame struct {
@@ -375,21 +403,6 @@ type Position struct {
 	X int `json:"x"`
 	Y int `json:"y"`
 }
-
-const (
-	EventBuildingKill         = "BUILDING_KILL"
-	EventChampionKill         = "CHAMPION_KILL"
-	EventChampionSpecialKill  = "CHAMPION_SPECIAL_KILL"
-	EventGameEnd              = "GAME_END"
-	EventItemDestroyed        = "ITEM_DESTROYED"
-	EventItemPurchased        = "ITEM_PURCHASED"
-	EventLevelUp              = "LEVEL_UP"
-	EventPauseEnd             = "PAUSE_END"
-	EventSkillLevelUp         = "SKILL_LEVEL_UP"
-	EventTurretPlateDestroyed = "TURRET_PLATE_DESTROYED"
-	EventWardKill             = "WARD_KILL"
-	EventWardPlaced           = "WARD_PLACED"
-)
 
 // GetMatchTimeline returns the timeline of a match.
 //
