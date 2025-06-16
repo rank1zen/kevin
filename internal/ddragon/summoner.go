@@ -1,12 +1,33 @@
 package ddragon
 
 type Summoner struct {
-	ID         ItemID
+	ID         int
 	Name       string
 	FullIcon   string
 	Sprite     string
 	X, Y, W, H int
 }
+
+const (
+	SummonerBarrierID                 = 21
+	SummonerBoostID                   = 1
+	SummonerCherryFlashID             = 2202
+	SummonerCherryHoldID              = 2201
+	SummonerDotID                     = 14
+	SummonerExhaustID                 = 3
+	SummonerFlashID                   = 4
+	SummonerHasteID                   = 6
+	SummonerHealID                    = 7
+	SummonerManaID                    = 13
+	SummonerPoroRecallID              = 30
+	SummonerPoroThrowID               = 31
+	SummonerSmiteID                   = 11
+	SummonerSnowURFSnowballMarkID     = 39
+	SummonerSnowballID                = 32
+	SummonerTeleportID                = 12
+	SummonerUltBookPlaceholderID      = 54
+	SummonerUltBookSmitePlaceholderID = 55
+)
 
 var (
 	SummonerBarrier                 = Summoner{21, "Barrier", "SummonerBarrier.png", "spell0.png", 0, 0, 48, 48}
@@ -28,3 +49,24 @@ var (
 	SummonerUltBookPlaceholder      = Summoner{54, "Placeholder", "Summoner_UltBookPlaceholder.png", "spell0.png", 288, 48, 48, 48}
 	SummonerUltBookSmitePlaceholder = Summoner{55, "Placeholder and Attack-Smite", "Summoner_UltBookSmitePlaceholder.png", "spell0.png", 336, 48, 48, 48}
 )
+
+var SummonerMap = map[int]Summoner{
+	SummonerBarrierID:                 SummonerBarrier,
+	SummonerBoostID:                   SummonerBoost,
+	SummonerCherryFlashID:             SummonerCherryFlash,
+	SummonerCherryHoldID:              SummonerCherryHold,
+	SummonerDotID:                     SummonerDot,
+	SummonerExhaustID:                 SummonerExhaust,
+	SummonerFlashID:                   SummonerFlash,
+	SummonerHasteID:                   SummonerHaste,
+	SummonerHealID:                    SummonerHeal,
+	SummonerManaID:                    SummonerMana,
+	SummonerPoroRecallID:              SummonerPoroRecall,
+	SummonerPoroThrowID:               SummonerPoroThrow,
+	SummonerSmiteID:                   SummonerSmite,
+	SummonerSnowURFSnowballMarkID:     SummonerSnowURFSnowballMark,
+	SummonerSnowballID:                SummonerSnowball,
+	SummonerTeleportID:                SummonerTeleport,
+	SummonerUltBookPlaceholderID:      SummonerUltBookPlaceholder,
+	SummonerUltBookSmitePlaceholderID: SummonerUltBookSmitePlaceholder,
+}
