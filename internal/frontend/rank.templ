@@ -1,0 +1,51 @@
+package frontend
+
+import (
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+func getTierIconPath(tier riot.Tier) string {
+	switch tier {
+	case riot.TierIron:
+		return "iron.svg"
+	case riot.TierBronze:
+		return "bronze.svg"
+	case riot.TierSilver:
+		return "silver.svg"
+	case riot.TierGold:
+		return "gold.svg"
+	case riot.TierPlatinum:
+		return "platinum.svg"
+	case riot.TierEmerald:
+		return "emerald.svg"
+	case riot.TierDiamond:
+		return "diamond.svg"
+	case riot.TierMaster:
+		return "master.svg"
+	case riot.TierGrandmaster:
+		return "grandmaster.svg"
+	case riot.TierChallenger:
+		return "challenger.svg"
+	default:
+		panic("bro.")
+	}
+}
+
+templ RankTag(rank *internal.RankDetail) {
+	<div class="flex flex-none items-center p-2">
+		if rank == nil {
+			<img class="size-4" src="/static/unranked.svg"/>
+			<span class="whitespace-nowrap text-sm">
+				Unranked
+			</span>
+		} else {
+			<div class="size-4">
+				<img class="size-full" src={ "/static/" + getTierIconPath(rank.Tier) }/>
+			</div>
+			<span class="whitespace-nowrap text-sm">
+				{ fmtRank(rank) }
+			</span>
+		}
+	</div>
+}
