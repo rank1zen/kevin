@@ -1,0 +1,37 @@
+package component
+
+import "context"
+
+type ListStyle int
+
+const (
+	ListStyleFlat ListStyle = iota
+	ListStyleRaised
+)
+
+// List is a list of components.
+type List struct {
+	Style ListStyle
+
+	Items []Component
+}
+
+templ (m List) ToTempl(ctx context.Context) {
+	if m.Style == ListStyleRaised {
+		<ol class="bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10 rounded-2xl">
+			for _, c := range m.Items {
+				<li class="block bg-white dark:bg-gray-950 border-b border-gray-900/10 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none">
+					@c.ToTempl(ctx)
+				</li>
+			}
+		</ol>
+	} else {
+		<ol>
+			for _, c := range m.Items {
+				<li class="block">
+					@c.ToTempl(ctx)
+				</li>
+			}
+		</ol>
+	}
+}

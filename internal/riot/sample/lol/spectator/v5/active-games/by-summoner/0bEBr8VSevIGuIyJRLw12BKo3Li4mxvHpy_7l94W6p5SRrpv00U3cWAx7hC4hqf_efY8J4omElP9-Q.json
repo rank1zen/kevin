@@ -1,0 +1,6 @@
+{
+    "httpStatus": 404,
+    "errorCode": "NOT_FOUND",
+    "message": "spectator game info isn't found",
+    "implementationDetails": "filtered"
+}

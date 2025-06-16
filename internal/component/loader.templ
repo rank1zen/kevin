@@ -1,0 +1,55 @@
+package component
+
+import (
+	"context"
+)
+
+type LoaderType int
+
+const (
+	LoaderTypeOnLoad LoaderType = iota
+	LoaderTypeOnReveal
+)
+
+// Loader is a component that requets the server for data.
+type Loader struct {
+	Path string
+
+	// Type is the trigger event. Default is [LoaderTypeOnLoad].
+	Type LoaderType
+
+	// Data is a JSON object and will be sent to the server. Zero values
+	// indicates no data will be sent.
+	Data string
+
+	// Children are displayed in the loader. TODO: A nil value indicates
+	// [...] will be used.
+	Children Component
+}
+
+func (m Loader) generateHXTrigger() string {
+	switch m.Type {
+	case LoaderTypeOnReveal:
+		return "revealed"
+	default:
+		return "load once"
+	}
+}
+
+templ (m Loader) ToTempl(ctx context.Context) {
+	<div
+		hx-post={ m.Path }
+		hx-trigger={ m.generateHXTrigger() }
+		hx-swap="outerHTML"
+		hx-ext="json-enc"
+		if m.Data != "" {
+			hx-vals={ string(m.Data) }
+		}
+	>
+		if m.Children != nil {
+			@m.Children.ToTempl(ctx)
+		} else {
+			Some loading symbol...
+		}
+	</div>
+}

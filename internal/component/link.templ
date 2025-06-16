@@ -1,0 +1,27 @@
+package component
+
+import (
+	"context"
+)
+
+// Link is an anchor to another page.
+type Link struct {
+	Href string
+
+	// Children are placed inside the link. A nil value will default to
+	// [Button].
+	Children Component
+}
+
+templ (m Link) ToTempl(ctx context.Context) {
+	<a
+		href={ templ.URL(m.Href) }
+		class="rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0"
+	>
+		if m.Children != nil {
+			@m.Children.ToTempl(ctx)
+		} else {
+			@Button{}.ToTempl(ctx)
+		}
+	</a>
+}
