@@ -3,7 +3,6 @@ package frontend
 import (
 	"fmt"
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/ddragon"
 )
 
 templ SummonerNotFoundView(platform, name, tagline string) {
@@ -153,9 +152,8 @@ templ SummonerMatchHeader() {
 templ SummonerMatchRow(m internal.SummonerMatch) {
 	<div class="flex tabular-nums items-center px-2 py-2 rounded-lg justify-between odd:bg-white even:bg-gray-50">
 		<div class="flex flex-none gap-1 items-center">
-			@ChampionSmallSprite(ddragon.ChampionID(m.Champion))
-			@sprite(internal.GetSpellSprite(m.Summoners[0]))
-			@sprite(internal.GetSpellSprite(m.Summoners[1]))
+			@ChampionSmallSprite(m.ChampionID)
+			@SummonersRow(m.SummonerIDs)
 		</div>
 		<div class="flex flex-none items-center w-24 justify-center">
 			<span>

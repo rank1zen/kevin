@@ -2,12 +2,11 @@ package frontend
 
 import (
 	"fmt"
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/ddragon"
 	"path"
 )
 
-func itemSpriteSmallClass(id ddragon.ItemID) templ.Attributes {
+func itemSpriteSmallClass(id int) templ.Attributes {
 	item := ddragon.ItemsMap[id]
 	fullPath := path.Join("/static/sprite", "small_"+item.Sprite)
 	w := 36
@@ -22,11 +21,11 @@ func itemSpriteSmallClass(id ddragon.ItemID) templ.Attributes {
 	}
 }
 
-templ ItemSmallSprite(id ddragon.ItemID) {
+templ ItemSmallSprite(id int) {
 	<img { itemSpriteSmallClass(id)... }/>
 }
 
-func itemSpriteTinyClass(id ddragon.ItemID) templ.Attributes {
+func itemSpriteTinyClass(id int) templ.Attributes {
 	item := ddragon.ItemsMap[id]
 	fullPath := path.Join("/static/sprite", "tiny_"+item.Sprite)
 	w := 24
@@ -41,11 +40,11 @@ func itemSpriteTinyClass(id ddragon.ItemID) templ.Attributes {
 	}
 }
 
-templ ItemTinySprite(id ddragon.ItemID) {
+templ ItemTinySprite(id int) {
 	<img { itemSpriteTinyClass(id)... }/>
 }
 
-templ ItemRow(items [7]internal.Item) {
+templ ItemRow(items [7]int) {
 	<div
 		x-data="
 			{
@@ -79,7 +78,7 @@ templ ItemRow(items [7]internal.Item) {
 		>
 			for _, id := range items {
 				if id != 0 {
-					@sprite(internal.GetItemSprite(id))
+					@ItemTinySprite(id)
 				} else {
 					<div class="bg-gray-200 rounded size-6 flex-none"></div>
 				}

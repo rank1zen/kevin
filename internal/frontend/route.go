@@ -135,7 +135,7 @@ func Routes(ds *internal.Datasource) http.Handler {
 		"GET /match/{matchID}",
 		func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			matchID := internal.MatchID(r.PathValue("matchID"))
+			matchID := r.PathValue("matchID")
 
 			match, participants, err := ds.GetMatch(ctx, matchID)
 			if err != nil {

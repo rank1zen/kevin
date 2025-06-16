@@ -54,17 +54,17 @@ templ RuneButton(runes internal.RunePage) {
 	</div>
 }
 
-func runeIconSrc(id internal.Rune) string {
-	return ddragon.RuneMap[ddragon.RuneID(id)].IconPath
+func runeIconSrc(id int) string {
+	return ddragon.RuneMap[id].IconPath
 }
 
-func runeName(id internal.Rune) string {
-	return ddragon.RuneMap[ddragon.RuneID(id)].Name
+func runeName(id int) string {
+	return ddragon.RuneMap[id].Name
 }
 
-func genRuneClass(id internal.Rune) templ.Attributes {
-	fullPath := path.Join("/static/", ddragon.RuneMap[ddragon.RuneID(id)].IconPath)
-	runeName := ddragon.RuneMap[ddragon.RuneID(id)].Name
+func genRuneClass(id int) templ.Attributes {
+	fullPath := path.Join("/static/", ddragon.RuneMap[id].IconPath)
+	runeName := ddragon.RuneMap[id].Name
 	return templ.Attributes{
 		"src":   fullPath,
 		"title": runeName,

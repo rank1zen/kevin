@@ -7,12 +7,12 @@ import (
 type Participant struct {
 	Puuid                  string
 	MatchID                string
-	Team                   Team
-	Champion               Champion
+	TeamID                 int
+	ChampionID             int
 	ChampionLevel          int
-	Summoners              [2]Spell
+	SummonerIDs            [2]int
 	Runes                  RunePage
-	Items                  [7]Item
+	Items                  [7]int
 	Kills, Deaths, Assists int
 	KillParticipation      float32
 	CreepScore             int
@@ -76,18 +76,18 @@ func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {
 		damageShare = float32(s.TotalDamageDealtToChampions) / float32(teamDamage)
 		goldShare   = float32(s.GoldEarned) / float32(teamGold)
 
-		runes     = NewRunePage(RiotPerksToRunePage(s.Perks))
-		items     = makeItems(s.Item0, s.Item1, s.Item2, s.Item3, s.Item4, s.Item5, s.Item6)
-		summoners = [2]Spell{Spell(s.Summoner1Id), Spell(s.Summoner2Id)}
+		runes     = NewRunePage(WithRiotPerks(s.Perks))
+		items     = [7]int{s.Item0, s.Item1, s.Item2, s.Item3, s.Item4, s.Item5, s.Item6}
+		summoners = [2]int{s.Summoner1Id, s.Summoner2Id}
 	)
 
 	return func(p *Participant) error {
 		p.Puuid = s.PUUID
 		p.MatchID = match.Metadata.MatchId
-		p.Team = Team(s.TeamId)
-		p.Champion = Champion(s.ChampionId)
+		p.TeamID = s.TeamId
+		p.ChampionID = s.ChampionId
 		p.ChampionLevel = s.ChampLevel
-		p.Summoners = summoners
+		p.SummonerIDs = summoners
 		p.Runes = runes
 		p.Items = items
 		p.Kills = s.Kills
@@ -107,4 +107,8 @@ func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {
 		p.PinkWardsBought = s.DetectorWardsPlaced
 		return nil
 	}
+}
+
+type LiveParticipant struct {
+
 }

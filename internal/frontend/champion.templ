@@ -6,7 +6,7 @@ import (
 	"path"
 )
 
-func championSmallSpriteClass(id ddragon.ChampionID) templ.Attributes {
+func championSmallSpriteClass(id int) templ.Attributes {
 	champion := ddragon.ChampionMap[id]
 	fullPath := path.Join("/static/sprite", "small_"+champion.Sprite)
 	w := 36
@@ -21,11 +21,11 @@ func championSmallSpriteClass(id ddragon.ChampionID) templ.Attributes {
 	}
 }
 
-templ ChampionSmallSprite(id ddragon.ChampionID) {
+templ ChampionSmallSprite(id int) {
 	<img { championSmallSpriteClass(id)... }/>
 }
 
-func championSpriteClass(id ddragon.ChampionID) templ.Attributes {
+func championSpriteClass(id int) templ.Attributes {
 	champion := ddragon.ChampionMap[id]
 	fullPath := path.Join("/static/sprite", champion.Sprite)
 	w := champion.W
@@ -40,6 +40,6 @@ func championSpriteClass(id ddragon.ChampionID) templ.Attributes {
 	}
 }
 
-templ ChampionSprite(id ddragon.ChampionID) {
+templ ChampionSprite(id int) {
 	<img { championSpriteClass(id)... }/>
 }

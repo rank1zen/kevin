@@ -22,7 +22,7 @@ func NewStore(conn *pgxpool.Pool) *Store {
 }
 
 // GetItemEvents returns all item events in a match, in time order.
-func (s *Store) GetItemEvents(ctx context.Context, matchID MatchID) ([]ItemEvent, error) {
+func (s *Store) GetItemEvents(ctx context.Context, matchID string) ([]ItemEvent, error) {
 	rows, _ := s.conn.Query(ctx, `
 		SELECT
 			match_id,
@@ -86,7 +86,7 @@ func (s *Store) RecordItemEvents(ctx context.Context, events []ItemEvent) error 
 }
 
 // GetNewMatchIDs returns ids that are not in store.
-func (s *Store) GetNewMatchIDs(ctx context.Context, ids []MatchID) (newIDs []MatchID, err error) {
+func (s *Store) GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error) {
 	rows, err := s.conn.Query(ctx, `
 		SELECT
 			match_id
@@ -103,7 +103,7 @@ func (s *Store) GetNewMatchIDs(ctx context.Context, ids []MatchID) (newIDs []Mat
 		return nil, err
 	}
 
-	collect := func(row pgx.CollectableRow) (m MatchID, err error) {
+	collect := func(row pgx.CollectableRow) (m string, err error) {
 		err = row.Scan(
 			&m,
 		)
@@ -115,7 +115,7 @@ func (s *Store) GetNewMatchIDs(ctx context.Context, ids []MatchID) (newIDs []Mat
 		return nil, err
 	}
 
-	newIDs = []MatchID{}
+	newIDs = []string{}
 	for _, id := range ids {
 		found := false
 		for _, oldID := range oldIDs {
@@ -131,7 +131,7 @@ func (s *Store) GetNewMatchIDs(ctx context.Context, ids []MatchID) (newIDs []Mat
 	return newIDs, nil
 }
 
-func (s *Store) ListMatchIDs(ctx context.Context, puuid string) ([]MatchID, error) {
+func (s *Store) ListMatchIDs(ctx context.Context, puuid string) ([]string, error) {
 	rows, err := s.conn.Query(ctx, `
 		SELECT
 			match_id
@@ -146,7 +146,7 @@ func (s *Store) ListMatchIDs(ctx context.Context, puuid string) ([]MatchID, erro
 		return nil, err
 	}
 
-	collect := func(row pgx.CollectableRow) (m MatchID, err error) {
+	collect := func(row pgx.CollectableRow) (m string, err error) {
 		err = row.Scan(
 			&m,
 		)
@@ -305,11 +305,11 @@ func (s *Store) GetSummoner(ctx context.Context, puuid string) (Summoner, error)
 	return summoner, nil
 }
 
-func (s *Store) GetMatch(ctx context.Context, id MatchID) (Match, [10]Participant, error) {
+func (s *Store) GetMatch(ctx context.Context, id string) (Match, [10]Participant, error) {
 	var match Match
 	s.conn.QueryRow(ctx, `
 		select date, duration, version, winner from Match where match_id = $1;
-	`, id).Scan(&match.Date, &match.Duration, &match.Version, &match.Winner)
+	`, id).Scan(&match.Date, &match.Duration, &match.Version, &match.WinnerID)
 
 	rows, _ := s.conn.Query(ctx, `
 		select
@@ -337,11 +337,11 @@ func (s *Store) GetMatch(ctx context.Context, id MatchID) (Match, [10]Participan
 	`, id)
 
 	collect := func(row pgx.CollectableRow) (m Participant, err error) {
-		var runeList [11]Rune
+		var runeList [11]int
 		err = row.Scan(
-			&m.Champion,
+			&m.ChampionID,
 			&m.ChampionLevel,
-			&m.Summoners,
+			&m.SummonerIDs,
 			&runeList,
 			&m.Items,
 			&m.Kills,
@@ -360,7 +360,7 @@ func (s *Store) GetMatch(ctx context.Context, id MatchID) (Match, [10]Participan
 			&m.VisionScore,
 			&m.PinkWardsBought,
 		)
-		m.Runes = makeRunePage(runeList)
+		m.Runes = NewRunePage(WithIntList(runeList))
 		return m, err
 	}
 
@@ -475,17 +475,17 @@ func (s *Store) GetMatches(ctx context.Context, puuid string, page int) ([]Summo
 	`, puuid, page*10, 10)
 
 	collect := func(row pgx.CollectableRow) (m SummonerMatch, err error) {
-		var runeList [11]Rune
-		var winner Team
+		var runeList [11]int
+		var winner int
 		err = row.Scan(
 			&m.MatchID,
 			&m.Date,
 			&m.Duration,
 			&winner,
-			&m.Team,
-			&m.Champion,
+			&m.TeamID,
+			&m.ChampionID,
 			&m.ChampionLevel,
-			&m.Summoners,
+			&m.SummonerIDs,
 			&runeList,
 			&m.Items,
 			&m.Kills,
@@ -504,8 +504,8 @@ func (s *Store) GetMatches(ctx context.Context, puuid string, page int) ([]Summo
 			&m.VisionScore,
 			&m.PinkWardsBought,
 		)
-		m.Runes = makeRunePage(runeList)
-		if winner == m.Team {
+		m.Runes = NewRunePage(WithIntList(runeList))
+		if winner == m.TeamID {
 			m.Win = true
 		} else {
 			m.Win = false
@@ -616,7 +616,7 @@ func (s *Store) RecordMatch(ctx context.Context, match Match, participants [10]P
 			"date":     match.Date,
 			"duration": match.Duration,
 			"version":  match.Version,
-			"winner":   match.Winner,
+			"winner":   match.WinnerID,
 		},
 	)
 
@@ -675,10 +675,10 @@ func (s *Store) RecordMatch(ctx context.Context, match Match, participants [10]P
 		`,
 			participant.MatchID,
 			participant.Puuid,
-			participant.Team,
-			participant.Champion,
+			participant.TeamID,
+			participant.ChampionID,
 			participant.ChampionLevel,
-			participant.Summoners,
+			participant.SummonerIDs,
 			makeRuneList(participant.Runes),
 			participant.Items,
 			participant.Kills,
@@ -703,7 +703,7 @@ func (s *Store) RecordMatch(ctx context.Context, match Match, participants [10]P
 }
 
 func makeRuneList(runes RunePage) [11]int {
-	ids := [11]Rune{
+	ids := [11]int{
 		runes.PrimaryTree,
 		runes.PrimaryKeystone,
 		runes.PrimaryA,

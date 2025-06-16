@@ -1,0 +1,31 @@
+package frontend
+
+import "fmt"
+import "github.com/rank1zen/kevin/internal/ddragon"
+import "path"
+
+func summonersTinySpriteClass(id int) templ.Attributes {
+	summoners := ddragon.SummonerMap[id]
+	fullPath := path.Join("/static/sprite", summoners.Sprite)
+	w := summoners.W
+	h := summoners.H
+	x := summoners.X
+	y := summoners.Y
+
+	return templ.Attributes{
+		"src":   fullPath,
+		"title": summoners.Name,
+		"class": fmt.Sprintf("w-[%dpx] h-[%dpx] object-none object-[-%dpx_-%dpx] rounded", w, h, x, y),
+	}
+}
+
+templ SummonersTinySprite(id int) {
+	<img { summonersTinySpriteClass(id)... }/>
+}
+
+templ SummonersRow(ids [2]int) {
+	<div class="flex">
+		@SummonersTinySprite(ids[0])
+		@SummonersTinySprite(ids[1])
+	</div>
+}

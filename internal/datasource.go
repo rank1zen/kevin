@@ -18,9 +18,13 @@ func NewDatasource(client *riot.Client, store *Store) *Datasource {
 	return &Datasource{client, store}
 }
 
+func (ds *Datasource) GetLiveMatch() {
+
+}
+
 // GetMatchEvents returns all item events.
 func (ds *Datasource) GetMatchEvents(ctx context.Context, id string) ([]ItemFrame, error) {
-	events, err := ds.store.GetItemEvents(ctx, MatchID(id))
+	events, err := ds.store.GetItemEvents(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -83,9 +87,9 @@ func (ds *Datasource) UpdateMatchlist(ctx context.Context, platform, puuid strin
 		return fmt.Errorf("fetching ids: %w", err)
 	}
 
-	matchIDs := []MatchID{}
+	matchIDs := []string{}
 	for _, id := range ids {
-		matchIDs = append(matchIDs, MatchID(id))
+		matchIDs = append(matchIDs, id)
 	}
 
 	newIDs, err := ds.store.GetNewMatchIDs(ctx, matchIDs)
@@ -103,7 +107,7 @@ func (ds *Datasource) UpdateMatchlist(ctx context.Context, platform, puuid strin
 }
 
 // RecordMatch records a riot match.
-func (ds *Datasource) RecordMatch(ctx context.Context, platform string, id MatchID) error {
+func (ds *Datasource) RecordMatch(ctx context.Context, platform string, id string) error {
 	riotRegion := riot.PlatformToRegion(platform)
 
 	riotMatch, err := ds.riot.GetMatch(ctx, riotRegion, string(id))
@@ -127,15 +131,15 @@ func (ds *Datasource) RecordMatch(ctx context.Context, platform string, id Match
 	return nil
 }
 
-func (ds *Datasource) ListNewMatches(ctx context.Context, platform string, puuid string) ([]MatchID, error) {
+func (ds *Datasource) ListNewMatches(ctx context.Context, platform string, puuid string) ([]string, error) {
 	ids, err := ds.riot.GetMatchIDsByPUUID(ctx, "", puuid, "queue=420&start=0&count=100")
 	if err != nil {
 		return nil, fmt.Errorf("fetching ids: %w", err)
 	}
 
-	matchIDs := []MatchID{}
+	matchIDs := []string{}
 	for _, id := range ids {
-		matchIDs = append(matchIDs, MatchID(id))
+		matchIDs = append(matchIDs, string(id))
 	}
 
 	newIDs, err := ds.store.GetNewMatchIDs(ctx, matchIDs)
@@ -172,7 +176,7 @@ func (ds *Datasource) GetChampions(ctx context.Context, puuid string) ([]Summone
 	return ds.store.GetChampions(ctx, puuid)
 }
 
-func (ds *Datasource) GetMatch(ctx context.Context, id MatchID) (Match, [10]MatchSummoner, error) {
+func (ds *Datasource) GetMatch(ctx context.Context, id string) (Match, [10]MatchSummoner, error) {
 	match, participants, err := ds.store.GetMatch(ctx, id)
 	if err != nil {
 		return Match{}, [10]MatchSummoner{}, err

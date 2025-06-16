@@ -12,39 +12,36 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	match5304757838 = internal.Participant{
+func TestParticipant(t *testing.T) {
+	testdata := os.DirFS("../testdata")
+
+	matchFile, err := testdata.Open("NA1_5304757838.json")
+	require.NoError(t, err)
+	var riotMatch riot.Match
+	err = json.NewDecoder(matchFile).Decode(&riotMatch)
+	require.NoError(t, err)
+
+	expected := internal.Participant{
 		Puuid:         "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
 		MatchID:       "NA1_5304757838",
-		Team:          100,
-		Champion:      63,
+		TeamID:        100,
+		ChampionID:    63,
 		ChampionLevel: 12,
-		Summoners: [2]internal.Spell{
-			internal.Spell(ddragon.SummonerFlash.ID),
-			internal.Spell(ddragon.SummonerDot.ID),
-		},
+		SummonerIDs:   [2]int{ddragon.SummonerFlashID, ddragon.SummonerDotID},
 		Runes: internal.RunePage{
-			PrimaryTree:     internal.Rune(ddragon.Sorcery.ID),
-			PrimaryKeystone: internal.Rune(ddragon.ArcaneComet.ID),
-			PrimaryA:        internal.Rune(ddragon.ManaflowBand.ID),
-			PrimaryB:        internal.Rune(ddragon.Transcendence.ID),
-			PrimaryC:        internal.Rune(ddragon.GatheringStorm.ID),
-			SecondaryTree:   internal.Rune(ddragon.Precision.ID),
-			SecondaryA:      internal.Rune(ddragon.PresenceOfMind.ID),
-			SecondaryB:      internal.Rune(ddragon.CoupDeGrace.ID),
+			PrimaryTree:     ddragon.RuneTreeSorceryID,
+			PrimaryKeystone: ddragon.RuneArcaneComet.ID,
+			PrimaryA:        ddragon.RuneManaflowBand.ID,
+			PrimaryB:        ddragon.RuneTranscendence.ID,
+			PrimaryC:        ddragon.RuneGatheringStorm.ID,
+			SecondaryTree:   ddragon.RuneTreePrecisionID,
+			SecondaryA:      ddragon.RunePresenceOfMind.ID,
+			SecondaryB:      ddragon.RuneCoupDeGrace.ID,
 			MiniOffense:     5005,
 			MiniFlex:        5008,
 			MiniDefense:     5001,
 		},
-		Items: [7]internal.Item{
-			internal.Item(1056),
-			internal.Item(3116),
-			internal.Item(3020),
-			internal.Item(2508),
-			internal.Item(3802),
-			internal.Item(0),
-			internal.Item(3363),
-		},
+		Items:                [7]int{1056, 3116, 3020, 2508, 3802, 0, 3363},
 		Kills:                2,
 		Deaths:               0,
 		Assists:              8,
@@ -61,18 +58,6 @@ var (
 		VisionScore:          7,
 		PinkWardsBought:      0,
 	}
-)
-
-func TestParticipant(t *testing.T) {
-	testdata := os.DirFS("../testdata")
-
-	matchFile, err := testdata.Open("NA1_5304757838.json")
-	require.NoError(t, err)
-	var riotMatch riot.Match
-	err = json.NewDecoder(matchFile).Decode(&riotMatch)
-	require.NoError(t, err)
-
-	expected := match5304757838
 
 	t.Run(
 		"create participant from riot",
