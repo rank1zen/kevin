@@ -1,8 +1,11 @@
 package frontend
 
 import (
+	"context"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
+	"io"
+	"fmt"
 )
 
 func getTierIconPath(tier riot.Tier) string {
@@ -32,20 +35,123 @@ func getTierIconPath(tier riot.Tier) string {
 	}
 }
 
-templ RankTag(rank *internal.RankDetail) {
-	<div class="flex flex-none items-center p-2">
-		if rank == nil {
-			<img class="size-4" src="/static/unranked.svg"/>
-			<span class="whitespace-nowrap text-sm">
-				Unranked
+type TextSize int
+
+func (m TextSize) Class() string {
+	switch m {
+	case TextSizeXS:
+		return "text-xs"
+	case TextSizeSmall:
+		return "text-small"
+	default:
+		return "text-small"
+	}
+}
+
+const (
+	TextSizeSmall TextSize = iota
+	TextSizeXS
+)
+
+// RankWidget displays summoner rank.
+type RankWidget struct {
+	// nil means unranked
+	Rank *internal.RankDetail
+
+	ShowWinLoss bool
+
+	ShowTierName bool
+
+	Size TextSize
+
+	UsePill bool
+}
+
+func (m RankWidget) genTierColorClass() string {
+	if m.Rank == nil {
+		return "text-gray-600/90"
+	}
+	switch m.Rank.Tier {
+	case riot.TierIron:
+		return "text-purple-500"
+	case riot.TierBronze:
+		return "text-purple-500"
+	case riot.TierSilver:
+		return "text-purple-500"
+	case riot.TierGold:
+		return "text-purple-500"
+	case riot.TierPlatinum:
+		return "text-purple-500"
+	case riot.TierEmerald:
+		return "text-green-500"
+	case riot.TierDiamond:
+		return "text-purple-500"
+	case riot.TierMaster:
+		return "text-purple-500"
+	case riot.TierGrandmaster:
+		return "text-purple-500"
+	case riot.TierChallenger:
+		return "text-purple-500"
+	default:
+		return ""
+	}
+}
+
+func (m RankWidget) makeLabel() string {
+	if m.Rank == nil {
+		return "Unranked"
+	}
+
+	var label string = m.Rank.Tier.String() + " " + m.Rank.Division.String()
+	if m.Rank.Tier == riot.TierChallenger || m.Rank.Tier == riot.TierGrandmaster || m.Rank.Tier == riot.TierMaster {
+		label = m.Rank.Tier.String()
+	}
+
+	label = label + " " + fmt.Sprintf("%d LP", m.Rank.LP)
+
+	return label
+}
+
+templ (m RankWidget) makeFlat() {
+	<div class="flex flex-none items-center p-1 gap-1 cursor-default">
+		if m.Rank != nil {
+			@Icon(getStaticRankSymbol(m.Rank.Tier))
+			<span class={ m.Size.Class(), m.genTierColorClass() }>
+				{ m.makeLabel() }
 			</span>
 		} else {
-			<div class="size-4">
-				<img class="size-full" src={ "/static/" + getTierIconPath(rank.Tier) }/>
-			</div>
-			<span class="whitespace-nowrap text-sm">
-				{ fmtRank(rank) }
-			</span>
+			@Icon("unranked.svg")
+			if m.ShowTierName {
+				<span class="text-sm text-gray-700/90">
+					Unranked
+				</span>
+			}
 		}
 	</div>
+}
+
+templ (m RankWidget) makePill() {
+	<div class="flex flex-none items-center px-2 py-1 gap-1 cursor-default rounded-full">
+		if m.Rank != nil {
+			@Icon(getStaticRankSymbol(m.Rank.Tier))
+			<span class={ m.Size.Class(), m.genTierColorClass() }>
+				{ m.makeLabel() }
+			</span>
+		} else {
+			@Icon("unranked.svg")
+			if m.ShowTierName {
+				<span class="text-sm text-gray-700/90">
+					Unranked
+				</span>
+			}
+		}
+	</div>
+}
+
+func (m RankWidget) Render(ctx context.Context, w io.Writer) error {
+	if m.UsePill {
+		return m.makePill().Render(ctx, w)
+	} else {
+		return m.makeFlat().Render(ctx, w)
+	}
 }

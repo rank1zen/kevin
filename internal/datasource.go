@@ -2,40 +2,51 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+var (
+	// ErrSummonerNotFound indicates the summoner associated with some
+	// puuid or name#tagline does not exist.
+	ErrSummonerDoesNotExist = errors.New("summoner does not exist")
+
+	// ErrNoLiveMatch indicates a summoner is not in a game.
+	ErrNoLiveMatch = errors.New("no live match")
+)
+
+// Datasource manages business operations for the frontend. Region parameters
+// specify the region to search.
 type Datasource struct {
+	// probably want to cache something
+
 	riot *riot.Client
 
-	store *Store
+	store Store
 }
 
-func NewDatasource(client *riot.Client, store *Store) *Datasource {
+func NewDatasource(client *riot.Client, store Store) *Datasource {
 	return &Datasource{client, store}
 }
 
-func (ds *Datasource) GetLiveMatch() {
-
-}
-
-// GetMatchEvents returns all item events.
-func (ds *Datasource) GetMatchEvents(ctx context.Context, id string) ([]ItemFrame, error) {
-	events, err := ds.store.GetItemEvents(ctx, id)
+// GetLiveMatch fetches riot for the a live match. If summoner is not in
+// a game, return ErrNoLiveMatch.
+func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puuid string) (LiveMatch, error) {
+	riotGame, err := ds.riot.Spectator.GetLiveMatch(ctx, region, puuid)
 	if err != nil {
-		return nil, err
+		return LiveMatch{}, err
 	}
 
-	items := makeItemProgression(events)
-	return items, nil
+	return NewLiveMatch(WithRiotLiveMatch(riotGame)), nil
 }
 
-func (ds *Datasource) GetRiotName(ctx context.Context, platform, puuid string) (name, tagline string, err error) {
-	riotRegion := riot.PlatformToRegion(platform)
-	account, err := ds.riot.GetAccountByRiotID(ctx, riotRegion, name, tagline)
+// GetRiotName returns the Riot ID (name#tag) associated with puuid.
+func (ds *Datasource) GetRiotName(ctx context.Context, puuid string) (name, tag string, err error) {
+	// Using AMER for now since puuid is globally unique ...
+	account, err := ds.riot.Account.GetAccountByPUUID(ctx, riot.ContinentAmericas, puuid)
 	if err != nil {
 		return "", "", err
 	}
@@ -43,9 +54,9 @@ func (ds *Datasource) GetRiotName(ctx context.Context, platform, puuid string) (
 	return account.GameName, account.TagLine, nil
 }
 
-func (ds *Datasource) GetPUUID(ctx context.Context, platform, name, tagline string) (puuid string, err error) {
-	riotRegion := riot.PlatformToRegion(platform)
-	account, err := ds.riot.GetAccountByRiotID(ctx, riotRegion, name, tagline)
+func (ds *Datasource) GetPUUID(ctx context.Context, name, tagline string) (puuid string, err error) {
+	// Using AMER for now...
+	account, err := ds.riot.Account.GetAccountByRiotID(ctx, riot.ContinentAmericas, name, tagline)
 	if err != nil {
 		return "", err
 	}
@@ -53,36 +64,14 @@ func (ds *Datasource) GetPUUID(ctx context.Context, platform, name, tagline stri
 	return account.PUUID, nil
 }
 
-func (ds *Datasource) GetSummonerID(ctx context.Context, platform, puuid string) (string, error) {
-	summoner, err := ds.riot.GetSummonerByPuuid(ctx, platform, puuid)
-	if err != nil {
-		return "", err
-	}
-
-	return summoner.Id, nil
-}
-
-func (ds *Datasource) RecordMatchTimeline(ctx context.Context, platform, id string) error {
-	riotRegion := riot.PlatformToRegion(platform)
-	timeline, err := ds.riot.GetMatchTimeline(ctx, riotRegion, id)
-	if err != nil {
-		return err
-	}
-
-	itemEvents := makeItemEvents(*timeline)
-	err = ds.store.RecordItemEvents(ctx, itemEvents)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// UpdateMatchlist syncs the matchlist of puuid from start to start + count.
-func (ds *Datasource) UpdateMatchlist(ctx context.Context, platform, puuid string, start, count int) error {
-	riotRegion := riot.PlatformToRegion(platform)
+// UpdateMatchHistory syncs the matchlist of summoner with puuid from start to
+// start + count.
+func (ds *Datasource) UpdateMatchHistory(ctx context.Context, region riot.Region, puuid string, start, count int) error {
 	query := fmt.Sprintf("queue=420&start=%d&count=%d", start, count)
-	ids, err := ds.riot.GetMatchIDsByPUUID(ctx, riotRegion, puuid, query)
+
+	continent := riot.RegionToContinent(region)
+
+	ids, err := ds.riot.Match.GetMatchList(ctx, continent, puuid, query)
 	if err != nil {
 		return fmt.Errorf("fetching ids: %w", err)
 	}
@@ -98,7 +87,7 @@ func (ds *Datasource) UpdateMatchlist(ctx context.Context, platform, puuid strin
 	}
 
 	for _, id := range newIDs {
-		if err := ds.RecordMatch(ctx, platform, id); err != nil {
+		if err := ds.recordMatch(ctx, continent, id); err != nil {
 			return err
 		}
 	}
@@ -106,13 +95,10 @@ func (ds *Datasource) UpdateMatchlist(ctx context.Context, platform, puuid strin
 	return nil
 }
 
-// RecordMatch records a riot match.
-func (ds *Datasource) RecordMatch(ctx context.Context, platform string, id string) error {
-	riotRegion := riot.PlatformToRegion(platform)
-
-	riotMatch, err := ds.riot.GetMatch(ctx, riotRegion, string(id))
+func (ds *Datasource) recordMatch(ctx context.Context, continent riot.Continent, id string) error {
+	riotMatch, err := ds.riot.Match.GetMatch(ctx, continent, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("fetching match: %w", err)
 	}
 
 	var participants [10]Participant
@@ -125,14 +111,18 @@ func (ds *Datasource) RecordMatch(ctx context.Context, platform string, id strin
 
 	err = ds.store.RecordMatch(ctx, match, participants)
 	if err != nil {
-		return err
+		return fmt.Errorf("saving match: %w", err)
 	}
 
 	return nil
 }
 
-func (ds *Datasource) ListNewMatches(ctx context.Context, platform string, puuid string) ([]string, error) {
-	ids, err := ds.riot.GetMatchIDsByPUUID(ctx, "", puuid, "queue=420&start=0&count=100")
+// ListNewMatches returns the 100 most recent matches that are not in store.
+func (ds *Datasource) ListNewMatches(ctx context.Context, region riot.Region, puuid string) ([]string, error) {
+	// use the continent for now
+	continent := riot.RegionToContinent(region)
+
+	ids, err := ds.riot.Match.GetMatchList(ctx, continent, puuid, "queue=420&start=0&count=100")
 	if err != nil {
 		return nil, fmt.Errorf("fetching ids: %w", err)
 	}
@@ -146,24 +136,39 @@ func (ds *Datasource) ListNewMatches(ctx context.Context, platform string, puuid
 	return newIDs, err
 }
 
-// RecordSummoner syncs the summoner's name and their rank.
-func (ds *Datasource) RecordSummoner(ctx context.Context, platform, puuid string) error {
-	riotRegion := riot.PlatformToRegion(platform)
-	account, err := ds.riot.GetAccountByPuuid(ctx, riotRegion, puuid)
+// UpdateSummoner syncs a summoner-rank with riot.
+func (ds *Datasource) UpdateSummoner(ctx context.Context, region riot.Region, puuid string) error {
+	name, tag, err := ds.GetRiotName(ctx, puuid)
 	if err != nil {
-		return fmt.Errorf("fetching account: %w", err)
+		return err
 	}
 
-	entries, err := ds.riot.GetLeagueEntries(ctx, platform, puuid)
+	entries, err := ds.riot.League.GetLeagueEntriesByPUUID(ctx, region, puuid)
 	if err != nil {
 		return fmt.Errorf("fetching summoner id: %w", err)
 	}
 
 	soloq := findSoloQLeagueEntry(entries)
-	err = ds.store.RecordSummoner(
-		ctx,
-		Summoner{account.PUUID, account.GameName, account.TagLine, platform, ""},
-		NewRankStatus(WithRiotLeagueEntry(puuid, time.Now(), soloq)),
+
+	var rank *RankDetail
+	if soloq != nil {
+		rd := NewRankDetail(WithRiotLeagueEntry(*soloq))
+		rank = &rd
+	}
+
+	err = ds.store.RecordSummoner(ctx,
+		Summoner{
+			PUUID:      puuid,
+			Name:       name,
+			Tagline:    tag,
+			Platform:   "",
+			SummonerID: "",
+		},
+		RankStatus{
+			PUUID:         puuid,
+			EffectiveDate: time.Now(),
+			Detail:        rank,
+		},
 	)
 	if err != nil {
 		return fmt.Errorf("saving summoner: %w", err)
@@ -172,58 +177,17 @@ func (ds *Datasource) RecordSummoner(ctx context.Context, platform, puuid string
 	return nil
 }
 
-func (ds *Datasource) GetChampions(ctx context.Context, puuid string) ([]SummonerChampion, error) {
-	return ds.store.GetChampions(ctx, puuid)
-}
-
-func (ds *Datasource) GetMatch(ctx context.Context, id string) (Match, [10]MatchSummoner, error) {
-	match, participants, err := ds.store.GetMatch(ctx, id)
-	if err != nil {
-		return Match{}, [10]MatchSummoner{}, err
-	}
-
-	var summoners [10]MatchSummoner
-	for i := range 10 {
-		summoner, err := ds.store.GetSummoner(ctx, participants[i].PUUID)
-		if err != nil {
-			return Match{}, [10]MatchSummoner{}, err
-		}
-
-		summoners[i] = MatchSummoner{
-			Name:        summoner.Name + "#" + summoner.Tagline,
-			Rank:        nil,
-			Participant: participants[i],
-		}
-	}
-
-	return match, summoners, nil
-}
-
-func (ds *Datasource) GetMatchlist(ctx context.Context, puuid string, page int) ([]SummonerMatch, error) {
-	return ds.store.GetMatches(ctx, puuid, page)
-}
-
+// GetRank returns the up-to-date rank for a summoner.
 func (ds *Datasource) GetRank(ctx context.Context, puuid string) (*RankDetail, error) {
-	return ds.store.GetRank(ctx, puuid)
+	panic("")
 }
 
-func (ds *Datasource) GetSummoner(ctx context.Context, puuid string) (name, platform string, err error) {
-	summoner, err := ds.store.GetSummoner(ctx, puuid)
-	if err != nil {
-		return "", "", err
-	}
-	return summoner.Name + "#" + summoner.Tagline, platform, nil
-}
-
-func (ds *Datasource) SearchSummoner(ctx context.Context, q string) ([]SearchResult, error) {
-	return ds.store.SearchSummoner(ctx, q)
-}
-
-func findSoloQLeagueEntry(entries []*riot.LeagueEntry) (soloq *riot.LeagueEntry) {
+func findSoloQLeagueEntry(entries riot.LeagueList) (soloq *riot.LeagueEntry) {
 	for _, entry := range entries {
 		if entry.QueueType == riot.QueueTypeRankedSolo5x5 {
-			return entry
+			return &entry
 		}
 	}
+
 	return nil
 }

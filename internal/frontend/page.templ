@@ -1,22 +1,139 @@
 package frontend
 
-templ Page(title string, content templ.Component) {
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"io"
+	"time"
+)
+
+// Page is the main html component returned the to browser.
+type Page struct {
+	// ... empty value means no title.
+	Title string
+
+	HeaderContent templ.Component
+
+	// Content is a body component of the page. A nil value indicates an
+	// empty page.
+	Content templ.Component
+}
+
+templ (m Page) build() {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
-			<script src="https://cdn.tailwindcss.com"></script>
+			<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 			<script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
-			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-			<title>{ title }</title>
+			if m.Title != "" {
+				<title>
+					{ m.Title }
+				</title>
+			}
 		</head>
-		<body>
-			<main>
-				@content
-			</main>
+		<body
+			x-data="{
+				isModalOpen: false
+			}"
+			@keydown.escape="isModalOpen = false"
+		>
+			<div class="sticky top-0 z-10 min-w-13">
+				if m.HeaderContent != nil {
+					@m.HeaderContent
+				}
+			</div>
+			<div>
+				if m.Content != nil {
+					@m.Content
+				}
+			</div>
 		</body>
 	</html>
+}
+
+func (m Page) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type SummonerPage struct {
+	PUUID string
+
+	Name, Tag string
+
+	Rank *internal.RankDetail
+
+	LastUpdated time.Time
+}
+
+func (m SummonerPage) Render(ctx context.Context, w io.Writer) error {
+	page := Page{
+		Title:         fmt.Sprintf("%s#%s - Kevin", m.Name, m.Tag),
+		HeaderContent: m.makeHeaderContent(),
+		Content:       m.makeContent(),
+	}
+	return page.Render(ctx, w)
+}
+
+templ (m SummonerPage) makeChampionsView() {
+	<div class="flex items-center">
+		@Loader{Path: "/summoner/%s/champions"}
+	</div>
+}
+
+templ (m SummonerPage) makeHeaderContent() {
+	<div class="flex justify-between gap-2 items-center p-2">
+		@MenuButton{}
+		@SummonerSearchBar{}
+		@MenuButton{}
+	</div>
+}
+
+templ (m SummonerPage) makeContent() {
+	<div class="flex justify-center">
+		<div>
+			<div class="flex justify-between items-center px-4 pt-10 w-full mx-auto">
+				<div class="flex items-center gap-4">
+					<h1 class="font-bold text-3xl text-gray-900/90">
+						{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
+					</h1>
+					@RankWidget{Rank: m.Rank, ShowTierName: true, UsePill: true}
+				</div>
+				<div class="flex gap-1">
+					@LiveGameModal{PUUID: m.PUUID}
+				</div>
+			</div>
+			<ol class="flex flex-col justify-center px-4 pt-10 w-full">
+				@Loader{Path: fmt.Sprintf("/summoner/%s/matchlist", m.PUUID)}
+			</ol>
+		</div>
+	</div>
+}
+
+type HomePage struct{}
+
+func (m HomePage) Render(ctx context.Context, w io.Writer) error {
+	page := Page{
+		Title:   fmt.Sprintf("Kevin"),
+		HeaderContent: m.makeHeaderContent(),
+		Content: m.makeContent(),
+	}
+
+	return page.Render(ctx, w)
+}
+
+templ (m HomePage) makeHeaderContent() {
+	<div class="flex bg-white justify-between gap-2 items-center p-2">
+		@MenuButton{}
+		@SummonerSearchBar{}
+		@MenuButton{}
+	</div>
+}
+
+templ (m HomePage) makeContent() {
+	<div></div>
 }

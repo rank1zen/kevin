@@ -7,6 +7,7 @@ import (
 )
 
 type SkillEvent struct {
+	MatchID         string
 	PUUID           int
 	InGameTimestamp time.Duration
 	SpellSlot       int

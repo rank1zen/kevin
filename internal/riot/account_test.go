@@ -7,10 +7,28 @@ import (
 
 	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestAccountByPuuid(t *testing.T) {
-	client := riot.NewClient(riot.WithApiKey(os.Getenv("KEVIN_RIOT_API_KEY")))
-	_, err := client.GetAccountByPuuid(context.Background(), riot.RegionAmericas, "xpzpxnzLQX12ACv3iHZfqgdA8RGZQBLCiqJVa1rfVO8Z3KRiYD7YikD2RZC5mot0YhJNKn1UDxu-Ng")
-	assert.NoError(t, err)
+func TestGetAccountByRiotID(t *testing.T) {
+	client := riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY"))
+
+	ctx := context.Background()
+
+	t.Run(
+		"account is independent of route",
+		func(t *testing.T) {
+			americas, err := client.Account.GetAccountByRiotID(ctx, riot.ContinentAmericas, "orrange", "NA1")
+			require.NoError(t, err)
+
+			europe, err := client.Account.GetAccountByRiotID(ctx, riot.ContinentEurope, "orrange", "NA1")
+			require.NoError(t, err)
+
+			asia, err := client.Account.GetAccountByRiotID(ctx, riot.ContinentAsia, "orrange", "NA1")
+			require.NoError(t, err)
+
+			assert.Equal(t, americas.PUUID, europe.PUUID)
+			assert.Equal(t, americas.PUUID, asia.PUUID)
+		},
+	)
 }

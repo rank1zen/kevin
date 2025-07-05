@@ -1,0 +1,71 @@
+package frontend
+
+templ makeDropdown(button, panel templ.Component) {
+	<div
+		class="relative"
+		x-id="
+			['dropdown-wrapper']
+		"
+		x-data="{
+			open: false,
+		        toggle() {
+				if (this.open) {
+				    return this.close()
+				}
+				this.$refs.button.focus()
+				this.open = true
+			},
+			close(focusAfter) {
+				if (! this.open) return
+				this.open = false
+				focusAfter && focusAfter.focus()
+			}
+		}"
+		@focusin.window="! $refs.panel.contains($event.target) && close()"
+	>
+		<button
+			type="button"
+			x-ref="button"
+			@click="toggle()"
+			class="relative"
+		>
+			@button
+		</button>
+		<div
+			x-ref="panel"
+			x-show="open"
+			@click.outside="close($refs.button)"
+			x-cloak
+			class="absolute"
+		>
+			@panel
+		</div>
+	</div>
+}
+
+templ makeModal(button, panel templ.Component) {
+	<div
+		x-id="
+			['modal-wrapper']
+		"
+		class=""
+	>
+		<button
+			type="button"
+			x-ref="button"
+			@click="isModalOpen = true"
+			class="relative"
+		>
+			@button
+		</button>
+		<div
+			role="dialog"
+			class="fixed size-screen flex items-center justify-center z-30"
+			x-show="isModalOpen"
+			x-cloak
+			x-transition
+		>
+			@panel
+		</div>
+	</div>
+}

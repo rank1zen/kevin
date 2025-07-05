@@ -1,0 +1,57 @@
+package frontend
+
+import "context"
+import "io"
+
+type Popover struct {
+	Trigger templ.Component
+
+	Panel templ.Component
+}
+
+templ (m Popover) build() {
+	<div
+		class="relative"
+		x-id="
+			['dropdown-wrapper']
+		"
+		x-data="{
+			open: false,
+		        toggle() {
+				if (this.open) {
+				    return this.close()
+				}
+				this.$refs.button.focus()
+				this.open = true
+			},
+			close(focusAfter) {
+				if (! this.open) return
+				this.open = false
+				focusAfter && focusAfter.focus()
+			}
+		}"
+		@focusin.window="! $refs.panel.contains($event.target) && close()"
+	>
+		<button
+			type="button"
+			x-ref="button"
+			@click="toggle()"
+			class="relative flex"
+		>
+			@m.Trigger
+		</button>
+		<div
+			x-ref="panel"
+			x-show="open"
+			@click.outside="close($refs.button)"
+			x-cloak
+			class="absolute flex"
+		>
+			@m.Panel
+		</div>
+	</div>
+}
+
+func (m Popover) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}

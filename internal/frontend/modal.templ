@@ -1,0 +1,90 @@
+package frontend
+
+import (
+	"context"
+	"io"
+	"fmt"
+)
+
+type Modal struct {
+	Trigger templ.Component
+
+	Panel templ.Component
+}
+
+templ (m Modal) build() {
+	<div
+		x-id="
+			['modal-wrapper']
+		"
+		class="relative"
+	>
+		<button
+			type="button"
+			x-ref="button"
+			@click="isModalOpen = true"
+			class="relative"
+		>
+			@m.Trigger
+		</button>
+		<div
+			class="fixed inset-0 flex items-center justify-center z-30 bg-gray-900/20"
+			x-show="isModalOpen"
+			x-cloak
+			x-transition.opacity
+			>
+			@m.Panel
+		</div>
+	</div>
+}
+
+func (m Modal) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+templ exitModal() {
+	<button
+		type="button"
+		@click="isModalOpen = false"
+		class="size-7 p-1.5 bg-gray-900/5 rounded-full"
+	>
+		@Icon(StaticWindowCloseSymbol)
+	</button>
+}
+
+type LiveGameModal struct {
+	PUUID string
+}
+
+func (m LiveGameModal) Render(ctx context.Context, w io.Writer) error {
+	modal := Modal{
+		Trigger: Button{
+			IconPath: StaticViewGridSymbol,
+			Label:    "Live Game",
+		},
+		Panel: ModalWindow{
+			HeaderContent: m.makeHeaderChildren(),
+			Content:       m.makeFetcherWindow(),
+		},
+	}
+
+	return modal.Render(ctx, w)
+}
+
+templ (m LiveGameModal) makeHeaderChildren() {
+	<div class="flex items-center justify-end gap-2 p-2">
+		@exitModal()
+	</div>
+}
+
+templ (m LiveGameModal) makeFetcherWindow() {
+	<div class="">
+		<div
+			hx-post={ fmt.Sprintf("/summoner/%s/live", m.PUUID) }
+			hx-trigger="revealed"
+			class="pt-5"
+		>
+			<span>Loading...</span>
+		</div>
+	</div>
+}

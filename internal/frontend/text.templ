@@ -1,0 +1,167 @@
+package frontend
+
+import "context"
+import "io"
+import "fmt"
+
+type TextStyle int
+
+const (
+	TextStyleBody TextStyle = iota
+	TextStyleHeading
+	TextStyleLabel
+	TextStyleTitle2
+	TextStyleTitle1
+)
+
+// Text is a text box component.
+type Text struct {
+	// S is the text.
+	S string
+
+	// Width is the width of the text box.
+	Width string
+
+	// Color is the color of the text.
+	Color string
+
+	// Style is the style of the text.
+	Style TextStyle
+}
+
+func (m Text) gen() templ.Attributes {
+	attrs := make(templ.Attributes)
+
+	classes := []string{"whitespace-nowrap"}
+
+	switch m.Style {
+	case TextStyleHeading:
+		classes = append(classes, "text-base", "font-bold")
+	case TextStyleLabel:
+		classes = append(classes, "text-sm", "font-bold")
+	case TextStyleTitle1:
+		classes = append(classes, "text-2xl", "font-bold")
+	case TextStyleTitle2:
+		classes = append(classes, "text-xl", "font-bold")
+	default:
+		classes = append(classes, "text-sm")
+	}
+
+	if m.Width != "" {
+		classes = append(classes, m.Width)
+	}
+
+	if m.Color != "" {
+		classes = append(classes, m.Color)
+	} else {
+		classes = append(classes, "text-gray-900/90")
+	}
+
+	attrs["class"] = joinClasses(classes)
+	return attrs
+}
+
+templ (m Text) Build() {
+	if m.S != "" {
+		<div { m.gen()... }>
+			{ m.S }
+		</div>
+	} else {
+		<div></div>
+	}
+}
+
+func (m Text) Render(ctx context.Context, w io.Writer) error {
+	return m.Build().Render(ctx, w)
+}
+
+// TextKDA is a block for kills, deaths, assists
+type TextKDA struct {
+	Kills, Deaths, Assists int
+}
+
+func (m TextKDA) gen() templ.Attributes {
+	attrs := make(templ.Attributes)
+
+	classes := []string{"whitespace-nowrap"}
+
+	attrs["class"] = joinClasses(classes)
+	return attrs
+}
+
+templ (m TextKDA) build() {
+	<div { m.gen()... }>
+		<span>
+			{ fmt.Sprintf("%d", m.Kills) }
+		</span>
+		/
+		<span class="text-red-500/90">
+			{ fmt.Sprintf("%d", m.Deaths) }
+		</span>
+		/
+		<span class="text-blue-500/90">
+			{ fmt.Sprintf("%d", m.Assists) }
+		</span>
+	</div>
+}
+
+func (m TextKDA) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// TextCS is a block for creep score, and creep score per minute.
+type TextCS struct {
+	CS int
+	CSPerMinute float32
+}
+
+func (m TextCS) gen() templ.Attributes {
+	attrs := make(templ.Attributes)
+
+	classes := []string{"whitespace-nowrap"}
+
+	attrs["class"] = joinClasses(classes)
+	return attrs
+}
+
+func (m TextCS) generateCSPerMinuteTextColor() string {
+	if m.CSPerMinute < 5 {
+		return "text-gray-700/90"
+	} else if m.CSPerMinute < 8 {
+		return "text-blue-700/90"
+	} else if m.CSPerMinute < 10 {
+		return "text-blue-900/90"
+	} else {
+		return "text-yellow-700/90"
+	}
+}
+
+templ (m TextCS) build() {
+	<div>
+		<span class="whitespace-nowrap text-gray-900/90">
+			{ fmt.Sprintf("%d", m.CS) }
+		</span>
+		<span class={ "whitespace-nowrap", m.generateCSPerMinuteTextColor() }>
+			{ fmt.Sprintf("(%.1f)", m.CSPerMinute) }
+		</span>
+	</div>
+}
+
+func (m TextCS) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// TextLabel is a one-line label component, usually used in buttons.
+type TextLabel struct {
+	Text string
+}
+
+templ (m TextLabel) build() {
+	<span class="whitespace-nowrap text-sm font-bold text-gray-900/90">
+		{ m.Text }
+	</span>
+}
+
+func (m TextLabel) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}

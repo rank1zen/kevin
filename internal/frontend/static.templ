@@ -1,0 +1,39 @@
+package frontend
+
+import (
+	"path"
+
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+var (
+	StaticDockLeftSymbol     = "dock-left-symbolic.svg"
+	StaticEditFindSymbol     = "edit-find-symbolic.svg"
+	StaticExternalLinkSymbol = "external-link-symbolic.svg"
+	StaticOpenMenuSymbol     = "open-menu-symbolic.svg"
+	StaticViewGridSymbol     = "view-grid-symbolic.svg"
+	StaticViewListSymbol     = "view-list-symbolic.svg"
+	StaticViewRefreshSymbol  = "view-refresh-symbolic.svg"
+	StaticWindowCloseSymbol  = "window-close-symbolic.svg"
+	StaticGoDownSymbol       = "go-down-symbolic.svg"
+)
+
+func getStaticRankSymbol(rank riot.Tier) string {
+	switch rank {
+	case riot.TierIron:
+		return GetStaticAsset("iron.svg")
+	default:
+		return GetStaticAsset("emerald.svg")
+	}
+}
+
+func GetStaticAsset(p string) string {
+	return path.Join("/static", p)
+}
+
+templ Icon(p string) {
+	<img
+		class="size-4"
+		src={ GetStaticAsset(p) }
+	/>
+}

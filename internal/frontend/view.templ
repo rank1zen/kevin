@@ -1,49 +1,20 @@
 package frontend
 
-import (
-	"context"
-	"io"
-	"path"
-)
+import "context"
+import "io"
 
-func getStaticPath(p string) string {
-	return path.Join("/static", p)
+type View struct {
+	Children []templ.Component
 }
 
-templ viewSwitcher(iconPath string, label string, href templ.SafeURL) {
-	<a
-		href={ href }
-		class="flex items-center gap-2 px-5 py-2 transition-colors rounded bg-white hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200"
-	>
-		<img class="size-4" src={ getStaticPath(iconPath) }/>
-		<span class="font-bold text-sm whitespace-nowrap">
-			{ label }
-		</span>
-	</a>
-}
-
-type ViewSwitcher struct {
-	Label    string
-	IconPath string
-	Href     templ.SafeURL
-}
-
-func NewViewSwitcher(iconPath string, label string, href templ.SafeURL) ViewSwitcher {
-	return ViewSwitcher{
-		Label:    label,
-		IconPath: iconPath,
-		Href:     href,
-	}
-}
-
-func (vs ViewSwitcher) Render(ctx context.Context, w io.Writer) error {
-	return viewSwitcher(vs.IconPath, vs.Label, vs.Href).Render(ctx, w)
-}
-
-templ ViewSwitcherRow(views ...ViewSwitcher) {
-	<div class="flex items-center gap-2">
-		for _, view := range views {
-			@view
+templ (m View) build() {
+	<div>
+		for _, c := range m.Children {
+			@c
 		}
 	</div>
+}
+
+func (m View) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
 }

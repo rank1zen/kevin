@@ -1,0 +1,231 @@
+package frontend
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"io"
+	"time"
+)
+
+// Panel is a floating container component.
+type Panel struct {
+	// Width is the width of window. A zero value means the window width
+	// is sized automatically.
+	Width string
+
+	// Height is the height of window. A zero value when IsFloating is
+	// true means the window height is sized automatically. Conversely, if
+	// IsFloating is false, then the window is screen height.
+	Height string
+
+	Z string
+
+	// IsModal
+
+	// Children is the main content of the window. A nil value means empty
+	// content.
+	Children templ.Component
+
+	// Attrs are additional non-class html attributes to add to the window.
+	Attrs templ.Attributes
+}
+
+templ (m Panel) Build() {
+	if m.Children != nil {
+		<div { m.gen()... }>
+			@m.Children
+		</div>
+	} else {
+		<div></div>
+	}
+}
+
+func (m Panel) gen() (attrs templ.Attributes) {
+	attrs = make(templ.Attributes)
+
+	classes := []string{
+		"bg-white",
+		"absolute",
+		"shadow-lg",
+		"rounded-lg",
+		"outline-none",
+		"border",
+		"border-gray-200",
+		"mt-2",
+	}
+
+	if m.Z != "" {
+		classes = append(classes, m.Z)
+	} else {
+		classes = append(classes, "z-10")
+	}
+
+	if m.Height != "" {
+		classes = append(classes, m.Height)
+	} else {
+		classes = append(classes, "h-screen")
+	}
+
+	attrs["class"] = joinClasses(classes)
+
+	for k, v := range m.Attrs {
+		attrs[k] = v
+	}
+
+	return attrs
+}
+
+func (m Panel) Render(ctx context.Context, w io.Writer) error {
+	return m.Build().Render(ctx, w)
+}
+
+// Window is a base container component with a header bar.
+type Window struct {
+	// HeaderChildren is the content in the header bar of the window. A nil
+	// value means the window has no header bar items.
+	HeaderChildren []templ.Component
+
+	// Children is the main content of the window. A nil value means empty
+	// content.
+	Children []templ.Component
+
+	// Attrs are additional non-class html attributes to add to the window.
+	Attrs templ.Attributes
+}
+
+templ (m Window) build() {
+	<div>
+		if m.HeaderChildren != nil {
+			<div class="sticky top-0 bg-white flex justify-between gap-2 items-center p-2 z-10 border-b">
+				for _, c := range m.HeaderChildren {
+					@c
+				}
+			</div>
+		}
+		if m.Children != nil {
+			@View{
+				Children: m.Children,
+			}
+		}
+	</div>
+}
+
+func (m Window) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// ModalWindow is a floating window.
+type ModalWindow struct {
+	HeaderContent templ.Component
+
+	Content templ.Component
+}
+
+templ (m ModalWindow) build() {
+	<div class="bg-white rounded-2xl shadow-lg border border-gray-900/25 h-1/2 w-xl">
+		<div class="h-13 sticky bg-white rounded-t-2xl">
+			@m.HeaderContent
+		</div>
+		<div class="flex-1">
+			@m.Content
+		</div>
+	</div>
+}
+
+func (m ModalWindow) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type LiveMatchModalWindow struct {
+	AverageRank *internal.RankDetail
+
+	StartTime time.Time
+
+	RedSide []LiveMatchSummonerCard
+
+	BlueSide []LiveMatchSummonerCard
+}
+
+templ (m LiveMatchModalWindow) makeHeaderContent() {
+	<div class="flex items-center justify-between gap-2">
+		<div class="flex">
+			{ fmt.Sprintf("%v", m.StartTime) } // 5:12
+		</div>
+		<div class="flex">
+			Avg Rank Grandmaster // Avg Rank Grandmaster
+		</div>
+	</div>
+}
+
+templ (m LiveMatchModalWindow) makeContent() {
+	<div class="flex justify-center">
+		<div>
+			for _, s := range m.BlueSide {
+				@s
+			}
+		</div>
+		<div class="mt-2">
+			for _, s := range m.RedSide {
+				@s
+			}
+		</div>
+	</div>
+}
+
+func (m LiveMatchModalWindow) Render(ctx context.Context, w io.Writer) error {
+	return m.makeContent().Render(ctx, w)
+}
+
+type NoLiveMatchModalWindow struct {}
+
+templ (m NoLiveMatchModalWindow) makeHeaderContent() {
+}
+
+templ (m NoLiveMatchModalWindow) makeContent() {
+	<div class="flex flex-col items-center justify-center">
+		<span class="text-base">
+			Currently not in live game
+		</span>
+	</div>
+}
+
+func (m NoLiveMatchModalWindow) Render(ctx context.Context, w io.Writer) error {
+	modal := ModalWindow{
+		HeaderContent: m.makeHeaderContent(),
+		Content:       m.makeContent(),
+	}
+
+	return modal.Render(ctx, w)
+}
+
+type ChampionsModal struct {
+	Cards []SummonerChampionCard
+}
+
+templ (m ChampionsModal) makeHeaderContent() {
+	<div>
+		Some filter by season maybe
+	</div>
+	<div>
+		Champions
+	</div>
+}
+
+templ (m ChampionsModal) makeContent() {
+	<div class="flex justify-center">
+		<div>
+			for _, card := range m.Cards {
+				@card
+			}
+		</div>
+	</div>
+}
+
+func (m ChampionsModal) Render(ctx context.Context, w io.Writer) error {
+	modal := ModalWindow{
+		HeaderContent: m.makeHeaderContent(),
+		Content:       m.makeContent(),
+	}
+	return modal.Render(ctx, w)
+}

@@ -1,0 +1,134 @@
+package frontend
+
+import "context"
+import "io"
+import "github.com/rank1zen/kevin/internal"
+import "github.com/rank1zen/kevin/internal/ddragon"
+import "path"
+import "fmt"
+
+// ChampionWidget displays a champion icon and summoner spells.
+type ChampionWidget struct {
+	Champion int
+
+	ChampionLevel int
+
+	// .. if nil, summoner spells are not included.
+	Summoners *[2]int
+}
+
+func (m ChampionWidget) gen() templ.Attributes {
+	attrs := make(templ.Attributes)
+
+	attrs["class"] = ""
+
+	return attrs
+}
+
+templ (m ChampionWidget) build() {
+	<div class="flex flex-none items-center gap-0.5">
+		<img { championSmallSpriteClass(m.Champion)... }/>
+		if m.Summoners != nil {
+			<img { summonersTinySpriteClass(m.Summoners[0])... } />
+			<img { summonersTinySpriteClass(m.Summoners[1])... } />
+		}
+	</div>
+}
+
+func (m ChampionWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// RuneWidget is displays match runes.
+type RuneWidget struct {
+	RunePage internal.RunePage
+}
+
+templ (m RuneWidget) makeFullRunPageView() {
+	<div class="gap-4">
+		<div class="flex flex-col items-center gap-4">
+			<img
+				class="size-12 flex-none p-1"
+				src={ runeIconSrc(m.RunePage.PrimaryTree) }
+				title={ runeName(m.RunePage.PrimaryTree) }
+			/>
+			<img class="size-16 flex-none p-1" { genRuneClass(m.RunePage.PrimaryKeystone)... }/>
+			<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.PrimaryA)... }/>
+			<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.PrimaryB)... }/>
+			<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.PrimaryC)... }/>
+		</div>
+		<div class="flex flex-col items-center gap-5">
+			<div class="flex flex-col gap-6">
+				<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.SecondaryTree)... }/>
+				<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.SecondaryA)... }/>
+				<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.SecondaryB)... }/>
+			</div>
+			<div class="flex flex-col gap-0.5">
+				<img class="size-8 flex-none p-1" { genRuneClass(m.RunePage.MiniOffense)... }/>
+				<img class="size-8 flex-none p-1" { genRuneClass(m.RunePage.MiniFlex)... }/>
+				<img class="size-8 flex-none p-1" { genRuneClass(m.RunePage.MiniDefense)... }/>
+			</div>
+		</div>
+	</div>
+}
+
+templ (m RuneWidget) build() {
+	<div class="flex flex-none items-center gap-0.5">
+		<img src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.PrimaryKeystone].IconPath) } class="size-9"/>
+		<img class="size-6 p-0.5 bg-gray-500/5" src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.SecondaryTree].IconPath) }/>
+		<button type="button" class="size-6 flex flex-none items-center justify-center bg-gray-500/5 hover:bg-gray-900/5">
+			<img class="size-4" src="/static/view-more-symbolic.svg" />
+		</button>
+	</div>
+}
+
+func (m RuneWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// ItemWidget displays an inventory of items.
+type ItemWidget struct {
+	Items [7]int
+}
+
+func itemClass(id int) templ.Attributes {
+	attrs := make(templ.Attributes)
+
+	item := ddragon.ItemsMap[id]
+	fullPath := path.Join("/static/sprite", "tiny_"+item.Sprite)
+	x := item.X / 2
+	y := item.Y / 2
+
+	attrs["src"] = fullPath
+	attrs["title"] = item.Name
+
+	classes := []string{
+		"size-6",
+		"object-none",
+		fmt.Sprintf("object-[-%dpx_-%dpx]", x, y),
+		"rounded",
+		"relative",
+		"-z-10",
+	}
+
+	attrs["class"] = joinClasses(classes)
+
+	return attrs
+}
+
+templ (m ItemWidget) build() {
+	<div class="flex flex-none items-center gap-0.5 p-0.5 rounded bg-gray-900/5">
+		for _, id := range m.Items {
+			<button type="button" class="cursor-pointer hover:ring-1 size-6 ring-gray-900 rounded">
+				<img { itemClass(id)... }/>
+			</button>
+		}
+		<button type="button" class="size-6 flex items-center justify-center cursor-pointer bg-gray-900/5 hover:bg-gray-900/10 rounded">
+			<img class="size-4" src="/static/view-more-symbolic.svg" />
+		</button>
+	</div>
+}
+
+func (m ItemWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}

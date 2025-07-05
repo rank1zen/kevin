@@ -41,7 +41,7 @@ func NewParticipant(opts ...ParticipantOption) Participant {
 }
 
 func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {
-	var s *riot.Participant
+	var s *riot.MatchParticipant
 	for _, p := range match.Info.Participants {
 		if p.PUUID == puuid {
 			s = p
@@ -54,14 +54,14 @@ func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {
 
 	var teamDamage, teamGold, teamKills int
 	for _, p := range match.Info.Participants {
-		if p.TeamId == s.TeamId {
+		if p.TeamID == s.TeamID {
 			teamDamage += p.TotalDamageDealtToChampions
 			teamGold += p.GoldEarned
 			teamKills += p.Kills
 		}
 	}
 
-	var counterpart *riot.Participant
+	var counterpart *riot.MatchParticipant
 	for _, p := range match.Info.Participants {
 		if p.TeamPosition == s.TeamPosition && p.PUUID != s.PUUID {
 			counterpart = p
@@ -80,14 +80,14 @@ func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {
 
 		runes     = NewRunePage(WithRiotPerks(s.Perks))
 		items     = [7]int{s.Item0, s.Item1, s.Item2, s.Item3, s.Item4, s.Item5, s.Item6}
-		summoners = [2]int{s.Summoner1Id, s.Summoner2Id}
+		summoners = [2]int{s.Summoner1ID, s.Summoner2ID}
 	)
 
 	return func(p *Participant) error {
 		p.PUUID = s.PUUID
-		p.MatchID = match.Metadata.MatchId
-		p.TeamID = s.TeamId
-		p.ChampionID = s.ChampionId
+		p.MatchID = match.Metadata.MatchID
+		p.TeamID = s.TeamID
+		p.ChampionID = s.ChampionID
 		p.ChampionLevel = s.ChampLevel
 		p.SummonerIDs = summoners
 		p.Runes = runes
@@ -130,8 +130,8 @@ func NewLiveParticipant(opts ...LiveParticipantOption) LiveParticipant {
 
 type LiveParticipantOption func(*LiveParticipant) error
 
-func WithRiotCurrentGame(r riot.CurrentGameInfo, puuid string) LiveParticipantOption {
-	var selected *riot.CurrentGameParticipant
+func WithRiotCurrentGame(r riot.LiveMatch, puuid string) LiveParticipantOption {
+	var selected *riot.LiveMatchParticipant
 	for _, p := range r.Participants {
 		if p.PUUID == puuid {
 			selected = &p

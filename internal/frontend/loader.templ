@@ -1,0 +1,65 @@
+package frontend
+
+import "context"
+import "io"
+
+type LoaderType int
+
+const (
+	LoaderTypeOnLoad LoaderType = iota
+	LoaderTypeOnReveal
+)
+
+// Loader is a component that fetches the server for data.
+type Loader struct {
+	Path string
+
+	// Type is the trigger event to fetch the path.
+	Type LoaderType
+}
+
+func (m Loader) gen() templ.Attributes {
+	attrs := make(templ.Attributes)
+
+	classes := []string{
+		"flex",
+		"items-center",
+		"justify-center",
+	}
+
+	attrs["class"] = joinClasses(classes)
+
+	attrs["hx-post"] = m.Path
+
+	switch m.Type {
+	case LoaderTypeOnReveal:
+		attrs["hx-trigger"] = "on reveal"
+	default:
+		attrs["hx-trigger"] = "load"
+	}
+
+	return attrs
+}
+
+func (m Loader) generateHXTrigger() string {
+	switch m.Type {
+	case LoaderTypeOnReveal:
+		return "reveal"
+	default:
+		return "load once"
+	}
+}
+
+templ (m Loader) build() {
+	<div
+		hx-post={ m.Path }
+		hx-trigger={ m.generateHXTrigger() }
+		hx-swap="outerHTML"
+	>
+		Some loading symbol...
+	</div>
+}
+
+func (m Loader) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}

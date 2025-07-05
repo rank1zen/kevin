@@ -3,57 +3,56 @@ package internal
 import (
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-type RankDetail struct {
-	Wins   int
-	Losses int
+type Rank struct {
 	Tier   riot.Tier
-	Rank   riot.Rank
+	Division   riot.Division
 	LP     int
 }
 
 type RankStatus struct {
 	PUUID         string
 	EffectiveDate time.Time
-	EndDate       pgtype.Date
-	IsCurrent     bool
-	IsRanked      bool
 	Detail        *RankDetail
 }
 
-func NewRankStatus(opts ...RankStatusOption) RankStatus {
-	var rs RankStatus
+type RankRecord struct {
+	PUUID         string
+	EffectiveDate time.Time
+	EndDate       *time.Time
+	IsCurrent     bool
+	Detail        *RankDetail
+}
+
+type RankDetail struct {
+	Wins   int
+	Losses int
+	Tier   riot.Tier
+	Division   riot.Division
+	LP     int
+}
+
+func NewRankDetail(opts ...RankDetailOption) RankDetail {
+	var m RankDetail
 	for _, f := range opts {
-		if err := f(&rs); err != nil {
+		if err := f(&m); err != nil {
 			panic(err)
 		}
 	}
-	return rs
+	return m
 }
 
-type RankStatusOption func(*RankStatus) error
+type RankDetailOption func(*RankDetail) error
 
-func WithRiotLeagueEntry(puuid string, t time.Time, rank *riot.LeagueEntry) RankStatusOption {
-	return func(rs *RankStatus) error {
-		rs.PUUID = puuid
-		rs.EffectiveDate = t
-		rs.EndDate = pgtype.Date{InfinityModifier: 1, Valid: true}
-		rs.IsCurrent = true
-		if rank == nil {
-			rs.Detail = nil
-			rs.IsRanked = false
-		} else {
-			rs.Detail = &RankDetail{
-				Wins:   rank.Wins,
-				Losses: rank.Losses,
-				Tier:   rank.Tier,
-				Rank:   rank.Rank,
-				LP:     rank.LeaguePoints,
-			}
-		}
+func WithRiotLeagueEntry(rank riot.LeagueEntry) RankDetailOption {
+	return func(m *RankDetail) error {
+		m.Wins = rank.Wins
+		m.Losses = rank.Losses
+		m.Tier = rank.Tier
+		m.Division = rank.Division
+		m.LP = rank.LeaguePoints
 		return nil
 	}
 }

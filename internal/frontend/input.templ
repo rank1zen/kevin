@@ -1,0 +1,72 @@
+package frontend
+
+import (
+	"context"
+	"io"
+)
+
+// SearchInput is a search input component.
+type SearchInput struct {
+	// InputName is the name of the value.
+	InputName string
+
+	// Placeholder is the placeholder for the entry field. An empty value
+	// indicates no placeholder.
+	Placeholder string
+
+	// Embeded indicates that the search input will be slightly smaller?
+	Embeded bool
+
+	Attrs templ.Attributes
+}
+
+func (m SearchInput) gen() templ.Attributes {
+	attrs := make(templ.Attributes)
+
+	attrs["type"] = "search"
+
+	if m.InputName != "" {
+		attrs["name"] = m.InputName
+	}
+
+	if m.Placeholder != "" {
+		attrs["placeholder"] = m.Placeholder
+	}
+
+	classes := []string{
+		"transition-all",
+		"rounded-lg",
+		"bg-transparent",
+		"hover:bg-gray-900/10",
+		"text-sm",
+		"text-gray-900/90",
+		"inset-ring-2",
+		"inset-ring-blue-500/50",
+		"focus:outline-0",
+		"focus:bg-gray-900/10",
+		"p-2",
+		"w-52",
+	}
+
+	if m.Embeded {
+		classes = append(classes, "h-7")
+	} else {
+		classes = append(classes, "h-9")
+	}
+
+	attrs["class"] = joinClasses(classes)
+
+	for k, v := range m.Attrs {
+		attrs[k] = v
+	}
+
+	return attrs
+}
+
+templ (m SearchInput) build() {
+	<input { m.gen()... }/>
+}
+
+func (m SearchInput) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}

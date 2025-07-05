@@ -20,15 +20,6 @@ type SummonerMatch struct {
 	Participant
 }
 
-// TODO: I really don't think this MatchPage with days bucket is natural to the domain
-type MatchPage struct {
-	Days []MatchDay
-}
-
-type MatchDay struct {
-	Day time.Time
-}
-
 // SummonerChampion is stats averaged by champion
 type SummonerChampion struct {
 	Champion               Champion

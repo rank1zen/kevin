@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/rank1zen/kevin/internal/riot"
@@ -8,14 +9,9 @@ import (
 
 type Match struct {
 	ID       string
-
-	// Date is the end timestamp
 	Date     time.Time
-
 	Duration time.Duration
-
 	Version  string
-
 	WinnerID int
 }
 
@@ -32,12 +28,12 @@ type MatchOption func(*Match) error
 func WithRiotMatch(match *riot.Match) MatchOption {
 	var winner int
 	if match.Info.Teams[0].Win {
-		winner = match.Info.Teams[0].TeamId
+		winner = match.Info.Teams[0].TeamID
 	} else {
-		winner = match.Info.Teams[1].TeamId
+		winner = match.Info.Teams[1].TeamID
 	}
 	return func(m *Match) error {
-		m.ID = match.Metadata.MatchId
+		m.ID = match.Metadata.MatchID
 		m.Date = makeRiotUnixTimeStamp(match.Info.GameEndTimestamp)
 		m.Duration = makeRiotTimeDuration(match.Info.GameDuration)
 		m.Version = match.Info.GameVersion
@@ -47,20 +43,49 @@ func WithRiotMatch(match *riot.Match) MatchOption {
 }
 
 type LiveMatch struct {
-	ID       string
+	ID string
 
 	// Date is game start timestamp
-	Date     time.Time
+	Date time.Time
 
 	Participants [10]LiveParticipant
 }
 
-type MatchSummoner struct {
-	Name string
-	Rank *RankDetail
+func NewLiveMatch(opts ...LiveMatchOption) LiveMatch {
+	var match LiveMatch
 
-	Participant
+	for _, f := range opts {
+		f(&match)
+	}
+
+	return match
 }
+
+type LiveMatchOption func(*LiveMatch) error
+
+func WithRiotLiveMatch(match *riot.LiveMatch) LiveMatchOption {
+	matchID := fmt.Sprintf("%s_%d", match.PlatformID, match.GameID)
+
+	participants := []LiveParticipant{}
+	for _, p := range match.Participants {
+		participants = append(participants, LiveParticipant{
+			PUUID:        p.PUUID,
+			MatchID:      matchID,
+			ChampionID:   p.ChampionID,
+			Runes:        NewRunePage(WithRiotSpectatorPerks(&p.Perks)),
+			TeamID:       p.TeamID,
+			SummonersIDs: [2]int{p.Spell1ID, p.Spell2ID},
+		})
+	}
+
+	return func(m *LiveMatch) error {
+		m.ID = matchID
+		m.Date = makeRiotUnixTimeStamp(match.GameStartTime)
+		m.Participants = [10]LiveParticipant(participants)
+		return nil
+	}
+}
+
 
 func makeRiotUnixTimeStamp(ts int64) time.Time {
 	return time.UnixMilli(ts)

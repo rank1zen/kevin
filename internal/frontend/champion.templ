@@ -2,8 +2,9 @@ package frontend
 
 import (
 	"fmt"
-	"github.com/rank1zen/kevin/internal/ddragon"
 	"path"
+
+	"github.com/rank1zen/kevin/internal/ddragon"
 )
 
 func championSmallSpriteClass(id int) templ.Attributes {
@@ -21,10 +22,6 @@ func championSmallSpriteClass(id int) templ.Attributes {
 	}
 }
 
-templ ChampionSmallSprite(id int) {
-	<img { championSmallSpriteClass(id)... }/>
-}
-
 func championSpriteClass(id int) templ.Attributes {
 	champion := ddragon.ChampionMap[id]
 	fullPath := path.Join("/static/sprite", champion.Sprite)
@@ -40,6 +37,32 @@ func championSpriteClass(id int) templ.Attributes {
 	}
 }
 
-templ ChampionSprite(id int) {
-	<img { championSpriteClass(id)... }/>
+func summonersSmallSpriteClass(id int) templ.Attributes {
+	summoners := ddragon.SummonerMap[id]
+	fullPath := path.Join("/static/sprite", "small_"+summoners.Sprite)
+	w := 36
+	h := 36
+	x := (summoners.X * 3) / 4
+	y := (summoners.Y * 3) / 4
+
+	return templ.Attributes{
+		"src":   fullPath,
+		"title": summoners.Name,
+		"class": fmt.Sprintf("w-[%dpx] h-[%dpx] object-none object-[-%dpx_-%dpx] rounded", w, h, x, y),
+	}
+}
+
+func summonersTinySpriteClass(id int) templ.Attributes {
+	summoners := ddragon.SummonerMap[id]
+	fullPath := path.Join("/static/sprite", "tiny_"+summoners.Sprite)
+	w := 24
+	h := 24
+	x := summoners.X / 2
+	y := summoners.Y / 2
+
+	return templ.Attributes{
+		"src":   fullPath,
+		"title": summoners.Name,
+		"class": fmt.Sprintf("w-[%dpx] h-[%dpx] object-none object-[-%dpx_-%dpx] rounded", w, h, x, y),
+	}
 }

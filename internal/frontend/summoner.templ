@@ -1,282 +1,166 @@
 package frontend
 
 import (
-	"fmt"
-	"github.com/rank1zen/kevin/internal"
+	"context"
+	"io"
 )
 
-templ SummonerNotFoundView(platform, name, tagline string) {
-	<div class="flex flex-col">
-		<button hx-get={ "/update?name=name" }>
-			Request riot { name + tagline } on { platform }
-		</button>
+// SummonerWidget is a component for displaying summoner information.
+type SummonerWidget struct {
+	Name string
+
+	Tagline string
+
+	Rank RankWidget
+}
+
+templ (m SummonerWidget) build() {
+	<div class="flex items center gap-2">
+		@Text{S: m.Name + "#" + m.Tagline}
+		@m.Rank
 	</div>
 }
 
-templ SummonerMatchView(puuid, name string, rank *internal.RankDetail) {
-	<div class="flex flex-col">
-		@SummonerHeaderBar(puuid, name, rank)
-		<div class="flex flex-col max-w-4xl mx-auto">
-			<div class="flex items-center gap-1.5">
-				@TextTitle(name)
-				@RankTag(rank)
-			</div>
-			<div class="flex justify-between">
-				@ViewSwitcherRow(
-					NewViewSwitcher(
-						"view-list-symbolic.svg",
-						"Matches",
-						templ.SafeURL(fmt.Sprintf("/summoner/%s", puuid)),
-					),
-					NewViewSwitcher(
-						"view-grid-symbolic.svg",
-						"Champions",
-						templ.SafeURL(fmt.Sprintf("/summoner/%s/champions", puuid)),
-					),
-				)
-				<div class="flex items-center gap-1 p-2">
-					<img class="size-4" src="/static/edit-find-symbolic.svg"/>
-				</div>
-			</div>
-			<div
-				class="flex flex-col"
-				hx-get={ fmt.Sprintf("/summoner/%s/matchlist", puuid) }
-				hx-trigger="load once"
-			></div>
-		</div>
-	</div>
+func (m SummonerWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
 }
 
-templ SummonerChampionView(puuid, name string, rank *internal.RankDetail, champions []internal.SummonerChampion) {
-	<div class="flex flex-col">
-		@SummonerHeaderBar(puuid, name, rank)
-		<div class="flex flex-col max-w-4xl mx-auto">
-			<div class="flex items-center gap1.5">
-				@TextTitle(name)
-				@RankTag(rank)
-			</div>
-			<div class="flex justify-between">
-				@ViewSwitcherRow(
-					NewViewSwitcher(
-						"view-list-symbolic.svg",
-						"Matches",
-						templ.SafeURL(fmt.Sprintf("/summoner/%s", puuid)),
-					),
-					NewViewSwitcher(
-						"view-grid-symbolic.svg",
-						"Champions",
-						templ.SafeURL(fmt.Sprintf("/summoner/%s/champions", puuid)),
-					),
-				)
-			</div>
-			<div class="flex wrap">
-				for _, champ := range champions {
-					@SummonerChampionCard(champ)
-				}
-			</div>
-		</div>
-	</div>
+var DefaultPlatforms = []string{"NA", "KR", "EUW"}
+
+// SummonerSearchBar is a search bar component with inputs for platform, name,
+// and tagline. This component issues POST requests to the server and displays
+// results in a popup.
+type SummonerSearchBar struct {
+	// Platforms are the available platforms for search. If nil,
+	// DefaultPlatforms is used.
+	Platforms []string // change this to riot platform type
+
+	// Name is the name of a summoner, which will be used as a search bar
+	// cover, if provided.
+	Name string
 }
 
-templ SummonerMatchlist(puuid string, page int, matches []internal.SummonerMatch) {
-	for _, m := range matches {
-		@SummonerMatchRow(m)
-	}
-	if !(len(matches) < 10) {
-		<div
-			hx-get={ fmt.Sprintf("/summoner/%s/matchlist?page=%d", puuid, page+1) }
-			hx-swap="outerHTML"
-			hx-trigger="revealed"
-		>
-			Loading more...
-		</div>
-	}
-}
-
-templ SummonerMatchHeader() {
-	<div class="flex items-center border-b border-gray-100 sticky top-[56px] z-20 px-2 rounded justify-between odd:bg-white even:bg-gray-50 text-xs text-gray-300 font-bold">
-		<div class="flex flex-none gap-1 items-center w-[92px]">
-			<span>
-				Champion
-			</span>
-		</div>
-		<div class="flex flex-none items-center w-24">
-			<span>
-				KDA
-			</span>
-		</div>
-		<div class="flex flex-none items-center w-16">
-			<span>
-				CS
-			</span>
-		</div>
-		<div class="flex flex-none items-center w-16">
-			<span>
-				CSM
-			</span>
-		</div>
-		<div class="flex flex-none w-[72px]">
-			<span>
-				Runes
-			</span>
-		</div>
-		<div class="flex flex-none w-[200px]">
-			<span>
-				Items
-			</span>
-		</div>
-		<div class="flex flex-none items-center w-20 justify-end">
-			<span>
-				CSD@END
-			</span>
-		</div>
-		<div class="flex flex-none items-center w-20 justify-end">
-			<span>
-				GD@END
-			</span>
-		</div>
-		<div class="flex flex-none items-center w-14 justify-end">
-			<span>
-				DMG%
-			</span>
-		</div>
-		<div class="flex flex-none items-center w-14 justify-end">
-			<span>
-				LP
-			</span>
-		</div>
-		<div class="flex size-9 flex-none"></div>
-	</div>
-}
-
-templ SummonerMatchRow(m internal.SummonerMatch) {
-	<div class="flex tabular-nums items-center px-2 py-2 rounded-lg justify-between odd:bg-white even:bg-gray-50">
-		<div class="flex flex-none gap-1 items-center">
-			@ChampionSmallSprite(m.ChampionID)
-			@SummonersRow(m.SummonerIDs)
-		</div>
-		<div class="flex flex-none items-center w-24 justify-center">
-			<span>
-				{ fmt.Sprintf("%d/%d/%d", m.Kills, m.Deaths, m.Assists) }
-			</span>
-		</div>
-		<div class="flex flex-none items-center w-16 justify-center">
-			<span>
-				{ fmt.Sprintf("%d", m.CreepScore) }
-			</span>
-		</div>
-		<div class="flex flex-none items-center w-16 justify-center">
-			<span>
-				{ fmt.Sprintf("%.1f", m.CreepScorePerMinute) }
-			</span>
-		</div>
-		<div class="flex flex-none">
-			@RuneButton(m.Runes)
-		</div>
-		<div class="flex flex-none">
-			@ItemRow(m.Items)
-		</div>
-		<div class="flex flex-none items-center w-14 justify-end">
-			<span>
-				if m.LpDelta != nil {
-					{ fmt.Sprintf("%d", *m.LpDelta) }
-				} else {
-					+21
-				}
-			</span>
-		</div>
-		<div class="flex flex-none">
-			<a
-				title="Open match page"
-				href={ templ.SafeURL(fmt.Sprintf("/match/%s", m.MatchID)) }
-				class="flex p-2.5 rounded hover:bg-gray-100"
-			>
-				<img class="w-4 h-4 flex-none" src="/static/external-link-symbolic.svg"/>
-			</a>
-		</div>
-	</div>
-}
-
-templ SummonerHeaderBar(puuid, name string, rank *internal.RankDetail) {
-	@HeaderBar(
-		SummonerSearchBar(puuid, name, rank),
-		SummonerSearchBar(puuid, name, rank),
-		SummonerSearchBar(puuid, name, rank),
-	)
-	// <div class="sticky top-0 bg-white flex justify-between items-center p-2 z-20">
-	// 	@SummonerSearchBar(puuid, name, rank)
-	// 	<div class="flex">
-	// 		@MenuButton("/static/open-menu-symbolic.svg", Menu())
-	// 	</div>
-	// </div>
-}
-
-templ SummonerSearchBar(puuid, name string, rank *internal.RankDetail) {
+templ (m SummonerSearchBar) makeSearchInput() {
 	<div
-		x-data="{
-			open: false,
-			toggle() {
-				this.open = this.open? this.close() : true
-				$nextTick(() => { $focus.focus($refs.searchInput) })
-			},
-			close() {
-				this.open = false
-			}
-		}"
-		class="flex grow max-w-2xl items-center justify-between"
+		class="relative"
+		x-data="{ open: false }"
+		@click.outside="open = false"
 	>
-		// search div
+		@SearchInput{
+			InputName: "q",
+			Placeholder: "Search summoner...",
+			Embeded: true,
+			Attrs: templ.Attributes{
+				"@input": "open = true",
+				"hx-post": "/search",
+				"hx-target": "#search-results",
+				"hx-trigger": "input changed delay:500ms, keyup[key=='Enter']",
+				"hx-include": "[name='platform']",
+			},
+		}
 		<div
-			x-transition:enter="transition-discrete"
-			x-show="!open"
-			@click="toggle()"
-			class="flex grow w-full items-center rounded-lg bg-gray-100 justify-between"
-		>
-			<div class="flex items-center">
-				<span class="font-bold text-sm whitespace-nowrap">
-					{ name }
-				</span>
-				@RankTag(rank)
-			</div>
-			<button
-				type="button"
-				hx-get={ fmt.Sprintf("/fetch/summoner?puuid=%s&platform=NA1", puuid) }
-				hx-trigger="click"
-				class="flex flex-none p-2.5 items-center justify-center"
-			>
-				<img class="size-4" src="/static/view-refresh-symbolic.svg"/>
-			</button>
-		</div>
-		// search input
-		<div
-			x-transition:enter="transition-discrete"
+			class="absolute -translate-x-1/2 mt-3 w-3/2 left-1/2 bg-white rounded-lg shadow z-20"
 			x-show="open"
-			@click.outside="close()"
-			class="flex grow max-w-2xl items-center rounded-lg bg-gray-100 justify-between"
+			x-ref="panel"
+			x-cloak
 		>
-			<input
-				type="text"
-				x-ref="searchInput"
-				class="size-full block bg-gray-100 p-2 focus:outline-0 transition-color inset-ring-2 inset-ring-blue-500/50 rounded-l-lg"
-			/>
-			<button
-				type="button"
-				@click="close()"
-				class="flex flex-none p-2.5 items-center justify-center"
-			>
-				<img class="size-4" src="/static/view-window-close-symbolic.svg"/>
-			</button>
+			<div id="search-results" class="p-2"></div>
 		</div>
 	</div>
 }
 
-templ SummonerChampionCard(champ internal.SummonerChampion) {
-	<div class="flex-col">
-		<div class="flex justify-between items-center">
-			@TextLabel("DMG")
-			<div>
-				17,200
-			</div>
+templ temp() {
+	<div
+		class="flex transition-colors rounded-lg p-1 gap-1 items-center hover:bg-gray-900/5 active:bg-gray-900/10"
+		:class="open && 'bg-gray-900/5'"
+	>
+		<div class="flex justify-center w-12">
+			<span class="font-bold text-sm" x-text="platform"></span>
+		</div>
+		@Icon(StaticGoDownSymbol)
+	</div>
+}
+
+templ (m SummonerSearchBar) build() {
+	<div
+		x-id="['summoner-search-bar']"
+		x-data="{
+			platform: 'NA1',
+			setPlatform(platform) {this.platform = platform},
+			name: '',
+			tag: ''
+		}"
+	>
+		<div class="flex flex-none p-1 bg-gray-900/5 rounded-lg gap-1">
+			<input type="hidden" name="platform" :value="$data.platform"/>
+			@makeDropdown(
+				temp(),
+				Menu{
+					Items: []MenuItem{
+						{
+							Label:    "NA1",
+							SubLabel: "North America",
+							Attrs:    templ.Attributes{"@click": "setPlatform('NA1')"},
+						},
+						{
+							Label:    "KR1",
+							SubLabel: "Korea",
+							Attrs:    templ.Attributes{"@click": "setPlatform('KR1')"},
+						},
+					},
+				},
+			)
+			@m.makeSearchInput()
 		</div>
 	</div>
 }
+
+func (m SummonerSearchBar) Render(ctx context.Context, w io.Writer) error {
+	if m.Platforms == nil {
+		m.Platforms = DefaultPlatforms
+	}
+	return m.build().Render(ctx, w)
+}
+
+// templ SummonerSearchBar(puuid string, platform string, name, tagline string, rank *internal.RankDetail) {
+// 	<div
+// 		x-data="{
+// 			open: false,
+// 			toggle() {
+// 				this.open = this.open? this.close() : true
+// 				$nextTick(() => { $focus.focus($refs.searchInput) })
+// 			},
+// 			close() {
+// 				this.open = false
+// 			}
+// 		}"
+// 		class="flex grow max-w-2xl items-center justify-between"
+// 	>
+// 		// search div
+// 		<div
+// 			x-transition:enter="transition-discrete"
+// 			x-show="!open"
+// 			@click="toggle()"
+// 			class="flex grow w-full items-center rounded-lg bg-gray-100 justify-between"
+// 		>
+// 			<div class="flex items-center">
+// 				@TextTitle(name + "#" + tagline)
+// 				@RankWidget{Rank: rank}
+// 			</div>
+// 			<form
+// 				type="button"
+// 				hx-post="/fetch/summoner"
+// 				hx-on="click"
+// 				hx-swap="none"
+// 				class="flex flex-none p-2.5 items-center justify-center"
+// 			>
+// 				<input type="hidden" name="platform" value={ platform }/>
+// 				<input type="hidden" name="puuid" value={ puuid }/>
+// 				@Icon(StaticViewRefreshSymbol)
+// 			</form>
+// 		</div>
+// 		<div>
+// 			@SearchBar()
+// 		</div>
+// 	</div>
+// }

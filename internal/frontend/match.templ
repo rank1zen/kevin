@@ -1,129 +1,65 @@
 package frontend
 
-import "github.com/rank1zen/kevin/internal"
+import (
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"time"
+)
 
-templ MatchPage(id string, match internal.Match, participants [10]internal.MatchSummoner) {
+templ MatchPage(
+	m struct {
+		ID           string
+		Date         time.Time
+		Duration     time.Duration
+		Version      string
+		WinnerID     int
+		Participants [10]templ.Component
+	},
+) {
 	<div class="flex flex-col">
-		// @matchHeaderBar(id, match)
-		// @matchTable(participants)
+		@templ.Join(m.Participants[:]...)
 	</div>
 }
 
-// templ MatchHeaderBar(id internal.MatchID, match internal.Match) {
-// 	<div class="flex justify-between items-center py-4">
-// 		@matchTitle(id, match)
-// 		@headerNavigation()
-// 	</div>
-// }
-//
-// templ matchTable(particpants [10]internal.MatchSummoner) {
-// 	<table class="w-full table-auto text-left text-nowrap tabular-nums">
-// 		<thead>
-// 			@matchTableHeader()
-// 		</thead>
-// 		<tbody>
-// 			for _, p := range particpants {
-// 				@matchTableRow(p)
-// 			}
-// 		</tbody>
-// 	</table>
-// }
-//
-// templ matchTitle(id internal.MatchID, match internal.Match) {
-// 	<div>
-// 		<div class="block">
-// 			{ string(id) }
-// 		</div>
-// 		<div class="block">
-// 			{ string(id) }
-// 			{ string(match.Version) }
-// 			{ match.Date.Format("2006-01-02") }
-// 			{ string(match.Duration) }
-// 		</div>
-// 	</div>
-// }
-//
-// templ matchTableHeader() {
-// 	<tr>
-// 		<th class="px-4 py-2 text-xs text-gray-400" scope="col">
-// 			Champion
-// 		</th>
-// 		<th class="px-4 py-2 text-xs text-gray-400" scope="col">
-// 			Summoner
-// 		</th>
-// 		<th class="px-4 py-2 text-xs text-gray-400" scope="col">
-// 			KDA
-// 		</th>
-// 		<th class="px-4 py-2 text-xs text-gray-400" scope="col">
-// 			CS
-// 		</th>
-// 		<th class="px-4 py-2 text-xs text-gray-400" scope="col">
-// 			Gold
-// 		</th>
-// 		<th class="px-4 py-2 text-xs text-gray-400" scope="col">
-// 			Damage
-// 		</th>
-// 		<th class="px-4 py-2 text-xs text-gray-400" scope="col">
-// 			Vision
-// 		</th>
-// 		<th class="px-4 py-2 text-xs text-gray-400" scope="col">
-// 			Lp gain
-// 		</th>
-// 	</tr>
-// }
-//
-// templ matchTableRow(p internal.MatchSummoner) {
-// 	<tr>
-// 		<td class="flex flex-col px-4 py-2">
-// 			@championGrid(p.Champion, p.Summoners, p.Runes, p.Items)
-// 		</td>
-// 		<td class="flex flex-col px-4 py-2 text-xs text-gray-400">
-// 			<a href={ templ.SafeURL("/summoner/" + p.Puuid) }>
-// 				{ p.Name }
-// 			</a>
-// 			<div class="flex">
-// 				<div class="">
-// 					{ fmtRank(p.Rank) }
-// 				</div>
-// 			</div>
-// 		</td>
-// 		<td class="px-4 py-2">
-// 			{ fmt.Sprintf("%d/%d/%d", p.Kills, p.Deaths, p.Assists) }
-// 		</td>
-// 		<td class="px-4 py-2">
-// 			{ fmt.Sprintf("%d (%.1f)", p.CreepScore, p.CreepScorePerMinute) }
-// 		</td>
-// 		<td class="flex flex-col px-4 py-2">
-// 			<div>
-// 				{ fmtInThousands(p.GoldEarned) }
-// 			</div>
-// 			<div class="flex">
-// 				<div class="">
-// 					{ fmtPercentage(p.GoldPercentageTeam) }
-// 				</div>
-// 				<div class="">
-// 					{ fmtInThousands(p.GoldDeltaEnemy) }
-// 				</div>
-// 			</div>
-// 		</td>
-// 		<td class="flex flex-col px-4 py-2">
-// 			<div>
-// 				{ fmtInThousands(p.DamageDealt) }
-// 			</div>
-// 			<div class="flex">
-// 				<div class="">
-// 					{ fmtPercentage(p.DamagePercentageTeam) }
-// 				</div>
-// 				<div class="">
-// 					{ fmtInThousands(p.DamageDeltaEnemy) }
-// 				</div>
-// 			</div>
-// 		</td>
-// 		<td class="flex flex-col px-4 py-2">
-// 			{ fmt.Sprintf("%d", p.VisionScore) }
-// 		</td>
-// 		<td class="px-4 py-2">
-// 			+21
-// 		</td>
-// 	</tr>
-// }
+templ MatchScoreboardRow(
+	m struct {
+		Name                   string
+		Tagline                string
+		Rank                   *internal.RankDetail
+		PUUID                  string
+		TeamID                 int
+		ChampionID             int
+		ChampionLevel          int
+		SummonerIDs            [2]int
+		Runes                  internal.RunePage
+		Items                  [7]int
+		Kills, Deaths, Assists int
+		KillParticipation      float32
+		CreepScore             int
+		CreepScorePerMinute    float32
+	},
+) {
+	<div class="flex items-center p-2.5 gap-4 rounded-lg justify-between odd:bg-transparent even:bg-gray-500/5">
+		@ChampionWidget{Champion: m.ChampionID, Summoners: &m.SummonerIDs}
+		<div class="">
+			@Text{S: m.Name + "#" + m.Tagline, Width: "w-24"}
+			@RankWidget{}
+		</div>
+		@TextKDA{Kills: m.Kills, Deaths: m.Deaths, Assists: m.Assists}
+		@Text{S: fmt.Sprintf("%d (%.1f)", m.CreepScore, m.CreepScorePerMinute), Width: "w-24"}
+		@RuneWidget{RunePage: m.Runes}
+		@ItemWidget{Items: m.Items}
+	</div>
+}
+
+templ MatchScoreboard(
+	m struct {
+		Rows []templ.Component
+	},
+) {
+	<div>
+		for _, row := range m.Rows {
+			@row
+		}
+	</div>
+}

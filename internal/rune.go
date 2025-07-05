@@ -27,7 +27,7 @@ func NewRunePage(opts ...RunePageOption) (runes RunePage) {
 	return runes
 }
 
-func WithRiotPerks(perks *riot.Perks) RunePageOption {
+func WithRiotPerks(perks *riot.MatchPerks) RunePageOption {
 	return func(runes *RunePage) error {
 		runes.PrimaryTree = perks.Styles[0].Style
 		runes.PrimaryKeystone = perks.Styles[0].Selections[0].Perk
@@ -61,7 +61,7 @@ func WithIntList(ids [11]int) RunePageOption {
 	}
 }
 
-func WithRiotSpectatorPerks(perks *riot.SpectatorPerks) RunePageOption {
+func WithRiotSpectatorPerks(perks *riot.LivePerks) RunePageOption {
 	return func(runes *RunePage) error {
 		runes.PrimaryTree = perks.PerkStyle
 		runes.PrimaryKeystone = perks.PerkIDs[0]

@@ -1,75 +1,11 @@
 package frontend
 
 import (
+	"path"
+
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/ddragon"
-	"path"
 )
-
-templ RuneButton(runes internal.RunePage) {
-	<div
-		x-data="
-			{
-				open: false,
-				toggle() {
-					if (this.open) {
-						return this.close()
-					}
-					this.$refs.button.focus()
-					this.open = true
-				},
-				close(focusAfter) {
-					if (! this.open) return
-					this.open = false
-					focusAfter && focusAfter.focus()
-				}
-			}
-		"
-		x-on:keydown.escape.prevent.stop="close($refs.button)"
-		x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-		x-id="['dropdown-button']"
-		class="relative"
-	>
-		<button
-			x-ref="button"
-			x-on:click="toggle()"
-			:aria-expanded="open"
-			:aria-controls="$id('dropdown-button')"
-			type="button"
-			class="relative flex gap-1 transition-colors rounded bg-gray-100 hover:bg-gray-200 focus:bg-gray-200 active:bg-gray-300"
-		>
-			@RuneIcon(runes)
-		</button>
-		<div
-			x-ref="panel"
-			x-show="open"
-			x-transition.origin.top.left
-			x-on:click.outside="close($refs.button)"
-			:id="$id('dropdown-button')"
-			x-cloak
-			class="absolute right-0 min-w-48 rounded shadow-sm mt-2 z-10 origin-top-right bg-white p-1.5 outline-none border border-gray-200"
-		>
-			@RunePage(runes)
-		</div>
-	</div>
-}
-
-func runeIconSrc(id int) string {
-	return ddragon.RuneMap[id].IconPath
-}
-
-func runeName(id int) string {
-	return ddragon.RuneMap[id].Name
-}
-
-func genRuneClass(id int) templ.Attributes {
-	fullPath := path.Join("/static/", ddragon.RuneMap[id].IconPath)
-	runeName := ddragon.RuneMap[id].Name
-	return templ.Attributes{
-		"src":   fullPath,
-		"title": runeName,
-	}
-}
 
 templ RunePage(runes internal.RunePage) {
 	<div class="inline-flex gap-4">
@@ -99,13 +35,20 @@ templ RunePage(runes internal.RunePage) {
 	</div>
 }
 
-templ RuneIcon(runes internal.RunePage) {
-	<div class="flex">
-		<div class="size-9 flex p-0.5 flex-none border-r border-gray-200">
-			<img { genRuneClass(runes.PrimaryKeystone)... }/>
-		</div>
-		<div class="size-9 flex p-2 flex-none">
-			<img { genRuneClass(runes.SecondaryTree)... }/>
-		</div>
-	</div>
+func runeIconSrc(id int) string {
+	return ddragon.RuneMap[id].IconPath
+}
+
+func runeName(id int) string {
+	return ddragon.RuneMap[id].Name
+}
+
+func genRuneClass(id int) templ.Attributes {
+	attrs := make(templ.Attributes)
+
+	attrs["src"] = path.Join("/static/", ddragon.RuneMap[id].IconPath)
+	attrs["title"] = ddragon.RuneMap[id].Name
+	attrs["class"] = "size-12"
+
+	return attrs
 }

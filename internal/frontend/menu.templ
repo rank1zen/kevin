@@ -1,7 +1,78 @@
 package frontend
 
-templ Menu() {
-	<a href="#KEVIN" class="px-2 py-2 w-full flex items-center rounded-md transition-colors text-left hover:bg-gray-100 focus-visible:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-		About KEVIN
-	</a>
+import (
+	"context"
+	"io"
+)
+
+type MenuItem struct {
+	Label string
+
+	SubLabel string
+
+	Attrs templ.Attributes
+}
+
+templ (m MenuItem) build() {
+	<div { m.Attrs... } class="flex flex-item h-9 items-center justify-between px-2.5 py-2 gap-2.5 rounded-lg hover:bg-gray-900/5">
+		<span class="text-sm text-gray-900/90 whitespace-nowrap">{ m.Label }</span>
+		<span class="text-sm text-gray-500/90 whitespace-nowrap">{ m.SubLabel }</span>
+	</div>
+}
+
+func (m MenuItem) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type Menu struct {
+	Items []MenuItem
+}
+
+templ (m Menu) build() {
+	<div class="rounded-lg shadow border bg-white p-2">
+		for _, item := range m.Items {
+			@MenuItem{
+				Label:    item.Label,
+				SubLabel: item.SubLabel,
+				Attrs:    item.Attrs,
+			}
+		}
+	</div>
+}
+
+func (m Menu) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// MenuButton is a button with a menu.
+type MenuButton struct {
+	// Style is the button style.
+	Style ButtonStyle
+
+	// IconPath is the icon on the button. If empty, no icon is used.
+	IconPath string
+
+	// Label is the text on the button. If empty, no label is used.
+	Label string
+
+	Items []MenuItem
+}
+
+func (m MenuButton) Render(ctx context.Context, w io.Writer) error {
+	icon := m.IconPath
+	if icon == "" {
+		icon = StaticOpenMenuSymbol
+	}
+
+	popover := Popover{
+		Trigger: Button{
+			Style:    m.Style,
+			IconPath: icon,
+			Label:    m.Label,
+		},
+		Panel: Menu{
+			Items: m.Items,
+		},
+	}
+	return popover.Render(ctx, w)
 }
