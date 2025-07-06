@@ -1,4 +1,3 @@
-// Hi
 package frontend
 
 import (
@@ -11,9 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/a-h/templ"
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/riot"
 )
 
 var (
@@ -24,21 +21,23 @@ var (
 type Frontend struct {
 	router *http.ServeMux
 
-	datasource *internal.Datasource
+	// logs emitted from [Frontend] will use Logger.
+	Logger *slog.Logger
 
-	store internal.Store
+	handler *Handler
 }
 
-func New(store internal.Store, datasource *internal.Datasource) *Frontend {
-	router := http.NewServeMux()
-
+// New creates a [Frontend]. If handler is nil, the default [Handler] is used.
+func New(handler *Handler, opts ...FrontendOption) *Frontend {
 	frontend := Frontend{
-		router:     router,
-		store:      store,
-		datasource: datasource,
+		handler: handler,
 	}
 
-	router.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	for _, opt := range opts {
+		opt(&frontend)
+	}
+
+	router := http.NewServeMux()
 
 	router.HandleFunc("GET /", frontend.getHomePage)
 
@@ -54,289 +53,27 @@ func New(store internal.Store, datasource *internal.Datasource) *Frontend {
 
 	router.HandleFunc("POST /summoner/champions", frontend.serveChampions)
 
+	loggedRouter := frontend.addLoggingMiddleware(router)
+
+	main := http.NewServeMux()
+	main.Handle("/", loggedRouter)
+	main.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+
+	frontend.router = main
+
 	return &frontend
+}
+
+type FrontendOption func(*Frontend)
+
+func WithLogger(logger *slog.Logger) FrontendOption {
+	return func(f *Frontend) {
+		f.Logger = logger
+	}
 }
 
 func (f *Frontend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.router.ServeHTTP(w, r)
-}
-
-// UpdateSummoner
-func (f *Frontend) UpdateSummoner(ctx context.Context, region riot.Region, name, tag string) error {
-	puuid, err := f.datasource.GetPUUID(ctx, name, tag)
-	if err != nil {
-		return err
-	}
-
-	if err := f.datasource.UpdateSummoner(ctx, region, puuid); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// GetLiveMatch the live match view if summoner is in a game in the region. If
-// no such game is found, return a view indicating such.
-func (f *Frontend) GetLiveMatch(ctx context.Context, region riot.Region, puuid string) (view templ.Component, err error) {
-	match, err := f.datasource.GetLiveMatch(ctx, region, puuid)
-	if err != nil {
-		if errors.Is(err, internal.ErrNoLiveMatch) {
-			return NoLiveMatchModalWindow{}, err
-		}
-
-		return LiveMatchModalWindow{}, err
-	}
-
-	redSide := []LiveMatchSummonerCard{}
-	blueSide := []LiveMatchSummonerCard{}
-
-	for _, p := range match.Participants {
-		card := LiveMatchSummonerCard{
-			Champion:  p.ChampionID,
-			Summoners: p.SummonersIDs,
-			RunePage:  p.Runes,
-			Name:      "Doublelift",
-			Tag:       "",
-			Rank:      &internal.RankDetail{},
-			TeamID:    p.TeamID,
-		}
-		if p.TeamID == 100 {
-			redSide = append(redSide, card)
-		} else {
-			blueSide = append(blueSide, card)
-		}
-	}
-
-	window := LiveMatchModalWindow{
-		AverageRank: &internal.RankDetail{},
-		StartTime:   match.Date,
-		RedSide:     redSide,
-		BlueSide:    blueSide,
-	}
-
-	return window, nil
-}
-
-// GetHomePage returns [HomePage].
-func (f *Frontend) GetHomePage(ctx context.Context) (templ.Component, error) {
-	page := HomePage{}
-	return page, nil
-}
-
-// GetSummonerMatchHistoryPage returns a [SummonerPage].
-func (f *Frontend) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (templ.Component, error) {
-	puuid, err := f.datasource.GetPUUID(ctx, name, tag)
-	if err != nil {
-		return nil, err
-	}
-
-	summoner, err := f.store.GetSummoner(ctx, puuid)
-	if err != nil {
-		return nil, err
-	}
-
-	rank, err := f.store.GetRank(ctx, puuid, time.Now(), true)
-	if err != nil {
-		return nil, err
-	}
-
-	page := SummonerPage{
-		PUUID:       puuid,
-		Name:        summoner.Name,
-		Tag:         summoner.Tagline,
-		Rank:        rank.Detail,
-		LastUpdated: rank.EffectiveDate,
-	}
-
-	return page, nil
-}
-
-// GetSummonerChampions returns a [ChampionsModal].
-func (f *Frontend) GetSummonerChampions(ctx context.Context, region riot.Region, puuid string) (templ.Component, error) {
-	champions, err := f.store.GetChampions(ctx, puuid)
-	if err != nil {
-		return nil, err
-	}
-
-	modal := ChampionsModal{
-		Cards: []SummonerChampionCard{},
-	}
-
-	for _, champion := range champions {
-		modal.Cards = append(modal.Cards, SummonerChampionCard{
-			Champion:             int(champion.Champion),
-			Kills:                champion.Kills,
-			Deaths:               champion.Deaths,
-			Assists:              champion.Assists,
-			KillParticipation:    champion.KillParticipation,
-			CS:                   champion.CreepScore,
-			CSPerMinute:          champion.CreepScorePerMinute,
-			DamageDealt:          champion.DamageDealt,
-			DamageTaken:          champion.DamageTaken,
-			DamageDeltaEnemy:     champion.DamageDeltaEnemy,
-			DamagePercentageTeam: champion.DamagePercentageTeam,
-			GoldEarned:           champion.GoldEarned,
-			GoldDeltaEnemy:       champion.GoldDeltaEnemy,
-			GoldPercentageTeam:   champion.GoldPercentageTeam,
-			VisionScore:          champion.VisionScore,
-			PinkWardsBought:      champion.PinkWardsBought,
-		})
-	}
-
-	return modal, nil
-}
-
-// GetSummonerMatchHistoryList returns a [MatchHistoryBlockCard] which are all
-// the matches played on date. The method will fetch riot first to ensure all
-// matches played on date are in store.
-func (f *Frontend) GetSummonerMatchHistoryList(ctx context.Context, region riot.Region, puuid string, date time.Time) (templ.Component, error) {
-	if err := f.datasource.ZUpdateMatchHistory(ctx, region, puuid, date); err != nil {
-		return nil, err
-	}
-
-	storeMatches, err := f.store.GetZMatches(ctx, puuid, date)
-	if err != nil {
-		return nil, fmt.Errorf("storage failure: %w", err)
-	}
-
-	cards := []MatchHistoryCard{}
-	for _, m := range storeMatches {
-		cards = append(cards, MatchHistoryCard{
-			Champion:    m.ChampionID,
-			Summoners:   m.SummonerIDs,
-			Kills:       m.Kills,
-			Deaths:      m.Deaths,
-			Assists:     m.Assists,
-			CS:          m.CreepScore,
-			CSPerMinute: m.CreepScorePerMinute,
-			RunePage:    m.Runes,
-			Items:       m.Items,
-		})
-	}
-
-	block := MatchHistoryBlockCard{
-		Date:    date,
-		Matches: cards,
-	}
-
-	return block, nil
-}
-
-// GetMatchScoreboard returns the scoreboard of a match.
-func (f *Frontend) GetMatchScoreboard(ctx context.Context, id string) (scoreboard templ.Component, err error) {
-	_, participants, err := f.store.GetMatch(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	redSide := List{
-		Title: "Red Side",
-		Items: []struct{ ListItemChildren []templ.Component }{},
-	}
-
-	blueSide := List{
-		Title: "Blue Side",
-		Items: []struct{ ListItemChildren []templ.Component }{},
-	}
-
-	for _, p := range participants {
-
-		particpantRow := struct {
-			ListItemChildren []templ.Component
-		}{
-			ListItemChildren: []templ.Component{
-				ChampionWidget{
-					Champion:  p.ChampionID,
-					Summoners: &p.SummonerIDs,
-				},
-				TextKDA{
-					Kills:   p.Kills,
-					Deaths:  p.Deaths,
-					Assists: p.Assists,
-				},
-				Text{
-					S:     fmt.Sprintf("%d (%.1f)", p.CreepScore, p.CreepScorePerMinute),
-					Width: "w-24",
-				},
-				RuneWidget{
-					RunePage: p.Runes,
-				},
-				ItemWidget{
-					Items: p.Items,
-				},
-			},
-		}
-
-		if p.TeamID == 100 {
-			blueSide.Items = append(blueSide.Items, particpantRow)
-		} else {
-			redSide.Items = append(redSide.Items, particpantRow)
-		}
-	}
-
-	scoreboard = templ.Join(blueSide, redSide)
-	return scoreboard, nil
-}
-
-// GetSearchResults returns a list of [SearchResultCard] for accounts that
-// match q. If no results were found, return [SearchNotFoundCard] instead.
-//
-// q should be of the form name#tag, if q has no tag, region is used as the
-// tag.
-//
-// POST /search
-func (f *Frontend) GetSearchResults(ctx context.Context, region riot.Region, q string) (templ.Component, error) {
-	storeSearchResults, err := f.store.SearchSummoner(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(storeSearchResults) == 0 {
-		var name, tag string
-		if i := strings.Index(q, "#"); i != -1 {
-			name = q[:i]
-			if i+1 == len(q) {
-				tag = string(region)
-			} else {
-				tag = q[i+1:]
-			}
-		} else {
-			name = q
-			tag = string(region)
-		}
-
-		return SearchNotFoundCard{
-			Name:     name,
-			Tag:      tag,
-			Platform: string(region),
-		}, nil
-	}
-
-	searchResults := []SearchResultCard{}
-
-	for _, r := range storeSearchResults {
-		rank, err := f.store.GetRank(ctx, r.Puuid, time.Now(), true)
-		if err != nil {
-			return nil, fmt.Errorf("getting rank for %s#%s: %w", r.Name, r.Tagline, err)
-		}
-
-		row := SearchResultCard{
-			PUUID:  r.Puuid,
-			Region: region,
-			Name:   r.Name,
-			Tag:    r.Tagline,
-			Rank:   rank.Detail,
-		}
-
-		searchResults = append(searchResults, row)
-	}
-
-	v := []templ.Component{}
-	for _, r := range searchResults {
-		v = append(v, r)
-	}
-
-	return templ.Join(v...), nil
 }
 
 func (f *Frontend) getHomePage(w http.ResponseWriter, r *http.Request) {
@@ -347,7 +84,7 @@ func (f *Frontend) getHomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component, err := f.GetHomePage(ctx)
+	component, err := f.handler.GetHomePage(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -360,6 +97,8 @@ func (f *Frontend) getHomePage(w http.ResponseWriter, r *http.Request) {
 func (f *Frontend) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	logger := fromCtx(ctx)
+
 	var (
 		region = r.PathValue("region")
 		name   = r.PathValue("name")
@@ -369,19 +108,22 @@ func (f *Frontend) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	riotRegion, err := convertStringToRiotRegion(region)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		slog.Debug("failed to parse region", slog.Group("payload", "region", region, "name", name, "tag", tag))
+		logger.Debug("failed to parse region",
+			slog.Group("payload", "region", region, "name", name, "tag", tag),
+		)
+
 		return
 	}
 
-	component, err := f.GetSummonerPage(ctx, riotRegion, name, tag)
+	component, err := f.handler.GetSummonerPage(ctx, riotRegion, name, tag)
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerNotFound) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		slog.Debug("getting summoner", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		logger.Debug("failed service", "err", err)
 		return
 	}
 
@@ -404,7 +146,7 @@ func (f *Frontend) serveSearchResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component, err := f.GetSearchResults(ctx, riotRegion, q)
+	component, err := f.handler.GetSearchResults(ctx, riotRegion, q)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		slog.Debug("failed service", slog.Any("err", err), slog.Group("payload", "region", region, "q", q))
@@ -419,8 +161,8 @@ func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var (
-		region       = r.FormValue("region")
-		puuid        = r.FormValue("puuid")
+		region           = r.FormValue("region")
+		puuid            = r.FormValue("puuid")
 		date   time.Time = time.Now()
 	)
 
@@ -439,7 +181,7 @@ func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component, err := f.GetSummonerMatchHistoryList(ctx, riotRegion, puuid, date)
+	component, err := f.handler.GetSummonerMatchHistoryList(ctx, riotRegion, puuid, date)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		slog.Debug("failed service", "err", err)
@@ -470,7 +212,7 @@ func (f *Frontend) updateSummoner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := f.UpdateSummoner(ctx, riotRegion, name, tag); err != nil {
+	if err := f.handler.UpdateSummoner(ctx, riotRegion, name, tag); err != nil {
 		slog.Debug("service failed",
 			slog.Any("err", err),
 			slog.Group("payload", "region", region, "name", name, "tag", tag),
@@ -505,7 +247,7 @@ func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component, err := f.GetSummonerChampions(ctx, riotRegion, puuid)
+	component, err := f.handler.GetSummonerChampions(ctx, riotRegion, puuid)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -535,7 +277,7 @@ func (f *Frontend) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component, err := f.GetLiveMatch(ctx, riotRegion, puuid)
+	component, err := f.handler.GetLiveMatch(ctx, riotRegion, puuid)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 
@@ -549,6 +291,22 @@ func (f *Frontend) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	component.Render(ctx, w)
+}
+
+func (f *Frontend) addLoggingMiddleware(handler http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		ts := time.Now()
+
+		requestLogger := f.Logger.With(slog.Group("request", "method", r.Method, "endpoint", r.URL))
+
+		r = r.WithContext(newCtx(r.Context(), requestLogger))
+
+		handler.ServeHTTP(w, r)
+
+		requestLogger.Info(fmt.Sprintf("request completed in %v", time.Since(ts)))
+	}
+
+	return http.HandlerFunc(fn)
 }
 
 func groupMatchesByDay(matches []internal.SummonerMatch) [][]internal.SummonerMatch {
@@ -615,4 +373,29 @@ func (cb classBuilder) Add(class string) classBuilder {
 
 func (cb classBuilder) Build() string {
 	return joinClasses(cb.class)
+}
+
+type ctxKey struct{}
+
+func newCtx(parent context.Context, logger *slog.Logger) context.Context {
+	if parent == nil {
+		parent = context.Background()
+	}
+
+	if lp, ok := parent.Value(ctxKey{}).(*slog.Logger); ok {
+		// if parent already has the same loggger
+		if lp == logger {
+			return parent
+		}
+	}
+
+	return context.WithValue(parent, ctxKey{}, logger)
+}
+
+func fromCtx(parent context.Context) *slog.Logger {
+	if logger, ok := parent.Value(ctxKey{}).(*slog.Logger); ok {
+		return logger
+	}
+
+	return nil
 }

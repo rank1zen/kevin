@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/tern/v2/migrate"
@@ -24,8 +23,17 @@ const (
 	AppModeDevelopment
 )
 
+func (m AppMode) String() string {
+	switch m {
+	case AppModeDevelopment:
+		return "Developement"
+	default:
+		return "Production"
+	}
+}
+
 type App struct {
-	mode AppMode
+	Mode AppMode
 
 	handler http.Handler
 
@@ -35,64 +43,31 @@ type App struct {
 
 	datasource *internal.Datasource
 
-	address string
-}
+	// Address is the http address to run App. If empty, localhost:4001 is
+	// used.
+	Address string
 
-func (app *App) Run(ctx context.Context) {
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
-	defer cancel()
-
-	switch app.mode {
-	case AppModeDevelopment:
-		slog.SetLogLoggerLevel(slog.LevelDebug)
-	}
-
-	go func() {
-		http.ListenAndServe(app.address, app.handler)
-	}()
-
-	slog.Info("starting server", "addr", app.address)
-
-	<-ctx.Done()
-
-	slog.Info("stopping server")
-
-}
-
-type logger struct {
-	handler http.Handler
-}
-
-func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
-
-	logger := slog.Default()
-
-	logger.With(
-		slog.Group("request",
-			slog.String("method", r.Method),
-			slog.Any("url", &r.URL),
-		),
-	)
-
-	l.handler.ServeHTTP(w, r)
-
-	slog.Info(fmt.Sprintf("%s %s %v", r.Method, r.URL.Path, time.Since(start)))
-}
-
-func (app *App) Close(ctx context.Context) {
-	app.conn.Close()
+	Logger *slog.Logger
 }
 
 func New(riotAPIKey string, pgConnStr string, opts ...AppOption) *App {
 	ctx := context.Background()
 
 	app := App{
-		address:    "localhost:4001",
+		Address:    "localhost:4001",
 	}
 
-	app.riotClient = riot.NewClient(riotAPIKey)
 
+	var logger *slog.Logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+	if app.Mode == AppModeDevelopment {
+		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	}
+
+	logger = logger.With("env", app.Mode.String())
+
+	app.Logger = logger
+
+	app.riotClient = riot.NewClient(riotAPIKey)
 
 	pool, err := pgxpool.New(ctx, pgConnStr)
 	if err != nil {
@@ -125,13 +100,10 @@ func New(riotAPIKey string, pgConnStr string, opts ...AppOption) *App {
 
 	app.datasource = internal.NewDatasource(app.riotClient, store)
 
-	router := http.NewServeMux()
-
-	frontend := frontend.New(store, app.datasource)
-
-	router.Handle("/", frontend)
-
-	app.handler = &logger{router}
+	frontend := frontend.New(&frontend.Handler{
+		Datasource: app.datasource,
+		Store:      store,
+	}, frontend.WithLogger(logger))
 
 	for _, opt := range opts {
 		if err := opt(&app); err != nil {
@@ -139,14 +111,42 @@ func New(riotAPIKey string, pgConnStr string, opts ...AppOption) *App {
 		}
 	}
 
+	app.handler = frontend
+
 	return &app
 }
 
 type AppOption func(*App) error
 
-func WithMode(mode AppMode) AppOption {
+func WithAddress(addr string) AppOption {
 	return func(a *App) error {
-		a.mode = mode
+		a.Address = addr
 		return nil
 	}
+}
+
+func WithMode(mode AppMode) AppOption {
+	return func(a *App) error {
+		a.Mode = mode
+		return nil
+	}
+}
+
+func (app *App) Run(ctx context.Context) {
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
+	defer cancel()
+
+	go func() {
+		http.ListenAndServe(app.Address, app.handler)
+	}()
+
+	app.Logger.Info("start server", "addr", app.Address)
+
+	<-ctx.Done()
+
+	app.Logger.Info("stop server")
+}
+
+func (app *App) Close(ctx context.Context) {
+	app.conn.Close()
 }
