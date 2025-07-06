@@ -32,6 +32,38 @@ func NewDatasource(client *riot.Client, store Store) *Datasource {
 	return &Datasource{client, store}
 }
 
+func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Region, puuid string, date time.Time) error {
+	startTime := date.Truncate(24*time.Hour)
+	endTime := startTime.Add(24 * time.Hour).Add(-1*time.Second)
+
+	query := fmt.Sprintf("queue=420&startTime=%d&endTime=%d", startTime.Unix(), endTime.Unix())
+
+	continent := riot.RegionToContinent(region)
+
+	ids, err := ds.riot.Match.GetMatchList(ctx, continent, puuid, query)
+	if err != nil {
+		return fmt.Errorf("fetching ids: %w", err)
+	}
+
+	matchIDs := []string{}
+	for _, id := range ids {
+		matchIDs = append(matchIDs, id)
+	}
+
+	newIDs, err := ds.store.GetNewMatchIDs(ctx, matchIDs)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range newIDs {
+		if err := ds.recordMatch(ctx, continent, id); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // GetLiveMatch fetches riot for the a live match. If summoner is not in
 // a game, return ErrNoLiveMatch.
 func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puuid string) (LiveMatch, error) {

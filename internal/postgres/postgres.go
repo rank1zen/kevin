@@ -12,6 +12,7 @@ import (
 	"github.com/rank1zen/kevin/internal"
 )
 
+// Store manages connections with a postgres database.
 type Store struct{
 	conn *pgxpool.Pool
 }
@@ -22,6 +23,95 @@ func NewStore(conn *pgxpool.Pool) *Store {
 		panic("nil connection given to store")
 	}
 	return &Store{conn}
+}
+
+func (s *Store) GetZMatches(ctx context.Context, puuid string, date time.Time) ([]internal.SummonerMatch, error) {
+	rows, _ := s.conn.Query(ctx, `
+		SELECT
+			m.match_id,
+			m.date,
+			m.duration,
+			m.winner,
+			p.team,
+			p.champion,
+			p.champion_level,
+			p.summoners,
+			p.runes,
+			p.items,
+			p.kills,
+			p.deaths,
+			p.assists,
+			p.kill_participation,
+			p.creep_score,
+			p.creep_score_per_minute,
+			p.gold_earned,
+			p.gold_delta_enemy,
+			p.gold_percentage_team,
+			p.damage_dealt,
+			p.damage_taken,
+			p.damage_delta_enemy,
+			p.damage_percentage_team,
+			p.vision_score,
+			p.pink_wards_bought
+		FROM
+			Participant as p
+		JOIN
+			Match as m USING (match_id)
+		WHERE
+			puuid = @puuid
+		AND
+			m.date < (@date::timestamp + interval '24 hours')
+		AND
+			m.date >= @date
+		ORDER BY
+			m.date desc
+	`,
+		pgx.NamedArgs{
+			"puuid": puuid,
+			"date": date,
+		},
+	)
+
+	collect := func(row pgx.CollectableRow) (m internal.SummonerMatch, err error) {
+		var runeList [11]int
+		var winner int
+		err = row.Scan(
+			&m.MatchID,
+			&m.Date,
+			&m.Duration,
+			&winner,
+			&m.TeamID,
+			&m.ChampionID,
+			&m.ChampionLevel,
+			&m.SummonerIDs,
+			&runeList,
+			&m.Items,
+			&m.Kills,
+			&m.Deaths,
+			&m.Assists,
+			&m.KillParticipation,
+			&m.CreepScore,
+			&m.CreepScorePerMinute,
+			&m.GoldEarned,
+			&m.GoldDeltaEnemy,
+			&m.GoldPercentageTeam,
+			&m.DamageDealt,
+			&m.DamageTaken,
+			&m.DamageDeltaEnemy,
+			&m.DamagePercentageTeam,
+			&m.VisionScore,
+			&m.PinkWardsBought,
+		)
+		m.Runes = internal.NewRunePage(internal.WithIntList(runeList))
+		if winner == m.TeamID {
+			m.Win = true
+		} else {
+			m.Win = false
+		}
+		return m, err
+	}
+
+	return pgx.CollectRows(rows, collect)
 }
 
 func (s *Store) RecordTimeline(ctx context.Context, id string, items []internal.ItemEvent, skills []internal.SkillEvent) error {
@@ -272,7 +362,7 @@ func (s *Store) RecordSummoner(ctx context.Context, summoner internal.Summoner, 
 	`,
 		pgx.NamedArgs{
 			"puuid":       summoner.PUUID,
-			"platform":    summoner.Platform,
+			"platform":    "NA1",
 			"name":        summoner.Name,
 			"tagline":     summoner.Tagline,
 			"summoner_id": summoner.SummonerID,

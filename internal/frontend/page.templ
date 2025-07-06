@@ -6,6 +6,7 @@ import (
 	"github.com/rank1zen/kevin/internal"
 	"io"
 	"time"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 // Page is the main html component returned the to browser.
@@ -79,16 +80,10 @@ func (m SummonerPage) Render(ctx context.Context, w io.Writer) error {
 	return page.Render(ctx, w)
 }
 
-templ (m SummonerPage) makeChampionsView() {
-	<div class="flex items-center">
-		@Loader{Path: "/summoner/%s/champions"}
-	</div>
-}
-
 templ (m SummonerPage) makeHeaderContent() {
 	<div class="flex justify-between gap-2 items-center p-2">
 		@MenuButton{}
-		@SummonerSearchBar{}
+		@ZSummonerSearchBar{}
 		@MenuButton{}
 	</div>
 }
@@ -101,14 +96,17 @@ templ (m SummonerPage) makeContent() {
 					<h1 class="font-bold text-3xl text-gray-900/90">
 						{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
 					</h1>
-					@RankWidget{Rank: m.Rank, ShowTierName: true, UsePill: true}
+					@RankWidget{Rank: m.Rank, UsePill: true, ShowTierName: true}
 				</div>
 				<div class="flex gap-1">
 					@LiveGameModal{PUUID: m.PUUID}
 				</div>
 			</div>
-			<ol class="flex flex-col justify-center px-4 pt-10 w-full">
-				@Loader{Path: fmt.Sprintf("/summoner/%s/matchlist", m.PUUID)}
+			<ol
+                                class="flex flex-col justify-center px-4 pt-10 w-full"
+                        >
+				@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now()}
+				@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now().Add(-24*time.Hour)}
 			</ol>
 		</div>
 	</div>

@@ -42,7 +42,7 @@ func New(store internal.Store, datasource *internal.Datasource) *Frontend {
 
 	router.HandleFunc("GET /", frontend.getHomePage)
 
-	router.HandleFunc("GET /summoner/{platform}/{name}/{tagline}", frontend.getSumonerPage)
+	router.HandleFunc("GET /summoner/{region}/{name}/{tag}", frontend.getSumonerPage)
 
 	router.HandleFunc("POST /search", frontend.serveSearchResults)
 
@@ -186,21 +186,20 @@ func (f *Frontend) GetSummonerChampions(ctx context.Context, region riot.Region,
 	return modal, nil
 }
 
-// GetSummonerMatchHistoryList returns a list of 10 [MatchHistoryCard] with an
-// additional component that will fetch the next page. It will fetch from riot
-// to ensure the store is synced.
-func (f *Frontend) GetSummonerMatchHistoryList(ctx context.Context, region riot.Region, puuid string, page int) (templ.Component, error) {
-	if err := f.datasource.UpdateMatchHistory(ctx, region, puuid, page*10, 10); err != nil {
+// GetSummonerMatchHistoryList returns a [MatchHistoryBlockCard] which are all
+// the matches played on date. The method will fetch riot first to ensure all
+// matches played on date are in store.
+func (f *Frontend) GetSummonerMatchHistoryList(ctx context.Context, region riot.Region, puuid string, date time.Time) (templ.Component, error) {
+	if err := f.datasource.ZUpdateMatchHistory(ctx, region, puuid, date); err != nil {
 		return nil, err
 	}
 
-	storeMatches, err := f.store.GetMatches(ctx, puuid, page)
+	storeMatches, err := f.store.GetZMatches(ctx, puuid, date)
 	if err != nil {
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
 
 	cards := []MatchHistoryCard{}
-
 	for _, m := range storeMatches {
 		cards = append(cards, MatchHistoryCard{
 			Champion:    m.ChampionID,
@@ -215,65 +214,12 @@ func (f *Frontend) GetSummonerMatchHistoryList(ctx context.Context, region riot.
 		})
 	}
 
-	// blocks := groupMatchesByDay(storeMatches)
-
-	// days := []List{}
-
-	// for _, block := range blocks {
-	// 	if len(block) == 0 {
-	// 		continue
-	// 	}
-
-	// 	day := List{
-	// 		Title: block[0].Date.Truncate(24 * time.Hour).Format("Monday, Jan 2"),
-	// 		Items: []struct{ ListItemChildren []templ.Component }{},
-	// 	}
-
-	// 	for _, m := range block {
-	// 		scoreboardRow := struct {
-	// 			ListItemChildren []templ.Component
-	// 		}{
-	// 			ListItemChildren: []templ.Component{
-	// 				ChampionWidget{
-	// 					Champion:  m.ChampionID,
-	// 					Summoners: &m.SummonerIDs,
-	// 				},
-	// 				TextKDA{
-	// 					Kills:   m.Kills,
-	// 					Deaths:  m.Deaths,
-	// 					Assists: m.Assists,
-	// 				},
-	// 				Text{
-	// 					S:     fmt.Sprintf("%d (%.1f)", m.CreepScore, m.CreepScorePerMinute),
-	// 					Width: "w-24",
-	// 				},
-	// 				RuneWidget{
-	// 					RunePage: m.Runes,
-	// 				},
-	// 				ItemWidget{
-	// 					Items: m.Items,
-	// 				},
-	// 				RankDeltaWidget{},
-	// 				LinkButton{
-	// 					HREF:     templ.URL(fmt.Sprintf("/match/%s", m.MatchID)),
-	// 					IconPath: StaticExternalLinkSymbol,
-	// 				},
-	// 			},
-	// 		}
-
-	// 		day.Items = append(day.Items, scoreboardRow)
-	// 	}
-
-	// 	days = append(days, day)
-	// }
-
-	var components []templ.Component
-
-	for _, card := range cards {
-		components = append(components, card)
+	block := MatchHistoryBlockCard{
+		Date:    date,
+		Matches: cards,
 	}
 
-	return templ.Join(components...), nil
+	return block, nil
 }
 
 // GetMatchScoreboard returns the scoreboard of a match.
@@ -339,7 +285,7 @@ func (f *Frontend) GetMatchScoreboard(ctx context.Context, id string) (scoreboar
 // tag.
 //
 // POST /search
-func (f *Frontend) GetSearchResults(ctx context.Context, region riot.Region, q string) (results templ.Component, err error) {
+func (f *Frontend) GetSearchResults(ctx context.Context, region riot.Region, q string) (templ.Component, error) {
 	storeSearchResults, err := f.store.SearchSummoner(ctx, q)
 	if err != nil {
 		return nil, err
@@ -360,8 +306,9 @@ func (f *Frontend) GetSearchResults(ctx context.Context, region riot.Region, q s
 		}
 
 		return SearchNotFoundCard{
-			Name: name,
-			Tag:  tag,
+			Name:     name,
+			Tag:      tag,
+			Platform: string(region),
 		}, nil
 	}
 
@@ -374,10 +321,11 @@ func (f *Frontend) GetSearchResults(ctx context.Context, region riot.Region, q s
 		}
 
 		row := SearchResultCard{
-			PUUID: r.Puuid,
-			Name:  r.Name,
-			Tag:   r.Tagline,
-			Rank:  rank.Detail,
+			PUUID:  r.Puuid,
+			Region: region,
+			Name:   r.Name,
+			Tag:    r.Tagline,
+			Rank:   rank.Detail,
 		}
 
 		searchResults = append(searchResults, row)
@@ -414,8 +362,8 @@ func (f *Frontend) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 
 	var (
 		region = r.PathValue("region")
-		name = r.PathValue("name")
-		tag  = r.PathValue("tag")
+		name   = r.PathValue("name")
+		tag    = r.PathValue("tag")
 	)
 
 	riotRegion, err := convertStringToRiotRegion(region)
@@ -429,6 +377,7 @@ func (f *Frontend) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerNotFound) {
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		slog.Debug("getting summoner", "err", err)
@@ -470,27 +419,31 @@ func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var (
-		region = r.FormValue("region")
-		puuid     = r.FormValue("puuid")
-		page  int = 0
+		region       = r.FormValue("region")
+		puuid        = r.FormValue("puuid")
+		date   time.Time = time.Now()
 	)
+
+	if dateQuery := r.FormValue("date"); dateQuery != "" {
+		if dateVal, err := strconv.ParseInt(dateQuery, 10, 64); err == nil {
+			date = time.Unix(dateVal, 0)
+		}
+	}
 
 	riotRegion, err := convertStringToRiotRegion(region)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		slog.Debug("failed to parse region", slog.Group("payload", "region", region, "puuid", puuid, "page", page))
+		slog.Debug("failed to parse region",
+			slog.Group("payload", "region", region, "puuid", puuid, "date", r.FormValue("date")),
+		)
 		return
 	}
 
-	if pageQuery := r.FormValue("page"); pageQuery != "" {
-		if pageVal, err := strconv.Atoi(pageQuery); err == nil {
-			page = pageVal
-		}
-	}
-
-	component, err := f.GetSummonerMatchHistoryList(ctx, riotRegion, puuid, page)
+	component, err := f.GetSummonerMatchHistoryList(ctx, riotRegion, puuid, date)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		slog.Debug("failed service", "err", err)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -505,11 +458,15 @@ func (f *Frontend) updateSummoner(w http.ResponseWriter, r *http.Request) {
 		name   = r.FormValue("name")
 		tag    = r.FormValue("tag")
 	)
+	slog.Debug("updating summoner", slog.Group("payload", "region", region, "name", name, "tag", tag))
 
 	riotRegion, err := convertStringToRiotRegion(region)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		slog.Debug("failed to parse region", "err", err, slog.Group("payload", "region", region, "name", name, "tag", tag))
+		slog.Debug("failed to parse region",
+			"err", err,
+			slog.Group("payload", "region", region, "name", name, "tag", tag),
+		)
 		return
 	}
 
@@ -533,7 +490,7 @@ func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
 
 	var (
 		region = r.PathValue("puuid")
-		puuid = r.PathValue("puuid")
+		puuid  = r.PathValue("puuid")
 	)
 
 	riotRegion, err := convertStringToRiotRegion(region)
@@ -547,7 +504,6 @@ func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
 
 	component, err := f.GetSummonerChampions(ctx, riotRegion, puuid)
 	if err != nil {
@@ -596,18 +552,47 @@ func (f *Frontend) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func groupMatchesByDay(matches []internal.SummonerMatch) [][]internal.SummonerMatch {
-	var blocks [][]internal.SummonerMatch
-
 	if len(matches) == 0 {
+		return [][]internal.SummonerMatch{}
+	}
+
+	times := []time.Time{}
+	for _, t := range matches {
+		times = append(times, t.Date)
+	}
+
+	blocks := [][]internal.SummonerMatch{}
+	indices := groupTimeByDay(times)
+
+	if len(indices) == 0 {
+		blocks = append(blocks, matches[:])
+		return blocks
+	}
+
+	blocks = append(blocks, matches[:indices[0]])
+
+	for i := 1; i < len(indices); i++ {
+		blocks = append(blocks, matches[indices[i-1]:indices[i]])
+	}
+
+	blocks = append(blocks, matches[indices[len(indices)-1]:])
+
+	return blocks
+}
+
+func groupTimeByDay(times []time.Time) []int {
+	blocks := []int{}
+
+	if len(times) == 0 {
 		return blocks
 	}
 
 	last := 0
-	for i := range matches {
-		if matches[last].Date.Truncate(24*time.Hour) == matches[i].Date.Truncate(24*time.Hour) {
+	for i := range times {
+		if times[i].Truncate(24*time.Hour) == times[last].Truncate(24*time.Hour) {
 			continue
 		} else {
-			blocks = append(blocks, matches[last:i-1])
+			blocks = append(blocks, i)
 			last = i
 		}
 	}

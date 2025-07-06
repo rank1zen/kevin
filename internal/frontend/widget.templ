@@ -108,7 +108,6 @@ func itemClass(id int) templ.Attributes {
 		fmt.Sprintf("object-[-%dpx_-%dpx]", x, y),
 		"rounded",
 		"relative",
-		"-z-10",
 	}
 
 	attrs["class"] = joinClasses(classes)
@@ -117,9 +116,9 @@ func itemClass(id int) templ.Attributes {
 }
 
 templ (m ItemWidget) build() {
-	<div class="flex flex-none items-center gap-0.5 p-0.5 rounded bg-gray-900/5">
+	<div class="flex flex-none items-center gap-1 p-1 rounded bg-gray-900/5">
 		for _, id := range m.Items {
-			<button type="button" class="cursor-pointer hover:ring-1 size-6 ring-gray-900 rounded">
+			<button type="button" class="cursor-pointer rounded">
 				<img { itemClass(id)... }/>
 			</button>
 		}
@@ -130,5 +129,77 @@ templ (m ItemWidget) build() {
 }
 
 func (m ItemWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type KDAWidget struct {
+	Kills, Deaths, Assists int
+}
+
+func (m KDAWidget) generateKillTextColor() string {
+	if m.Kills < 3 {
+		return "text-gray-900/90"
+	} else if m.Kills < 6 {
+		return "text-yelow-900/90"
+	} else if m.Kills < 9 {
+		return "text-yellow-800/90"
+	} else {
+		return "text-yellow-500/90"
+	}
+}
+
+func (m KDAWidget) generateDeathTextColor() string {
+	if m.Deaths < 3 {
+		return "text-gray-400"
+	} else if m.Deaths < 6 {
+		return "text-red-200"
+	} else if m.Deaths < 9 {
+		return "text-red-300"
+	} else {
+		return "text-red-400"
+	}
+}
+
+func (m KDAWidget) generateAssistTextColor() string {
+	if m.Assists < 3 {
+		return "text-gray-400"
+	} else if m.Assists < 6 {
+		return "text-cyan-200"
+	} else if m.Assists < 9 {
+		return "text-cyan-300"
+	} else {
+		return "text-cyan-400"
+	}
+}
+
+templ (m KDAWidget) sep() {
+	<span class="text-xs text-gray-200">
+		/
+	</span>
+}
+
+templ (m KDAWidget) build() {
+	<div class="flex flex-none items-center">
+		<div class="flex justify-center w-6">
+			<span class={ m.generateKillTextColor() }>
+				{ fmt.Sprintf("%d", m.Kills) }
+			</span>
+		</div>
+		@m.sep()
+		<div class="flex justify-center w-6">
+			<span class="text-red-900/90">
+				{ fmt.Sprintf("%d", m.Deaths) }
+			</span>
+		</div>
+		@m.sep()
+		<div class="flex justify-center w-6">
+			<span class="text-gray-900/90">
+				{ fmt.Sprintf("%d", m.Assists) }
+			</span>
+		</div>
+	</div>
+}
+
+func (m KDAWidget) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }

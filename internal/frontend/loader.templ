@@ -1,7 +1,13 @@
 package frontend
 
-import "context"
-import "io"
+import (
+	"context"
+	"encoding/json"
+	"io"
+
+	"github.com/rank1zen/kevin/internal/riot"
+	"time"
+)
 
 type LoaderType int
 
@@ -61,5 +67,43 @@ templ (m Loader) build() {
 }
 
 func (m Loader) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type MatchHistoryLoader struct {
+	Region riot.Region
+
+	PUUID string
+
+	Date time.Time
+}
+
+func (m MatchHistoryLoader) generateJSONVals() string {
+	bytes, _ := json.Marshal(struct {
+		Region riot.Region `json:"region"`
+		PUUID string `json:"puuid"`
+		Date  int64 `json:"date"`
+	}{
+		m.Region,
+		m.PUUID,
+		m.Date.Truncate(24*time.Hour).Unix(),
+	})
+
+	return string(bytes)
+}
+
+templ (m MatchHistoryLoader) build() {
+	<div
+		hx-post="/summoner/matchlist"
+		hx-trigger="load once"
+		hx-swap="outerHTML"
+		hx-vals={ m.generateJSONVals() }
+		class="w-full h-32 flex items-center justify-center"
+	>
+		<span>Loading next page...</span>
+	</div>
+}
+
+func (m MatchHistoryLoader) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }

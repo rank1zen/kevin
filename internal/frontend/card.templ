@@ -7,6 +7,7 @@ import (
 	"github.com/rank1zen/kevin/internal"
 	"fmt"
 	"time"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type Card struct {
@@ -14,9 +15,9 @@ type Card struct {
 }
 
 templ (m Card) build() {
-	<div class="rounded-lg bg-white hover:bg-gray-50">
+	<li class="rounded-lg bg-white hover:bg-gray-50">
 		@m.Children
-	</div>
+	</li>
 }
 
 func (m Card) Render(ctx context.Context, w io.Writer) error {
@@ -37,20 +38,16 @@ type MatchHistoryCard struct {
 }
 
 templ (m MatchHistoryCard) build() {
-	<li class="flex flex-none items-center p-2 rounded-lg even:bg-gray-500/5 gap-4">
-		<div class="flex-none">
-			@ChampionWidget{
-				Champion:  m.Champion,
-				Summoners: &m.Summoners,
-			}
-		</div>
-		<div class="flex justify-end flex-none w-24">
-			@TextKDA{
-				Kills:   m.Kills,
-				Deaths:  m.Deaths,
-				Assists: m.Assists,
-			}
-		</div>
+	<li class="flex flex-none items-center px-4 py-3 rounded-lg even:bg-gray-500/5 gap-4">
+		@ChampionWidget{
+			Champion:  m.Champion,
+			Summoners: &m.Summoners,
+		}
+		@KDAWidget{
+			Kills:   m.Kills,
+			Deaths:  m.Deaths,
+			Assists: m.Assists,
+		}
 		<div class="flex-none w-24">
 			@TextCS{
 				CS:          m.CS,
@@ -63,35 +60,16 @@ templ (m MatchHistoryCard) build() {
 		@ItemWidget{
 			Items: m.Items,
 		}
-		<div class="flex flex-none gap-1">
-			@RankWidget{Rank: m.Rank}
-			<span class="text-sm text-green-500">
-				+21
-			</span>
-		</div>
+		// <div class="flex flex-none gap-1">
+		// 	@RankWidget{Rank: m.Rank}
+		// 	<span class="text-sm text-green-500">
+		// 		+21
+		// 	</span>
+		// </div>
 	</li>
 }
 
 func (m MatchHistoryCard) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
-// MatchHistoryBlockCard displays a full day of matches.
-type MatchHistoryBlockCard struct {
-	Date time.Time
-
-	Matches []MatchHistoryCard
-}
-
-templ (m MatchHistoryBlockCard) build() {
-	<ol class="rounded-lg">
-		for _, match := range m.Matches {
-			@match
-		}
-	</ol>
-}
-
-func (m MatchHistoryBlockCard) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
@@ -175,7 +153,7 @@ func (m SummonerChampionCard) Render(ctx context.Context, w io.Writer) error {
 type SearchResultCard struct {
 	PUUID string
 
-	Platform string
+	Region riot.Region
 
 	Name, Tag string
 
@@ -183,7 +161,7 @@ type SearchResultCard struct {
 }
 
 templ (m SearchResultCard) build() {
-	<a href={ templ.URL(fmt.Sprintf("/summoner/%s/%s/%s", m.Platform, m.Name, m.Tag)) } class="flex items-center justify-between p-1">
+	<a href={ templ.URL(fmt.Sprintf("/summoner/%s/%s/%s", string(m.Region), m.Name, m.Tag)) } class="flex items-center justify-between p-1">
 		<div class="flex flex-col gap-1">
 			<div class="font-bold text-sm text-gray-900/90 truncate text-left">
 				{ m.Name +"#"+ m.Tag }
@@ -214,8 +192,9 @@ type SearchNotFoundCard struct {
 templ (m SearchNotFoundCard) build() {
 	<button
 		type="button"
-		hx-post="/fetch/summoner"
+		hx-post="/summoner/fetch"
 		hx-trigger="click"
+		hx-include="[name='region'], [name='name'], [name='tag']"
 		class="flex w-full cursor-pointer items-center justify-between px-2 py-1 gap-3"
 	>
 		<div class="flex-1 min-w-0">
@@ -230,7 +209,7 @@ templ (m SearchNotFoundCard) build() {
 			@Icon(StaticViewRefreshSymbol)
 		</div>
 
-		<input type="hidden" name="platform" value={ m.Platform }/>
+		<input type="hidden" name="region" value={ m.Platform }/>
 		<input type="hidden" name="name" value={ m.Name }/>
 		if m.Tag != "" {
 			<input type="hidden" name="tag" value={ m.Tag }/>
@@ -245,4 +224,28 @@ func (m SearchNotFoundCard) Render(ctx context.Context, w io.Writer) error {
 		Children: m.build(),
 	}
 	return card.Render(ctx, w)
+}
+
+// MatchHistoryBlockCard displays a full day of matches.
+type MatchHistoryBlockCard struct {
+	Date time.Time
+
+	Matches []MatchHistoryCard
+}
+
+templ (m MatchHistoryBlockCard) build() {
+	<div>
+		<h2 class="font-bold">
+			{ m.Date.Format("Monday") }
+		</h2>
+		<ol>
+			for _, match := range m.Matches {
+				@match
+			}
+		</ol>
+	</div>
+}
+
+func (m MatchHistoryBlockCard) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
 }

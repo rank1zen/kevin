@@ -1,10 +1,6 @@
 package frontend
 
-import (
-	"path"
-
-	"github.com/rank1zen/kevin/internal/riot"
-)
+import "path"
 
 var (
 	StaticDockLeftSymbol     = "dock-left-symbolic.svg"
@@ -17,15 +13,6 @@ var (
 	StaticWindowCloseSymbol  = "window-close-symbolic.svg"
 	StaticGoDownSymbol       = "go-down-symbolic.svg"
 )
-
-func getStaticRankSymbol(rank riot.Tier) string {
-	switch rank {
-	case riot.TierIron:
-		return GetStaticAsset("iron.svg")
-	default:
-		return GetStaticAsset("emerald.svg")
-	}
-}
 
 func GetStaticAsset(p string) string {
 	return path.Join("/static", p)
