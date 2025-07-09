@@ -46,8 +46,6 @@ type RankWidget struct {
 	// nil means unranked
 	Rank *internal.RankDetail
 
-	ZRank *internal.Rank
-
 	ShowWinLoss bool
 
 	ShowTierName bool
@@ -55,6 +53,8 @@ type RankWidget struct {
 	Size TextSize
 
 	UsePill bool
+
+	FontBold bool
 }
 
 func (m RankWidget) generateLabel() string {
@@ -73,25 +73,29 @@ func (m RankWidget) generateLabel() string {
 templ (m RankWidget) makeIcon() {
 	if m.Rank != nil {
 		<img
-			class={ tierSize[m.Rank.Tier] }
-			src={ GetStaticAsset(tierSymbol[m.Rank.Tier]) }
+			if m.Size == TextSizeXS {
+				class="size-4"
+			} else {
+				class={ tierSize[m.Rank.Tier] }
+			}
+			src={ getStaticAsset(tierSymbol[m.Rank.Tier]) }
 		/>
 	} else {
 		<img
 			class="size-4"
-			src={ GetStaticAsset(StaticUnrankedSymbol) }
+			src={ getStaticAsset(StaticUnrankedSymbol) }
 		/>
 	}
 }
 
 templ (m RankWidget) makeLabel() {
 	if m.ShowTierName {
-		<span class={ "font-bold text-sm", m.generateTierTextColorClass() }>
+		<span class={ m.Size.Class(), m.generateTierTextColorClass() }>
 			{ m.generateLabel() }
 			{ fmt.Sprintf("%d LP", m.Rank.LP) }
 		</span>
 	} else {
-		<span class={ "font-bold text-sm", m.generateTierTextColorClass() }>
+		<span class={ m.Size.Class(), m.generateTierTextColorClass() }>
 			{ fmt.Sprintf("%d LP", m.Rank.LP) }
 		</span>
 	}
@@ -114,7 +118,7 @@ func (m RankWidget) generateTierBGColorClass() string {
 }
 
 templ (m RankWidget) makeFlat() {
-	<div class="flex flex-none items-center p-1 gap-1 cursor-default">
+	<div class="flex flex-none items-center gap-1 cursor-default">
 		@m.makeIcon()
 		@m.makeLabel()
 	</div>

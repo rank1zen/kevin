@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
@@ -41,7 +40,7 @@ func New(handler *Handler, opts ...FrontendOption) *Frontend {
 
 	router.HandleFunc("GET /", frontend.getHomePage)
 
-	router.HandleFunc("GET /summoner/{region}/{name}/{tag}", frontend.getSumonerPage)
+	router.HandleFunc("GET /{riotID}", frontend.getSumonerPage)
 
 	router.HandleFunc("POST /search", frontend.serveSearchResults)
 
@@ -79,14 +78,23 @@ func (f *Frontend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (f *Frontend) getHomePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	logger := fromCtx(ctx)
+
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
 
-	component, err := f.handler.GetHomePage(ctx)
+	region := r.FormValue("region")
+
+	payload := slog.Group("payload", "region", region)
+
+	riotRegion := convertStringToRiotRegion(region)
+
+	component, err := f.handler.GetHomePage(ctx, riotRegion)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		logger.Debug("failed service", "err", err, payload)
 		return
 	}
 
@@ -100,30 +108,31 @@ func (f *Frontend) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	logger := fromCtx(ctx)
 
 	var (
-		region = r.PathValue("region")
-		name   = r.PathValue("name")
-		tag    = r.PathValue("tag")
+		region = r.FormValue("region")
 	)
 
-	riotRegion, err := convertStringToRiotRegion(region)
+	payload := slog.Group("payload", "region", region)
+
+	riotID := r.PathValue("riotID")
+	name, tag, err := convertRiotIDToNameTag(riotID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		logger.Debug("failed to parse region",
-			slog.Group("payload", "region", region, "name", name, "tag", tag),
-		)
-
+		logger.Debug("failed to resolve riot id", "err", err , payload)
 		return
 	}
+
+	riotRegion := convertStringToRiotRegion(region)
 
 	component, err := f.handler.GetSummonerPage(ctx, riotRegion, name, tag)
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerNotFound) {
 			w.WriteHeader(http.StatusInternalServerError)
+			logger.Info("summoner is not found", "name", name, "tag", tag, payload)
 			return
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed service", "err", err)
+		logger.Debug("failed service", "err", err , payload)
 		return
 	}
 
@@ -133,23 +142,21 @@ func (f *Frontend) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 
 func (f *Frontend) serveSearchResults(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	logger := fromCtx(ctx)
 
 	var (
 		region = r.FormValue("region")
 		q      = r.FormValue("q")
 	)
 
-	riotRegion, err := convertStringToRiotRegion(region)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		slog.Debug("failed to parse region", slog.Group("payload", "region", region, "q", q))
-		return
-	}
+	payload := slog.Group("payload", "region", region, "q", q)
+
+	riotRegion := convertStringToRiotRegion(region)
 
 	component, err := f.handler.GetSearchResults(ctx, riotRegion, q)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.Debug("failed service", slog.Any("err", err), slog.Group("payload", "region", region, "q", q))
+		logger.Debug("failed service", slog.Any("err", err), payload)
 		return
 	}
 
@@ -159,6 +166,7 @@ func (f *Frontend) serveSearchResults(w http.ResponseWriter, r *http.Request) {
 
 func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	logger := fromCtx(ctx)
 
 	var (
 		region           = r.FormValue("region")
@@ -166,25 +174,20 @@ func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 		date   time.Time = time.Now()
 	)
 
+	payload := slog.Group("payload", "region", region, "puuid", puuid, "date", r.FormValue("date"))
+
 	if dateQuery := r.FormValue("date"); dateQuery != "" {
 		if dateVal, err := strconv.ParseInt(dateQuery, 10, 64); err == nil {
 			date = time.Unix(dateVal, 0)
 		}
 	}
 
-	riotRegion, err := convertStringToRiotRegion(region)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		slog.Debug("failed to parse region",
-			slog.Group("payload", "region", region, "puuid", puuid, "date", r.FormValue("date")),
-		)
-		return
-	}
+	riotRegion := convertStringToRiotRegion(region)
 
-	component, err := f.handler.GetSummonerMatchHistoryList(ctx, riotRegion, puuid, date)
+	component, err := f.handler.GetSummonerMatchHistory(ctx, riotRegion, puuid, date)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.Debug("failed service", "err", err)
+		logger.Debug("failed service", "err", err, payload)
 		return
 	}
 
@@ -194,62 +197,48 @@ func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 
 func (f *Frontend) updateSummoner(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	logger := fromCtx(ctx)
 
 	var (
 		region = r.FormValue("region")
 		name   = r.FormValue("name")
 		tag    = r.FormValue("tag")
 	)
-	slog.Debug("updating summoner", slog.Group("payload", "region", region, "name", name, "tag", tag))
 
-	riotRegion, err := convertStringToRiotRegion(region)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		slog.Debug("failed to parse region",
-			"err", err,
-			slog.Group("payload", "region", region, "name", name, "tag", tag),
-		)
-		return
-	}
+	payload := slog.Group("payload", "region", region, "name", name, "tag", tag)
+
+	logger.Debug("updating summoner", payload)
+
+	riotRegion:= convertStringToRiotRegion(region)
 
 	if err := f.handler.UpdateSummoner(ctx, riotRegion, name, tag); err != nil {
-		slog.Debug("service failed",
-			slog.Any("err", err),
-			slog.Group("payload", "region", region, "name", name, "tag", tag),
-		)
-
 		w.WriteHeader(http.StatusInternalServerError)
+		logger.Debug("service failed", "err", err, payload)
 		return
 	}
 
 	// Redirect to summoner page
-	w.Header().Set("HX-Location", fmt.Sprintf("/summoner/%s/%s/%s", region, name, tag))
+	w.Header().Set("HX-Location", fmt.Sprintf("/%s-%s", name, tag))
 	w.WriteHeader(http.StatusOK)
 }
 
 func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	logger := fromCtx(ctx)
 
 	var (
-		region = r.PathValue("puuid")
-		puuid  = r.PathValue("puuid")
+		region = r.FormValue("puuid")
+		puuid  = r.FormValue("puuid")
 	)
 
-	riotRegion, err := convertStringToRiotRegion(region)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+	payload := slog.Group("payload", "region", region, "puuid", puuid)
 
-		slog.Debug("failed to parse region",
-			slog.Any("err", err),
-			slog.Group("payload", "region", region, "puuid", puuid),
-		)
-
-		return
-	}
+	riotRegion := convertStringToRiotRegion(region)
 
 	component, err := f.handler.GetSummonerChampions(ctx, riotRegion, puuid)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		logger.Debug("failed service", "err", err, payload)
 		return
 	}
 
@@ -261,31 +250,18 @@ func (f *Frontend) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var (
-		region = r.PathValue("puuid")
-		puuid  = r.PathValue("puuid")
+		region = r.FormValue("puuid")
+		puuid  = r.FormValue("puuid")
 	)
 
-	riotRegion, err := convertStringToRiotRegion(region)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+	payload := slog.Group("payload", "region", region, "puuid", puuid)
 
-		slog.Debug("failed to parse region",
-			slog.Any("err", err),
-			slog.Group("payload", "region", region, "puuid", puuid),
-		)
-
-		return
-	}
+	riotRegion := convertStringToRiotRegion(region)
 
 	component, err := f.handler.GetLiveMatch(ctx, riotRegion, puuid)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-
-		slog.Debug("failed service",
-			slog.Any("err", err),
-			slog.Group("payload", "region", region, "puuid", puuid),
-		)
-
+		slog.Debug("failed service", "err", err, payload)
 		return
 	}
 
@@ -307,72 +283,6 @@ func (f *Frontend) addLoggingMiddleware(handler http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(fn)
-}
-
-func groupMatchesByDay(matches []internal.SummonerMatch) [][]internal.SummonerMatch {
-	if len(matches) == 0 {
-		return [][]internal.SummonerMatch{}
-	}
-
-	times := []time.Time{}
-	for _, t := range matches {
-		times = append(times, t.Date)
-	}
-
-	blocks := [][]internal.SummonerMatch{}
-	indices := groupTimeByDay(times)
-
-	if len(indices) == 0 {
-		blocks = append(blocks, matches[:])
-		return blocks
-	}
-
-	blocks = append(blocks, matches[:indices[0]])
-
-	for i := 1; i < len(indices); i++ {
-		blocks = append(blocks, matches[indices[i-1]:indices[i]])
-	}
-
-	blocks = append(blocks, matches[indices[len(indices)-1]:])
-
-	return blocks
-}
-
-func groupTimeByDay(times []time.Time) []int {
-	blocks := []int{}
-
-	if len(times) == 0 {
-		return blocks
-	}
-
-	last := 0
-	for i := range times {
-		if times[i].Truncate(24*time.Hour) == times[last].Truncate(24*time.Hour) {
-			continue
-		} else {
-			blocks = append(blocks, i)
-			last = i
-		}
-	}
-
-	return blocks
-}
-
-func joinClasses(classes []string) string {
-	return strings.Join(classes, " ")
-}
-
-type classBuilder struct {
-	class []string
-}
-
-func (cb classBuilder) Add(class string) classBuilder {
-	cb.class = append(cb.class, class)
-	return cb
-}
-
-func (cb classBuilder) Build() string {
-	return joinClasses(cb.class)
 }
 
 type ctxKey struct{}

@@ -1,12 +1,16 @@
 package frontend
 
-import "context"
-import "io"
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/riot"
+	"io"
+)
 
+// Popover shows a popup on click.
 type Popover struct {
-	Trigger templ.Component
+	ButtonChildren templ.Component
 
-	Panel templ.Component
+	PanelChildren templ.Component
 }
 
 templ (m Popover) build() {
@@ -36,22 +40,107 @@ templ (m Popover) build() {
 			type="button"
 			x-ref="button"
 			@click="toggle()"
-			class="relative flex"
+			class="relative cursor-pointer rounded-lg transition bg-transparent hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20"
+			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
-			@m.Trigger
+			if m.ButtonChildren != nil {
+				@m.ButtonChildren
+			} else {
+				<div class="size-9"></div>
+			}
 		</button>
 		<div
+			x-cloak
 			x-ref="panel"
 			x-show="open"
 			@click.outside="close($refs.button)"
-			x-cloak
-			class="absolute flex"
+			x-anchor="$refs.button"
+			class="bg-white mt-2 dark:bg-gray-950 border border-gray-900/10 shadow shadow-gray-900/50 dark:shadow-gray-100/50 overflow-hidden rounded-2xl"
 		>
-			@m.Panel
+			if m.PanelChildren != nil {
+				@m.PanelChildren
+			} else {
+				<div class="size-9"></div>
+			}
 		</div>
 	</div>
 }
 
 func (m Popover) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
+}
+
+type MenuPopover struct {
+	MenuEntries []struct {
+		Label string
+
+		SubLabel string
+
+		Attrs templ.Attributes
+	}
+}
+
+templ (m MenuPopover) buildAtIndex(i int) {
+	<div class="flex flex-item h-9 items-center justify-between px-2.5 py-2 gap-2.5 rounded-lg hover:bg-gray-900/5">
+		<span class="text-sm text-gray-900/90 whitespace-nowrap">{ m.MenuEntries[i].Label }</span>
+		<span class="text-sm text-gray-500/90 whitespace-nowrap">{ m.MenuEntries[i].SubLabel }</span>
+	</div>
+}
+
+templ (m MenuPopover) buildMenu() {
+	<div class="p-2">
+		for i := range len(m.MenuEntries) {
+			@m.buildAtIndex(i)
+		}
+	</div>
+}
+
+func (m MenuPopover) Render(ctx context.Context, w io.Writer) error {
+	popover := Popover{
+		ButtonChildren: Button{IconPath: StaticOpenMenuSymbol},
+		PanelChildren:  m.buildMenu(),
+	}
+
+	return popover.Render(ctx, w)
+}
+
+var regions = []templ.Component{
+	MenuLink{
+		Href: "/NA1",
+		Item: MenuItemLayout{Label: "NA1", SubLabel: "North America"},
+	},
+	MenuLink{
+		Href: "/NA1",
+		Item: MenuItemLayout{Label: "KR", SubLabel: "Korea"},
+	},
+}
+
+type RegionPopover struct {
+	Region riot.Region
+}
+
+templ (m RegionPopover) buildButton() {
+	<div class="flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end">
+		<span class="text-sm font-bold">
+			{ convertRiotRegionToString(m.Region) }
+		</span>
+		@staticIcon(StaticGoDownSymbol)
+	</div>
+}
+
+templ (m RegionPopover) buildMenu() {
+	<ul class="p-2">
+		for _, c := range regions {
+			@c
+		}
+	</ul>
+}
+
+func (m RegionPopover) Render(ctx context.Context, w io.Writer) error {
+	popover := Popover{
+		ButtonChildren: m.buildButton(),
+		PanelChildren:  m.buildMenu(),
+	}
+
+	return popover.Render(ctx, w)
 }

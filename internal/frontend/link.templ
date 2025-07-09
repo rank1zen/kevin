@@ -1,0 +1,76 @@
+package frontend
+
+import (
+	"context"
+	"fmt"
+	"io"
+
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+type Link struct {
+	Href string
+
+	Children templ.Component
+}
+
+templ (m Link) build() {
+	<a
+		href={ templ.URL(m.Href) }
+		class="block rounded-lg transition overflow-hidden bg-transparent hover:bg-gray-900/5 dark:hover:bg-gray-100/5"
+	>
+		if m.Children != nil {
+			@m.Children
+		}
+	</a>
+}
+
+func (m Link) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type MenuLink struct {
+	Href string
+
+	Item MenuItemLayout
+}
+
+func (m MenuLink) Render(ctx context.Context, w io.Writer) error {
+	link := Link{
+		Href:     m.Href,
+		Children: m.Item,
+	}
+
+	return link.Render(ctx, w)
+}
+
+type SearchResultLink struct {
+	Region riot.Region
+
+	PUUID string
+
+	Name string
+
+	Tag string
+
+	Rank *internal.RankDetail
+}
+
+templ (m SearchResultLink) build() {
+	<div class="px-3 py-2">
+		<div class="text-sm text-gray-900/90 dark:text-gray-200/90 truncate">
+			{ m.Name +"#"+ m.Tag }
+		</div>
+		@RankWidget{Rank: m.Rank, ShowTierName: true, Size: TextSizeXS}
+	</div>
+}
+
+func (m SearchResultLink) Render(ctx context.Context, w io.Writer) error {
+	link := Link{
+		Href:     fmt.Sprintf("/%s-%s", m.Name, m.Tag),
+		Children: m.build(),
+	}
+
+	return link.Render(ctx, w)
+}

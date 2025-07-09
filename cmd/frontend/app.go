@@ -57,7 +57,6 @@ func New(riotAPIKey string, pgConnStr string, opts ...AppOption) *App {
 		Address:    "localhost:4001",
 	}
 
-
 	var logger *slog.Logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 	if app.Mode == AppModeDevelopment {
 		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))

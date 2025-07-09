@@ -5,18 +5,8 @@ import (
 	"io"
 )
 
-type ButtonStyle int
-
-const (
-	ButtonStyleFlat ButtonStyle = iota
-	ButtonStyleRaised
-)
-
-// Button is a clickable component.
+// Button is a simple button layout.
 type Button struct {
-	// Style is the button style.
-	Style ButtonStyle
-
 	// IconPath is the icon on the button. If empty, no icon is used.
 	IconPath string
 
@@ -25,90 +15,39 @@ type Button struct {
 }
 
 templ (m Button) build() {
-	<div class={ m.gen() }>
-		if m.IconPath != "" {
-			@Icon(m.IconPath)
-		}
-		if m.Label != "" {
-			<span class="whitespace-nowrap font-bold text-sm text-gray-900/90">
+	if m.Label != "" {
+		<div class="flex flex-none h-9 w-32 gap-2 items-center justify-center">
+			if m.IconPath != "" {
+				@staticIcon(m.IconPath)
+			}
+			<span class="whitespace-nowrap font-bold text-sm text-gray-900/90 dark:text-gray-100/90">
 				{ m.Label }
 			</span>
-		}
-	</div>
-}
-
-func (m Button) gen() string {
-	classes := classBuilder{}.
-		Add("flex").
-		Add("flex-none").
-		Add("items-center").
-		Add("justify-center").
-		Add("transition-colors").
-		Add("rounded-lg").
-		Add("gap-2").
-		Add("p-2").
-		Add("h-9").
-		Add("cursor-pointer")
-
-	if m.Label != "" {
-		classes = classes.Add("w-32")
+		</div>
 	} else {
-		classes = classes.Add("w-9")
+		<div class="flex flex-none size-9 items-center justify-center">
+			if m.IconPath != "" {
+				@staticIcon(m.IconPath)
+			}
+		</div>
 	}
-
-	switch m.Style {
-	case ButtonStyleRaised:
-		classes = classes.
-			Add("bg-gray-900/10").
-			Add("hover:bg-gray-900/20").
-			Add("focus:bg-gray-900/20").
-			Add("active:bg-gray-900/30")
-	case ButtonStyleFlat:
-		classes = classes.
-			Add("bg-transparent").
-			Add("hover:bg-gray-900/10").
-			Add("focus:bg-gray-900/10").
-			Add("active:bg-gray-900/20")
-	}
-
-	return classes.Build()
 }
 
 func (m Button) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
-// ModalButton displays a button which triggers a modal.
-type ModalButton struct {
-	// Style is the button style.
-	Style ButtonStyle
-
+type ThinButton struct {
 	// IconPath is the icon on the button. If empty, no icon is used.
 	IconPath string
-
-	// Label is the text on the button. If empty, no label is used.
-	Label string
-
-	Content templ.Component
 }
 
-func (m ModalButton) Render(ctx context.Context, w io.Writer) error {
-	modal := Modal{
-		Trigger: nil,
-		Panel: m.makeModalWindow(),
-	}
-
-	return modal.Render(ctx, w)
-}
-
-templ (m ModalButton) makeModalWindow() {
-	<div class="bg-white rounded-lg shadow-lg h-1/2">
-		<div class="flex border-b p-2">
-			// put some content here
-			@Button{}
-		</div>
-		<div>
-			@m.Content
-		</div>
+templ (m ThinButton) build() {
+	<div class="flex flex-none w-6 h-9 items-center justify-center">
+		@staticIcon(m.IconPath)
 	</div>
+}
+
+func (m ThinButton) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
 }

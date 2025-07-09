@@ -2,12 +2,9 @@ package frontend
 
 import (
 	"context"
-	"io"
-
 	"github.com/rank1zen/kevin/internal"
-	"fmt"
+	"io"
 	"time"
-	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type Card struct {
@@ -15,12 +12,35 @@ type Card struct {
 }
 
 templ (m Card) build() {
-	<li class="rounded-lg bg-white hover:bg-gray-50">
+	<li class="bg-white dark:bg-gray-950 hover:bg-gray-900/5 dark:hover:bg-gray-100/5 border-b border-gray-900/5 dark:border-gray-100/5 last:border-none">
 		@m.Children
 	</li>
 }
 
 func (m Card) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type CardGroup struct {
+	Title string
+
+	Cards []Card
+}
+
+templ (m CardGroup) build() {
+	<div>
+		<div class="mb-3">
+			@h2(m.Title)
+		</div>
+		<ol class="bg-white dark:bg-gray-950 border border-gray-900/10 shadow shadow-gray-900/50 dark:shadow-gray-100/50 overflow-hidden rounded-2xl">
+			for _, card := range m.Cards {
+				@card
+			}
+		</ol>
+	</div>
+}
+
+func (m CardGroup) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
@@ -38,7 +58,7 @@ type MatchHistoryCard struct {
 }
 
 templ (m MatchHistoryCard) build() {
-	<li class="flex flex-none items-center px-4 py-3 rounded-lg even:bg-gray-500/5 gap-4">
+	<div class="flex gap-4 px-4 py-3 items-center">
 		@ChampionWidget{
 			Champion:  m.Champion,
 			Summoners: &m.Summoners,
@@ -48,29 +68,81 @@ templ (m MatchHistoryCard) build() {
 			Deaths:  m.Deaths,
 			Assists: m.Assists,
 		}
-		<div class="flex-none w-24">
-			@TextCS{
-				CS:          m.CS,
-				CSPerMinute: m.CSPerMinute,
-			}
-		</div>
+		@CSWidget{
+			CS:          m.CS,
+			CSPerMinute: m.CSPerMinute,
+		}
 		@RuneWidget{
 			RunePage: m.RunePage,
 		}
 		@ItemWidget{
 			Items: m.Items,
 		}
-		// <div class="flex flex-none gap-1">
-		// 	@RankWidget{Rank: m.Rank}
-		// 	<span class="text-sm text-green-500">
-		// 		+21
-		// 	</span>
-		// </div>
-	</li>
+	</div>
+}
+
+func (m MatchHistoryCard) card() Card {
+	card := Card{
+		Children: m.build(),
+	}
+
+	return card
 }
 
 func (m MatchHistoryCard) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
+	card := Card{
+		Children: m.build(),
+	}
+
+	return card.Render(ctx, w)
+}
+
+// MatchHistoryBlockCard displays a full day of matches.
+type MatchHistoryBlockCard struct {
+	Date time.Time
+
+	Matches []MatchHistoryCard
+}
+
+templ (m MatchHistoryBlockCard) makeMatches() {
+	<div>
+		@h2(m.Date.Format("Monday"))
+		<div class="flex h-24 items-center justify-center">
+			<span>No matches played</span>
+		</div>
+	</div>
+}
+
+templ (m MatchHistoryBlockCard) build() {
+	<div>
+		<h2 class="font-bold">
+			{ m.Date.Format("Monday") }
+		</h2>
+		<ol class="border-1 border-gray-900/15 shadow overflow-hidden rounded-2xl">
+			for _, match := range m.Matches {
+				@match
+			}
+		</ol>
+	</div>
+}
+
+func (m MatchHistoryBlockCard) Render(ctx context.Context, w io.Writer) error {
+	if len(m.Matches) == 0 {
+		return m.makeMatches().Render(ctx, w)
+	}
+
+	cards := []Card{}
+
+	for _, match := range m.Matches {
+		cards = append(cards, match.card())
+	}
+
+	group := CardGroup{
+		Title: m.Date.Format("Monday, Jan 2"),
+		Cards: cards,
+	}
+
+	return group.Render(ctx, w)
 }
 
 type LiveMatchSummonerCard struct {
@@ -110,8 +182,8 @@ type SummonerChampionCard struct {
 	Champion               int
 	Kills, Deaths, Assists int
 	KillParticipation      float32
-	CS int
-	CSPerMinute    float32
+	CS                     int
+	CSPerMinute            float32
 	DamageDealt            int
 	DamageTaken            int
 	DamageDeltaEnemy       int
@@ -126,23 +198,6 @@ type SummonerChampionCard struct {
 templ (m SummonerChampionCard) build() {
 	<div class="flex items-center p-2 rounded-lg hover:bg-gray-900/5">
 		@ChampionWidget{Champion: m.Champion}
-		<div class="w-24">
-			@TextKDA{
-				Kills:   m.Kills,
-				Deaths:  m.Deaths,
-				Assists: m.Assists,
-			}
-		</div>
-		<div class="w-24">
-			@TextCS{
-				CS:          m.CS,
-				CSPerMinute: m.CSPerMinute,
-			}
-		</div>
-		// more fields
-		<div class="w-24">
-			+21
-		</div>
 	</div>
 }
 
@@ -150,33 +205,18 @@ func (m SummonerChampionCard) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
-type SearchResultCard struct {
-	PUUID string
-
-	Region riot.Region
-
-	Name, Tag string
-
-	Rank *internal.RankDetail
+type SearchCard struct {
+	Children templ.Component
 }
 
-templ (m SearchResultCard) build() {
-	<a href={ templ.URL(fmt.Sprintf("/summoner/%s/%s/%s", string(m.Region), m.Name, m.Tag)) } class="flex items-center justify-between p-1">
-		<div class="flex flex-col gap-1">
-			<div class="font-bold text-sm text-gray-900/90 truncate text-left">
-				{ m.Name +"#"+ m.Tag }
-			</div>
-			@RankWidget{Rank: m.Rank, ShowTierName: true, Size: TextSizeXS}
-		</div>
-	</a>
+templ (m SearchCard) build() {
+	<li class="rounded-lg bg-transparent hover:bg-gray-900/5 dark:hover:bg-gray-200/5 cursor-pointer">
+		@m.Children
+	</li>
 }
 
-func (m SearchResultCard) Render(ctx context.Context, w io.Writer) error {
-	card := Card{
-		Children: m.build(),
-	}
-
-	return card.Render(ctx, w)
+func (m SearchCard) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
 }
 
 // SearchNotFoundCard is a button that will issue a post to fetch summoner.
@@ -195,20 +235,19 @@ templ (m SearchNotFoundCard) build() {
 		hx-post="/summoner/fetch"
 		hx-trigger="click"
 		hx-include="[name='region'], [name='name'], [name='tag']"
-		class="flex w-full cursor-pointer items-center justify-between px-2 py-1 gap-3"
+		class="flex w-full items-center justify-between px-3 py-2 gap-3"
 	>
 		<div class="flex-1 min-w-0">
-			<div class="text-sm text-gray-900/90 truncate text-left">
+			<div class="text-sm text-gray-900/90 dark:text-gray-200/90 text-left truncate">
 				{ m.Name + "#" + m.Tag } is not found
 			</div>
-			<div class="text-xs text-gray-500/90 truncate text-left">
+			<div class="text-xs text-gray-500/90 dark:text-gray-600/90 text-left truncate">
 				Click to fetch
 			</div>
 		</div>
 		<div class="flex-none">
-			@Icon(StaticViewRefreshSymbol)
+			@staticIcon(StaticViewRefreshSymbol)
 		</div>
-
 		<input type="hidden" name="region" value={ m.Platform }/>
 		<input type="hidden" name="name" value={ m.Name }/>
 		if m.Tag != "" {
@@ -220,32 +259,9 @@ templ (m SearchNotFoundCard) build() {
 }
 
 func (m SearchNotFoundCard) Render(ctx context.Context, w io.Writer) error {
-	card := Card{
+	card := SearchCard{
 		Children: m.build(),
 	}
+
 	return card.Render(ctx, w)
-}
-
-// MatchHistoryBlockCard displays a full day of matches.
-type MatchHistoryBlockCard struct {
-	Date time.Time
-
-	Matches []MatchHistoryCard
-}
-
-templ (m MatchHistoryBlockCard) build() {
-	<div>
-		<h2 class="font-bold">
-			{ m.Date.Format("Monday") }
-		</h2>
-		<ol>
-			for _, match := range m.Matches {
-				@match
-			}
-		</ol>
-	</div>
-}
-
-func (m MatchHistoryBlockCard) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
 }

@@ -32,6 +32,10 @@ func NewDatasource(client *riot.Client, store Store) *Datasource {
 	return &Datasource{client, store}
 }
 
+func (ds *Datasource) GetStore() Store {
+	return ds.store
+}
+
 func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Region, puuid string, date time.Time) error {
 	startTime := date.Truncate(24*time.Hour)
 	endTime := startTime.Add(24 * time.Hour).Add(-1*time.Second)

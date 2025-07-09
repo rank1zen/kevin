@@ -1,11 +1,13 @@
 package frontend
 
-import "context"
-import "io"
-import "github.com/rank1zen/kevin/internal"
-import "github.com/rank1zen/kevin/internal/ddragon"
-import "path"
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/ddragon"
+	"io"
+	"path"
+)
 
 // ChampionWidget displays a champion icon and summoner spells.
 type ChampionWidget struct {
@@ -17,22 +19,51 @@ type ChampionWidget struct {
 	Summoners *[2]int
 }
 
-func (m ChampionWidget) gen() templ.Attributes {
-	attrs := make(templ.Attributes)
+func (m ChampionWidget) generateSpriteBGPosition(id int) string {
+	summ := ddragon.SummonerMap[id]
+	x := summ.X / 48
+	y := summ.Y / 48
+	return fmt.Sprintf("bg-position-[-%dpx_-%dpx]", x*28, y*28)
+}
 
-	attrs["class"] = ""
+func (m ChampionWidget) generateSpriteBG(id int) string {
+	summ := ddragon.SummonerMap[id]
+	p := path.Join("/static/sprite", "small_"+summ.Sprite)
+	return fmt.Sprintf("bg-[url(%s)]", p)
+}
 
-	return attrs
+templ (m ChampionWidget) makeSummonerAtIndex(i int) {
+	{{ id := m.Summoners[i] }}
+	<div class={ "rounded-lg", "size-7", m.generateSpriteBG(id), m.generateSpriteBGPosition(id), "bg-size-[280px_112px]" }></div>
+}
+
+templ (m ChampionWidget) buildChampionIcon() {
+	{{ champion := ddragon.ChampionMap[m.Champion] }}
+	{{ x := 3 * champion.X / 4 }}
+	{{ y := 3 * champion.Y / 4 }}
+	<img
+		src={ path.Join("/static/sprite", "small_"+champion.Sprite) }
+		class={ fmt.Sprintf("w-[%dpx] h-[%dpx] object-none object-[-%dpx_-%dpx] rounded", 36, 36, x, y) }
+	/>
 }
 
 templ (m ChampionWidget) build() {
-	<div class="flex flex-none items-center gap-0.5">
-		<img { championSmallSpriteClass(m.Champion)... }/>
-		if m.Summoners != nil {
-			<img { summonersTinySpriteClass(m.Summoners[0])... } />
-			<img { summonersTinySpriteClass(m.Summoners[1])... } />
-		}
-	</div>
+	{{
+		champion := ddragon.ChampionMap[m.Champion]
+
+		championTooltip := Tooltip{Tip: champion.Name, ButtonChildren: m.buildChampionIcon()}
+	}}
+	if m.Summoners != nil {
+		<div class="flex flex-none items-center gap-1">
+			@championTooltip
+			<div class="flex p-1 gap-1 bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+				@Tooltip{ButtonChildren: m.makeSummonerAtIndex(0)}
+				@Tooltip{ButtonChildren: m.makeSummonerAtIndex(1)}
+			</div>
+		</div>
+	} else {
+		@championTooltip
+	}
 }
 
 func (m ChampionWidget) Render(ctx context.Context, w io.Writer) error {
@@ -44,41 +75,37 @@ type RuneWidget struct {
 	RunePage internal.RunePage
 }
 
-templ (m RuneWidget) makeFullRunPageView() {
-	<div class="gap-4">
-		<div class="flex flex-col items-center gap-4">
-			<img
-				class="size-12 flex-none p-1"
-				src={ runeIconSrc(m.RunePage.PrimaryTree) }
-				title={ runeName(m.RunePage.PrimaryTree) }
-			/>
-			<img class="size-16 flex-none p-1" { genRuneClass(m.RunePage.PrimaryKeystone)... }/>
-			<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.PrimaryA)... }/>
-			<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.PrimaryB)... }/>
-			<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.PrimaryC)... }/>
-		</div>
-		<div class="flex flex-col items-center gap-5">
-			<div class="flex flex-col gap-6">
-				<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.SecondaryTree)... }/>
-				<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.SecondaryA)... }/>
-				<img class="size-12 flex-none p-1" { genRuneClass(m.RunePage.SecondaryB)... }/>
-			</div>
-			<div class="flex flex-col gap-0.5">
-				<img class="size-8 flex-none p-1" { genRuneClass(m.RunePage.MiniOffense)... }/>
-				<img class="size-8 flex-none p-1" { genRuneClass(m.RunePage.MiniFlex)... }/>
-				<img class="size-8 flex-none p-1" { genRuneClass(m.RunePage.MiniDefense)... }/>
-			</div>
-		</div>
+templ (m RuneWidget) buildFullRunPageView() {
+	// TODO
+}
+
+templ (m RuneWidget) buildKeystone() {
+	<div class="size-9">
+		<img
+			src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.PrimaryKeystone].IconPath) }
+			class="size-9"
+		/>
+	</div>
+}
+
+templ (m RuneWidget) buildSecondary() {
+	<div class="h-9 w-6 flex items-center justify-center">
+		<img
+			src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.SecondaryTree].IconPath) }
+			class="size-4"
+		/>
 	</div>
 }
 
 templ (m RuneWidget) build() {
-	<div class="flex flex-none items-center gap-0.5">
-		<img src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.PrimaryKeystone].IconPath) } class="size-9"/>
-		<img class="size-6 p-0.5 bg-gray-500/5" src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.SecondaryTree].IconPath) }/>
-		<button type="button" class="size-6 flex flex-none items-center justify-center bg-gray-500/5 hover:bg-gray-900/5">
-			<img class="size-4" src="/static/view-more-symbolic.svg" />
-		</button>
+	{{
+		keystone := ddragon.RuneMap[m.RunePage.PrimaryKeystone]
+		secondaryTree := ddragon.RuneMap[m.RunePage.SecondaryTree]
+	}}
+	<div class="flex flex-none items-center h-9 bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+		@Tooltip{Tip: keystone.Name, ButtonChildren: m.buildKeystone(), ButtonStyle: 1}
+		@Tooltip{Tip: secondaryTree.Name, ButtonChildren: m.buildSecondary(), ButtonStyle: 1}
+		@Popover{ButtonChildren: ThinButton{IconPath: "down-small-symbolic.svg"}}
 	</div>
 }
 
@@ -91,40 +118,46 @@ type ItemWidget struct {
 	Items [7]int
 }
 
-func itemClass(id int) templ.Attributes {
-	attrs := make(templ.Attributes)
-
+func (m ItemWidget) generateSpriteBGPosition(id int) string {
 	item := ddragon.ItemsMap[id]
-	fullPath := path.Join("/static/sprite", "tiny_"+item.Sprite)
-	x := item.X / 2
-	y := item.Y / 2
+	x := item.X / 48
+	y := item.Y / 48
+	return fmt.Sprintf("bg-position-[-%dpx_-%dpx]", x*28, y*28)
+}
 
-	attrs["src"] = fullPath
-	attrs["title"] = item.Name
+func (m ItemWidget) generateSpriteBG(id int) string {
+	item := ddragon.ItemsMap[id]
+	p := path.Join("/static/sprite", "small_"+item.Sprite)
+	return fmt.Sprintf("bg-[url(%s)]", p)
+}
 
-	classes := []string{
-		"size-6",
-		"object-none",
-		fmt.Sprintf("object-[-%dpx_-%dpx]", x, y),
-		"rounded",
-		"relative",
+templ (m ItemWidget) makeItemAtIndex(i int) {
+	{{ id := m.Items[i] }}
+	if id == 0 {
+		<div class="size-7 rounded bg-gray-900/5 dark:bg-gray-100/5"></div>
+	} else {
+		<button
+			title={ ddragon.ItemsMap[id].Name }
+			type="button"
+			if i == 6 {
+				class="size-7 shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 overflow-hidden cursor-pointer rounded-full"
+			} else {
+				class="size-7 shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 overflow-hidden cursor-pointer rounded"
+			}
+		>
+			<div class={ "size-7", m.generateSpriteBG(id), m.generateSpriteBGPosition(id), "bg-size-[280px_280px]" }></div>
+		</button>
 	}
-
-	attrs["class"] = joinClasses(classes)
-
-	return attrs
 }
 
 templ (m ItemWidget) build() {
-	<div class="flex flex-none items-center gap-1 p-1 rounded bg-gray-900/5">
-		for _, id := range m.Items {
-			<button type="button" class="cursor-pointer rounded">
-				<img { itemClass(id)... }/>
-			</button>
-		}
-		<button type="button" class="size-6 flex items-center justify-center cursor-pointer bg-gray-900/5 hover:bg-gray-900/10 rounded">
-			<img class="size-4" src="/static/view-more-symbolic.svg" />
-		</button>
+	<div class="flex flex-none bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+		<div class="flex gap-1 p-1">
+			for i := range 7 {
+				@m.makeItemAtIndex(i)
+			}
+		</div>
+		@Popover{ButtonChildren: ThinButton{IconPath: "down-small-symbolic.svg"}}
 	</div>
 }
 
@@ -201,5 +234,18 @@ templ (m KDAWidget) build() {
 }
 
 func (m KDAWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type CSWidget struct {
+	CS int
+
+	CSPerMinute float32
+}
+
+templ (m CSWidget) build() {
+}
+
+func (m CSWidget) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }

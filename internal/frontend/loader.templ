@@ -24,29 +24,6 @@ type Loader struct {
 	Type LoaderType
 }
 
-func (m Loader) gen() templ.Attributes {
-	attrs := make(templ.Attributes)
-
-	classes := []string{
-		"flex",
-		"items-center",
-		"justify-center",
-	}
-
-	attrs["class"] = joinClasses(classes)
-
-	attrs["hx-post"] = m.Path
-
-	switch m.Type {
-	case LoaderTypeOnReveal:
-		attrs["hx-trigger"] = "on reveal"
-	default:
-		attrs["hx-trigger"] = "load"
-	}
-
-	return attrs
-}
-
 func (m Loader) generateHXTrigger() string {
 	switch m.Type {
 	case LoaderTypeOnReveal:

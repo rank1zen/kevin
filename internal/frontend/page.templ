@@ -14,8 +14,6 @@ type Page struct {
 	// ... empty value means no title.
 	Title string
 
-	HeaderContent templ.Component
-
 	// Content is a body component of the page. A nil value indicates an
 	// empty page.
 	Content templ.Component
@@ -29,6 +27,7 @@ templ (m Page) build() {
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 			<script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/anchor@3.x.x/dist/cdn.min.js"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 			if m.Title != "" {
@@ -43,12 +42,7 @@ templ (m Page) build() {
 			}"
 			@keydown.escape="isModalOpen = false"
 		>
-			<div class="sticky top-0 z-10 min-w-13">
-				if m.HeaderContent != nil {
-					@m.HeaderContent
-				}
-			</div>
-			<div>
+			<div class="bg-white min-h-screen dark:bg-gray-950">
 				if m.Content != nil {
 					@m.Content
 				}
@@ -62,6 +56,8 @@ func (m Page) Render(ctx context.Context, w io.Writer) error {
 }
 
 type SummonerPage struct {
+	Region riot.Region
+
 	PUUID string
 
 	Name, Tag string
@@ -71,67 +67,88 @@ type SummonerPage struct {
 	LastUpdated time.Time
 }
 
-func (m SummonerPage) Render(ctx context.Context, w io.Writer) error {
-	page := Page{
-		Title:         fmt.Sprintf("%s#%s - Kevin", m.Name, m.Tag),
-		HeaderContent: m.makeHeaderContent(),
-		Content:       m.makeContent(),
-	}
-	return page.Render(ctx, w)
-}
-
-templ (m SummonerPage) makeHeaderContent() {
-	<div class="flex justify-between gap-2 items-center p-2">
-		@MenuButton{}
-		@ZSummonerSearchBar{}
-		@MenuButton{}
-	</div>
-}
-
-templ (m SummonerPage) makeContent() {
-	<div class="flex justify-center">
-		<div>
-			<div class="flex justify-between items-center px-4 pt-10 w-full mx-auto">
-				<div class="flex items-center gap-4">
-					<h1 class="font-bold text-3xl text-gray-900/90">
-						{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
-					</h1>
-					@RankWidget{Rank: m.Rank, UsePill: true, ShowTierName: true}
+templ (m SummonerPage) buildContent() {
+	<div>
+		@buildHeaderBar() {
+			@PageHeaderLayout{Region: m.Region}
+		}
+		<div class="flex justify-center">
+			<div>
+				<div class="flex justify-between items-center px-4 pt-10 w-full mx-auto">
+					<div class="flex items-center gap-4">
+						@h1(fmt.Sprintf("%s#%s", m.Name, m.Tag))
+						@RankWidget{Rank: m.Rank, UsePill: true, ShowTierName: true}
+					</div>
+					<div>
+						// placeholder
+					</div>
 				</div>
-				<div class="flex gap-1">
-					@LiveGameModal{PUUID: m.PUUID}
-				</div>
+				<ol
+					class="flex flex-col justify-center px-4 pt-10 w-full gap-8"
+				>
+					@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now()}
+					@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now().Add(-24*time.Hour)}
+					@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now().Add(-48*time.Hour)}
+				</ol>
 			</div>
-			<ol
-                                class="flex flex-col justify-center px-4 pt-10 w-full"
-                        >
-				@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now()}
-				@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now().Add(-24*time.Hour)}
-			</ol>
 		</div>
 	</div>
 }
 
-type HomePage struct{}
-
-func (m HomePage) Render(ctx context.Context, w io.Writer) error {
+func (m SummonerPage) Render(ctx context.Context, w io.Writer) error {
 	page := Page{
-		Title:   fmt.Sprintf("Kevin"),
-		HeaderContent: m.makeHeaderContent(),
-		Content: m.makeContent(),
+		Title:   fmt.Sprintf("%s#%s - Kevin", m.Name, m.Tag),
+		Content: m.buildContent(),
 	}
 
 	return page.Render(ctx, w)
 }
 
-templ (m HomePage) makeHeaderContent() {
-	<div class="flex bg-white justify-between gap-2 items-center p-2">
-		@MenuButton{}
-		@SummonerSearchBar{}
-		@MenuButton{}
+type NoSummonerPage struct {
+	Region riot.Region
+
+	Name string
+
+	Tag string
+}
+
+templ (m NoSummonerPage) build() {
+	<div>
+		@buildHeaderBar() {
+			@PageHeaderLayout{Region: m.Region}
+		}
+		<div>
+			Summoner not found
+		</div>
 	</div>
 }
 
-templ (m HomePage) makeContent() {
-	<div></div>
+func (m NoSummonerPage) Render(ctx context.Context, w io.Writer) error {
+	page := Page{
+		Title:   fmt.Sprintf("Summoner not found - Kevin"),
+		Content: m.build(),
+	}
+
+	return page.Render(ctx, w)
+}
+
+type HomePage struct{
+	Region riot.Region
+}
+
+templ (m HomePage) buildContent() {
+	<div>
+		@buildHeaderBar() {
+			@PageHeaderLayout{Region: m.Region}
+		}
+	</div>
+}
+
+func (m HomePage) Render(ctx context.Context, w io.Writer) error {
+	page := Page{
+		Title:   fmt.Sprintf("Kevin"),
+		Content: m.buildContent(),
+	}
+
+	return page.Render(ctx, w)
 }

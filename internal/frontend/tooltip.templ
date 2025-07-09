@@ -1,0 +1,31 @@
+package frontend
+
+import "context"
+import "io"
+
+type Tooltip struct {
+	Tip string
+
+	ButtonStyle int // for now 0 is shadow, 1 is flat
+
+	ButtonChildren templ.Component
+}
+
+templ (m Tooltip) build() {
+	<div
+		if m.Tip != "" {
+			title={ m.Tip }
+		}
+		if m.ButtonStyle == 0 {
+			class="overflow-hidden shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 rounded-lg dark:hover:shadow-gray-100/90 hover:shadow-gray-900/90"
+		} else {
+			class="overflow-hidden bg-transparent rounded-lg dark:hover:bg-gray-100/5 hover:bg-gray-900/5"
+		}
+	>
+		@m.ButtonChildren
+	</div>
+}
+
+func (m Tooltip) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}

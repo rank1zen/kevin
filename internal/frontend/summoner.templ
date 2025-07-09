@@ -6,134 +6,17 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-// SummonerWidget is a component for displaying summoner information.
-type SummonerWidget struct {
-	Name string
-
-	Tagline string
-
-	Rank RankWidget
-}
-
-templ (m SummonerWidget) build() {
-	<div class="flex items center gap-2">
-		@Text{S: m.Name + "#" + m.Tagline}
-		@m.Rank
-	</div>
-}
-
-func (m SummonerWidget) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
-var DefaultPlatforms = []string{"NA", "KR", "EUW"}
-
-// SummonerSearchBar is a search bar component with inputs for platform, name,
-// and tagline. This component issues POST requests to the server and displays
-// results in a popup.
 type SummonerSearchBar struct {
-	// Platforms are the available platforms for search. If nil,
-	// DefaultPlatforms is used.
-	Platforms []string // change this to riot platform type
-
-	// Name is the name of a summoner, which will be used as a search bar
-	// cover, if provided.
-	Name string
-}
-
-templ (m SummonerSearchBar) makeSearchInput() {
-	<div
-		class="relative"
-		x-data="{ open: false }"
-		@click.outside="open = false"
-	>
-		@SearchInput{
-			InputName: "q",
-			Placeholder: "Search summoner...",
-			Embeded: true,
-			Attrs: templ.Attributes{
-				"@input": "open = true",
-				"hx-post": "/search",
-				"hx-target": "#search-results",
-				"hx-trigger": "input changed delay:500ms, keyup[key=='Enter']",
-				"hx-include": "[name='region']",
-			},
-		}
-		<div
-			class="absolute -translate-x-1/2 mt-3 w-3/2 left-1/2 bg-white rounded-lg shadow z-20"
-			x-show="open"
-			x-ref="panel"
-			x-cloak
-		>
-			<div id="search-results" class="p-2"></div>
-		</div>
-	</div>
-}
-
-templ temp() {
-	<div
-		class="flex transition-colors rounded-lg p-1 gap-1 items-center hover:bg-gray-900/5 active:bg-gray-900/10"
-		:class="open && 'bg-gray-900/5'"
-	>
-		<div class="flex justify-center w-12">
-			<span class="font-bold text-sm" x-text="platform"></span>
-		</div>
-		@Icon(StaticGoDownSymbol)
-	</div>
-}
-
-templ (m SummonerSearchBar) build() {
-	<div
-		x-id="['summoner-search-bar']"
-		x-data="{
-			platform: 'NA1',
-			setPlatform(platform) {this.platform = platform},
-			name: '',
-			tag: ''
-		}"
-	>
-		<div class="flex flex-none p-1 bg-gray-900/5 rounded-lg gap-1">
-			<input type="hidden" name="region" :value="$data.platform"/>
-			@makeDropdown(
-				temp(),
-				Menu{
-					Items: []MenuItem{
-						{
-							Label:    "NA1",
-							SubLabel: "North America",
-							Attrs:    templ.Attributes{"@click": "setPlatform('NA1')"},
-						},
-						{
-							Label:    "KR1",
-							SubLabel: "Korea",
-							Attrs:    templ.Attributes{"@click": "setPlatform('KR1')"},
-						},
-					},
-				},
-			)
-			@m.makeSearchInput()
-		</div>
-	</div>
-}
-
-func (m SummonerSearchBar) Render(ctx context.Context, w io.Writer) error {
-	if m.Platforms == nil {
-		m.Platforms = DefaultPlatforms
-	}
-	return m.build().Render(ctx, w)
-}
-
-type ZSummonerSearchBar struct {
         // Region will be used as the default tagline if no tag is found in search
         Region riot.Region
 }
 
-templ (m ZSummonerSearchBar) build() {
+templ (m SummonerSearchBar) build() {
         <div
 		x-id="['summoner-search-bar']"
                 x-data="{ open: false }"
 		@click.outside="open = false"
-		class="relative"
+		class="relative flex-1 max-w-96"
         >
                 <input
 			type="hidden"
@@ -145,70 +28,29 @@ templ (m ZSummonerSearchBar) build() {
                         name="q"
                         @input="open = true"
 			hx-post="/search"
-                        hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+                        hx-trigger="input changed delay:300ms, keyup[key=='Enter']"
 			hx-include="[name='region']"
 			hx-target="#search-results"
 			placeholder="Search summoner..."
-                        class="transition rounded-lg bg-gray-900/5 text-sm text-gray-950/90 inset-ring-blue-500/50 w-52 p-2 focus:inset-ring-2 focus:outline-0"
+                        class="transition rounded-lg bg-gray-900/5 dark:bg-gray-200/5 text-sm text-gray-900/90 dark:text-gray-100/90 w-full inset-ring-blue-500/50 px-3 py-2 focus:inset-ring-2 focus:outline-0"
                 />
 		<div
 			x-ref="panel"
 			x-show="open"
 			x-cloak
-			class="absolute -translate-x-1/2 mt-3 w-3/2 left-1/2 bg-white rounded-lg shadow z-20"
+			class="absolute mt-2 w-full z-20"
 		>
-			<div
-				id="search-results"
-				class="p-2"
-			>
-			</div>
+			@buildPanel() {
+				<div
+					id="search-results"
+					class="p-2"
+				>
+				</div>
+			}
 		</div>
         </div>
 }
 
-func (m ZSummonerSearchBar) Render(ctx context.Context, w io.Writer) error {
+func (m SummonerSearchBar) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
-
-// templ SummonerSearchBar(puuid string, platform string, name, tagline string, rank *internal.RankDetail) {
-// 	<div
-// 		x-data="{
-// 			open: false,
-// 			toggle() {
-// 				this.open = this.open? this.close() : true
-// 				$nextTick(() => { $focus.focus($refs.searchInput) })
-// 			},
-// 			close() {
-// 				this.open = false
-// 			}
-// 		}"
-// 		class="flex grow max-w-2xl items-center justify-between"
-// 	>
-// 		// search div
-// 		<div
-// 			x-transition:enter="transition-discrete"
-// 			x-show="!open"
-// 			@click="toggle()"
-// 			class="flex grow w-full items-center rounded-lg bg-gray-100 justify-between"
-// 		>
-// 			<div class="flex items-center">
-// 				@TextTitle(name + "#" + tagline)
-// 				@RankWidget{Rank: rank}
-// 			</div>
-// 			<form
-// 				type="button"
-// 				hx-post="/fetch/summoner"
-// 				hx-on="click"
-// 				hx-swap="none"
-// 				class="flex flex-none p-2.5 items-center justify-center"
-// 			>
-// 				<input type="hidden" name="platform" value={ platform }/>
-// 				<input type="hidden" name="puuid" value={ puuid }/>
-// 				@Icon(StaticViewRefreshSymbol)
-// 			</form>
-// 		</div>
-// 		<div>
-// 			@SearchBar()
-// 		</div>
-// 	</div>
-// }

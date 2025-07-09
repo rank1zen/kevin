@@ -1,0 +1,91 @@
+package frontend
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/riot"
+	"io"
+)
+
+type HeaderLayout struct {
+	StartChildren templ.Component
+
+	CenterChildren templ.Component
+
+	EndChildren templ.Component
+}
+
+templ (m HeaderLayout) build() {
+	<div class="flex w-full h-13 gap-x-2 justify-between items-center px-2">
+		if m.StartChildren != nil {
+			<div>
+				@m.StartChildren
+			</div>
+		}
+		if m.CenterChildren != nil {
+			<div class="flex-1">
+				@m.CenterChildren
+			</div>
+		}
+		if m.EndChildren != nil {
+			<div>
+				@m.EndChildren
+			</div>
+		}
+	</div>
+}
+
+func (m HeaderLayout) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type PageHeaderLayout struct {
+	Region riot.Region
+}
+
+templ (m PageHeaderLayout) buildHeaderStart() {
+	<div class="flex gap-2">
+		<div class="size-9 transition flex items-center justify-center rounded-lg hover:bg-gray-900/5 dark:hover:bg-gray-100/5">
+			<span>K</span>
+		</div>
+	</div>
+}
+
+templ (m PageHeaderLayout) buildHeaderCenter() {
+	<div class="flex gap-2 justify-center">
+		@RegionPopover{Region: m.Region}
+		@SummonerSearchBar{}
+	</div>
+}
+
+templ (m PageHeaderLayout) buildHeaderEnd() {
+	<div class="flex gap-2">
+		@MenuPopover{}
+	</div>
+}
+
+func (m PageHeaderLayout) Render(ctx context.Context, w io.Writer) error {
+	c := HeaderLayout{
+		StartChildren:  m.buildHeaderStart(),
+		CenterChildren: m.buildHeaderCenter(),
+		EndChildren:    m.buildHeaderEnd(),
+	}
+
+	return c.Render(ctx, w)
+}
+
+type MenuItemLayout struct {
+	Label string
+
+	SubLabel string
+}
+
+templ (m MenuItemLayout) build() {
+	<div class="flex flex-item h-7 items-center justify-between px-3 gap-3">
+		<span class="text-sm text-gray-900/90 dark:text-gray-100/90  whitespace-nowrap">{ m.Label }</span>
+		<span class="text-sm text-gray-500/90 whitespace-nowrap">{ m.SubLabel }</span>
+	</div>
+}
+
+func (m MenuItemLayout) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
