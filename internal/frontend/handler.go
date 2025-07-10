@@ -83,29 +83,48 @@ func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (templ.Co
 	return page, nil
 }
 
-// GetSummonerPage returns [SummonerPage] if summoner exists, otherwise, return
+// GetSummonerPage returns [SummonerPage] if summoner exists in store,
+// otherwise, it will complete a update for summoner, then return
+// [SummonerPage]. If no summoner with name#tag exists, return
 // [NoSummonerPage].
 func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (templ.Component, error) {
 	puuid, err := h.Datasource.GetPUUID(ctx, name, tag)
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerDoesNotExist) {
-			return NoSummonerPage{}, nil
+			return NoSummonerPage{
+				Region: region,
+				Name:   name,
+				Tag:    tag,
+			}, nil
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("get puuid: %w", err)
 	}
 
 	summoner, err := h.Datasource.GetStore().GetSummoner(ctx, puuid)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, internal.ErrSummonerNotFound) {
+			fromCtx(ctx).Info("first time visit", "puuid", puuid)
+
+			if err := h.Datasource.UpdateSummoner(ctx, region, puuid); err != nil {
+				return nil, fmt.Errorf("getting puuid: %w", err)
+			}
+		}
+	}
+
+	// try again
+	summoner, err = h.Datasource.GetStore().GetSummoner(ctx, puuid)
+	if err != nil {
+		return nil, fmt.Errorf("get summoner: %w", err)
 	}
 
 	rank, err := h.Datasource.GetStore().GetRank(ctx, puuid, time.Now(), true)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get rank: %w", err)
 	}
 
 	page := SummonerPage{
+		Region:      region,
 		PUUID:       puuid,
 		Name:        summoner.Name,
 		Tag:         summoner.Tagline,
@@ -167,6 +186,7 @@ func (h *Handler) GetSummonerMatchHistory(ctx context.Context, region riot.Regio
 	cards := []MatchHistoryCard{}
 	for _, m := range storeMatches {
 		cards = append(cards, MatchHistoryCard{
+			MatchID:     m.MatchID,
 			Champion:    m.ChampionID,
 			Summoners:   m.SummonerIDs,
 			Kills:       m.Kills,
@@ -176,6 +196,8 @@ func (h *Handler) GetSummonerMatchHistory(ctx context.Context, region riot.Regio
 			CSPerMinute: m.CreepScorePerMinute,
 			RunePage:    m.Runes,
 			Items:       m.Items,
+			Rank:        &internal.RankDetail{},
+			LPChange:    new(int),
 		})
 	}
 

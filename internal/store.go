@@ -24,6 +24,9 @@ var (
 )
 
 type Store interface {
+	// GetPUUID returns a summoner's puuid.
+	GetPUUID(ctx context.Context, name, tag string) (puuid string, err error)
+
 	GetMatch(ctx context.Context, id string) (Match, [10]Participant, error)
 
 	// GetItemEvents(ctx context.Context, matchID string, puuid string) ()
@@ -41,6 +44,8 @@ type Store interface {
 
 	// GetMatches returns a summoners match history in chronological order.
 	// Each page is 10 matches.
+	//
+	// Might be deprecated
 	GetMatches(ctx context.Context, puuid string, page int) ([]SummonerMatch, error)
 
 	// GetZMatches returns a every match a summoner has played starting at

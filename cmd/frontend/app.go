@@ -33,7 +33,7 @@ func (m AppMode) String() string {
 }
 
 type App struct {
-	Mode AppMode
+	mode AppMode
 
 	handler http.Handler
 
@@ -43,37 +43,43 @@ type App struct {
 
 	datasource *internal.Datasource
 
-	// Address is the http address to run App. If empty, localhost:4001 is
+	// address is the http address to run App. If empty, localhost:4001 is
 	// used.
-	Address string
+	address string
 
-	Logger *slog.Logger
+	logger *slog.Logger
 }
 
 func New(riotAPIKey string, pgConnStr string, opts ...AppOption) *App {
 	ctx := context.Background()
-
-	app := App{
-		Address:    "localhost:4001",
-	}
-
-	var logger *slog.Logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
-	if app.Mode == AppModeDevelopment {
-		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	}
-
-	logger = logger.With("env", app.Mode.String())
-
-	app.Logger = logger
-
-	app.riotClient = riot.NewClient(riotAPIKey)
 
 	pool, err := pgxpool.New(ctx, pgConnStr)
 	if err != nil {
 		panic(err)
 	}
 
-	app.conn = pool
+	// defaults
+	app := App{
+		mode:       AppModeProduction,
+		handler:    nil,
+		conn:       pool,
+		riotClient: riot.NewClient(riotAPIKey),
+		datasource: &internal.Datasource{},
+		address:    "localhost:4001",
+		logger:     slog.Default(),
+	}
+
+	for _, f := range opts {
+		f(&app)
+	}
+
+	var logger *slog.Logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+	if app.mode == AppModeDevelopment {
+		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	}
+
+	logger = logger.With("env", app.mode.String())
+	app.logger = logger
 
 	conn, err := app.conn.Acquire(ctx)
 	if err != nil {
@@ -99,10 +105,10 @@ func New(riotAPIKey string, pgConnStr string, opts ...AppOption) *App {
 
 	app.datasource = internal.NewDatasource(app.riotClient, store)
 
-	frontend := frontend.New(&frontend.Handler{
-		Datasource: app.datasource,
-		Store:      store,
-	}, frontend.WithLogger(logger))
+	frontend := frontend.New(
+		&frontend.Handler{Datasource: app.datasource,},
+		frontend.WithLogger(logger),
+	)
 
 	for _, opt := range opts {
 		if err := opt(&app); err != nil {
@@ -119,14 +125,14 @@ type AppOption func(*App) error
 
 func WithAddress(addr string) AppOption {
 	return func(a *App) error {
-		a.Address = addr
+		a.address = addr
 		return nil
 	}
 }
 
 func WithMode(mode AppMode) AppOption {
 	return func(a *App) error {
-		a.Mode = mode
+		a.mode = mode
 		return nil
 	}
 }
@@ -136,14 +142,14 @@ func (app *App) Run(ctx context.Context) {
 	defer cancel()
 
 	go func() {
-		http.ListenAndServe(app.Address, app.handler)
+		http.ListenAndServe(app.address, app.handler)
 	}()
 
-	app.Logger.Info("start server", "addr", app.Address)
+	app.logger.Info("start server", "addr", app.address)
 
 	<-ctx.Done()
 
-	app.Logger.Info("stop server")
+	app.logger.Info("stop server")
 }
 
 func (app *App) Close(ctx context.Context) {

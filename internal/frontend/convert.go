@@ -1,9 +1,6 @@
 package frontend
 
 import (
-	"errors"
-	"strings"
-
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
@@ -31,15 +28,4 @@ func convertRiotRegionToString(region riot.Region) (string) {
 	}
 
 	return riotRegionToString[riot.RegionNA1]
-}
-
-func convertRiotIDToNameTag(riotID string) (name, tag string, err error) {
-	tokens := strings.SplitN(riotID, "-", 2)
-	name = tokens[0]
-	tag = tokens[1]
-	if tag == "" {
-		return "", "", errors.New("invalid riotID")
-	}
-
-	return name, tag, nil
 }

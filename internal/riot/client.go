@@ -61,28 +61,32 @@ func WithHTTPClient(c *http.Client) ClientOption {
 }
 
 // makeAndDispatchRequest basically does everything
-func (c *Client) makeAndDispatchRequest(ctx context.Context, region Region, endpoint string, dst any) error {
+func (c *Client) makeAndDispatchRequest(ctx context.Context, region Region, endpoint string, dst any, opts ...requestOption) error {
 	u, err := url.JoinPath(regionToHost[region], endpoint)
 	if err != nil {
 		panic(err)
 	}
 
-	return c.makeAndDispatch(ctx, u, dst)
+	return c.makeAndDispatch(ctx, u, dst, opts...)
 }
 
-func (c *Client) makeAndDispatchRequestOnContinent(ctx context.Context, continent Continent, endpoint string, dst any) error {
+func (c *Client) makeAndDispatchRequestOnContinent(ctx context.Context, continent Continent, endpoint string, dst any, opts ...requestOption) error {
 	u, err := url.JoinPath(continentToHost[continent], endpoint)
 	if err != nil {
 		panic(err)
 	}
 
-	return c.makeAndDispatch(ctx, u, dst)
+	return c.makeAndDispatch(ctx, u, dst, opts...)
 }
 
-func (c *Client) makeAndDispatch(ctx context.Context, url string, dst any) error {
+func (c *Client) makeAndDispatch(ctx context.Context, url string, dst any, opts ...requestOption) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-Riot-Token", c.apiKey)
+
+	for _, f := range opts {
+		f(req)
+	}
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
@@ -146,5 +150,15 @@ func getError(status int) error {
 	default:
 		// assume status is OK!
 		return nil
+	}
+}
+
+type requestOption func(*http.Request)
+
+func withParam(k, v string) requestOption {
+	return func(r *http.Request) {
+		query := r.URL.Query()
+		query.Set(k, v)
+		r.URL.RawQuery = query.Encode()
 	}
 }

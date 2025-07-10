@@ -46,6 +46,7 @@ func (m CardGroup) Render(ctx context.Context, w io.Writer) error {
 
 // MatchHistoryCard displays a match in a summoner's match history.
 type MatchHistoryCard struct {
+	MatchID                string
 	Champion               int
 	Summoners              [2]int
 	Kills, Deaths, Assists int

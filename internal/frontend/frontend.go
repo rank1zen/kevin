@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
@@ -14,6 +15,7 @@ import (
 
 var (
 	ErrInvalidRegion = errors.New("invalid region")
+	ErrInvalidRiotID = errors.New("invalid riot id")
 )
 
 // Frontend serves [templ.Component].
@@ -114,7 +116,7 @@ func (f *Frontend) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	payload := slog.Group("payload", "region", region)
 
 	riotID := r.PathValue("riotID")
-	name, tag, err := convertRiotIDToNameTag(riotID)
+	name, tag, err := ParseRiotID(riotID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		logger.Debug("failed to resolve riot id", "err", err , payload)
@@ -307,5 +309,27 @@ func fromCtx(parent context.Context) *slog.Logger {
 		return logger
 	}
 
-	return nil
+	return slog.Default()
+}
+
+// ParseRiotID parses a name-tag serperated by a '-' character. It returns
+// [ErrInvalidRiotID] if riotID is not exactly "name-tag".
+func ParseRiotID(riotID string) (name, tag string, err error) {
+	index := strings.Index(riotID, "-")
+	if index == -1 {
+		return "", "", ErrInvalidRiotID
+	}
+
+	if index == len(riotID) - 1 {
+		return "", "", ErrInvalidRiotID
+	}
+
+	name = riotID[:index]
+	tag = riotID[index+1:]
+
+	if index := strings.Index(tag, "-"); index != -1 {
+		return "", "", ErrInvalidRiotID
+	}
+
+	return name, tag, nil
 }

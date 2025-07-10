@@ -7,6 +7,22 @@ import (
 
 type MatchService service
 
+// MatchListOptions are parameters to send in a [MatchService.GetMatchList]
+// request.
+type MatchListOptions struct {
+	StartTime *int64
+
+	EndTime *int64
+
+	Queue *int
+
+	Type *string
+
+	Start int
+
+	Count int
+}
+
 type MatchList []string
 
 // GetMatchIDsByPUUID returns a list of match ids by puuid.
@@ -14,11 +30,27 @@ type MatchList []string
 // Riot API docs: https://developer.riotgames.com/apis#match-v5/GET_getMatchIdsByPUUID
 //
 // GET /lol/match/v5/matches/by-puuid/{puuid}/ids
-func (m *MatchService) GetMatchList(ctx context.Context, continent Continent, puuid, query string) (MatchList, error) {
+func (m *MatchService) GetMatchList(ctx context.Context, continent Continent, puuid string, opts MatchListOptions) (MatchList, error) {
 	endpoint := fmt.Sprintf("/lol/match/v5/matches/by-puuid/%s/ids", puuid)
 
+	reqOpts := []requestOption{}
+	reqOpts = append(reqOpts, withParam("start", fmt.Sprintf("%d", opts.Start)))
+	reqOpts = append(reqOpts, withParam("count", fmt.Sprintf("%d", opts.Count)))
+	if opts.StartTime != nil {
+		reqOpts = append(reqOpts, withParam("startTime", fmt.Sprintf("%d", *opts.StartTime)))
+	}
+	if opts.EndTime != nil {
+		reqOpts = append(reqOpts, withParam("endTime", fmt.Sprintf("%d", *opts.EndTime)))
+	}
+	if opts.Queue != nil {
+		reqOpts = append(reqOpts, withParam("queue", fmt.Sprintf("%d", *opts.Queue)))
+	}
+	if opts.Type != nil {
+		reqOpts = append(reqOpts, withParam("type", *opts.Type))
+	}
+
 	var ids MatchList
-	if err := m.client.makeAndDispatchRequestOnContinent(ctx, continent, endpoint, &ids); err != nil {
+	if err := m.client.makeAndDispatchRequestOnContinent(ctx, continent, endpoint, &ids, reqOpts...); err != nil {
 		return nil, err
 	}
 

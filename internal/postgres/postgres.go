@@ -25,6 +25,14 @@ func NewStore(conn *pgxpool.Pool) *Store {
 	return &Store{conn}
 }
 
+func (s *Store) GetPUUID(ctx context.Context, name, tag string) (puuid string, err error) {
+	err = s.conn.QueryRow(ctx, `
+		SELECT puuid FROM summoner WHERE name = $1 AND tagline = $2;
+	`, name, tag).Scan(&puuid)
+
+	return puuid, err
+}
+
 func (s *Store) GetZMatches(ctx context.Context, puuid string, date time.Time) ([]internal.SummonerMatch, error) {
 	rows, _ := s.conn.Query(ctx, `
 		SELECT

@@ -62,7 +62,8 @@ func (m RankWidget) generateLabel() string {
 		return "Unranked"
 	}
 
-	var label string = m.Rank.Tier.String() + " " + m.Rank.Division.String()
+	label := m.Rank.Tier.String() + " " + m.Rank.Division.String()
+
 	if m.Rank.Tier == riot.TierChallenger || m.Rank.Tier == riot.TierGrandmaster || m.Rank.Tier == riot.TierMaster {
 		label = m.Rank.Tier.String()
 	}

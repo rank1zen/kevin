@@ -73,7 +73,7 @@ func TestLiveParticipant(t *testing.T) {
 
 	matchFile, err := testdata.Open("spectator/aram.json")
 
-	var riotMatch riot.CurrentGameInfo
+	var riotMatch riot.LiveMatch
 	err = json.NewDecoder(matchFile).Decode(&riotMatch)
 	require.NoError(t, err)
 
