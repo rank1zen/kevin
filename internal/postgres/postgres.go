@@ -574,9 +574,10 @@ func (s *Store) GetMatch(ctx context.Context, id string) (internal.Match, [10]in
 	return match, p, nil
 }
 
-func (s *Store) GetChampions(ctx context.Context, puuid string) (_ []internal.SummonerChampion, err error) {
+// GetChampions returns summoner champions stats in the last 7 days.
+func (s *Store) GetChampions(ctx context.Context, puuid string) ([]internal.SummonerChampion, error) {
 	rows, _ := s.conn.Query(ctx, `
-		select
+		SELECT
 			champion,
 			round(avg(kills)),
 			round(avg(deaths)),
@@ -593,10 +594,14 @@ func (s *Store) GetChampions(ctx context.Context, puuid string) (_ []internal.Su
 			round(avg(damage_taken)),
 			round(avg(vision_score)),
 			round(avg(pink_wards_bought))
-		from Participant
-		where puuid = $1
-		group by champion
-		order by champion asc;
+		FROM
+			Participant
+		WHERE
+			puuid = $1
+		GROUP BY
+			champion
+		ORDER BY
+			count(*) DESC;
 	`, puuid)
 
 	collect := func(row pgx.CollectableRow) (m internal.SummonerChampion, err error) {
