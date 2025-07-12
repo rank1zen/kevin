@@ -10,9 +10,12 @@ templ h1(s string) {
 }
 
 templ h2(s string) {
-	<h1 class="font-bold text-xl text-gray-900/90 dark:text-gray-100/90">
+	<h1 class="font-bold text-base text-gray-900/90 dark:text-gray-100/90">
 		{ s }
 	</h1>
+}
+
+templ empty() {
 }
 
 templ buildHeaderBar() {

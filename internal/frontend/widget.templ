@@ -23,18 +23,18 @@ func (m ChampionWidget) generateSpriteBGPosition(id int) string {
 	summ := ddragon.SummonerMap[id]
 	x := summ.X / 48
 	y := summ.Y / 48
-	return fmt.Sprintf("bg-position-[-%dpx_-%dpx]", x*28, y*28)
+	return fmt.Sprintf("bg-position-[-%dpx_-%dpx]", x*24, y*24)
 }
 
 func (m ChampionWidget) generateSpriteBG(id int) string {
 	summ := ddragon.SummonerMap[id]
-	p := path.Join("/static/sprite", "small_"+summ.Sprite)
+	p := path.Join("/static/sprite", "tiny_"+summ.Sprite)
 	return fmt.Sprintf("bg-[url(%s)]", p)
 }
 
 templ (m ChampionWidget) makeSummonerAtIndex(i int) {
 	{{ id := m.Summoners[i] }}
-	<div class={ "rounded-lg", "size-7", m.generateSpriteBG(id), m.generateSpriteBGPosition(id), "bg-size-[280px_112px]" }></div>
+	<div class={ "rounded-sm", "size-6", m.generateSpriteBG(id), m.generateSpriteBGPosition(id) }></div>
 }
 
 templ (m ChampionWidget) buildChampionIcon() {
@@ -54,9 +54,9 @@ templ (m ChampionWidget) build() {
 		championTooltip := Tooltip{Tip: champion.Name, ButtonChildren: m.buildChampionIcon()}
 	}}
 	if m.Summoners != nil {
-		<div class="flex flex-none items-center gap-1">
+		<div class="flex flex-none items-start gap-0.5">
 			@championTooltip
-			<div class="flex p-1 gap-1 bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+			<div class="flex flex-col gap-0.5">
 				@Tooltip{ButtonChildren: m.makeSummonerAtIndex(0)}
 				@Tooltip{ButtonChildren: m.makeSummonerAtIndex(1)}
 			</div>
@@ -213,19 +213,19 @@ templ (m KDAWidget) sep() {
 
 templ (m KDAWidget) build() {
 	<div class="flex flex-none items-center">
-		<div class="flex justify-center w-6">
+		<div class="flex justify-center w-5 text-sm">
 			<span class={ m.generateKillTextColor() }>
 				{ fmt.Sprintf("%d", m.Kills) }
 			</span>
 		</div>
 		@m.sep()
-		<div class="flex justify-center w-6">
+		<div class="flex justify-center w-5 text-sm">
 			<span class="text-red-900/90">
 				{ fmt.Sprintf("%d", m.Deaths) }
 			</span>
 		</div>
 		@m.sep()
-		<div class="flex justify-center w-6">
+		<div class="flex justify-center w-5 text-sm">
 			<span class="text-gray-900/90">
 				{ fmt.Sprintf("%d", m.Assists) }
 			</span>
@@ -244,8 +244,33 @@ type CSWidget struct {
 }
 
 templ (m CSWidget) build() {
+	<div class="size-9">
+		<div class="font-bold text-sm text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%d", m.CS) }
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%.1f", m.CSPerMinute) }
+		</div>
+	</div>
 }
 
 func (m CSWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type GamesPlayedWidget struct {
+	GamesPlayed int
+
+	TotalGamesPlayed int
+}
+
+templ (m GamesPlayedWidget) build() {
+	<div class="flex-none h-5 bg-gray-900/5 w-24">
+		<div class="w-1/5 h-full bg-blue-500/50">
+		</div>
+	</div>
+}
+
+func (m GamesPlayedWidget) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }

@@ -186,7 +186,7 @@ func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 
 	riotRegion := convertStringToRiotRegion(region)
 
-	component, err := f.handler.GetSummonerMatchHistory(ctx, riotRegion, puuid, date)
+	component, err := f.handler.GetSummonerMatchHistory(ctx, riotRegion, puuid, date.Unix())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)

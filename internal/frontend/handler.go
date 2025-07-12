@@ -135,6 +135,40 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	return page, nil
 }
 
+// GetSummonerChampions returns [SummonerChampionList] consisting of stats for
+// the last week of games.
+func (h *Handler) ZGetSummonerChampions(ctx context.Context, region riot.Region, puuid string) (templ.Component, error) {
+	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid)
+	if err != nil {
+		return nil, err
+	}
+
+	list := SummonerChampionList{Champions: []ChampionPopover{}}
+
+	for _, champion := range champions {
+		list.Champions = append(
+			list.Champions,
+			ChampionPopover{
+				Champion:             int(champion.Champion),
+				KillParticipation:    champion.KillParticipation,
+				CS:                   champion.CreepScore,
+				CSPerMinute:          champion.CreepScorePerMinute,
+				DamageDealt:          champion.DamageDealt,
+				DamageTaken:          champion.DamageTaken,
+				DamageDeltaEnemy:     champion.DamageDeltaEnemy,
+				DamagePercentageTeam: champion.DamagePercentageTeam,
+				GoldEarned:           champion.GoldEarned,
+				GoldDeltaEnemy:       champion.GoldDeltaEnemy,
+				GoldPercentageTeam:   champion.GoldPercentageTeam,
+				VisionScore:          champion.VisionScore,
+				PinkWardsBought:      champion.PinkWardsBought,
+			},
+		)
+	}
+
+	return list, nil
+}
+
 // GetSummonerChampions returns a [ChampionsModal].
 func (h *Handler) GetSummonerChampions(ctx context.Context, region riot.Region, puuid string) (templ.Component, error) {
 	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid)
@@ -170,43 +204,44 @@ func (h *Handler) GetSummonerChampions(ctx context.Context, region riot.Region, 
 	return modal, nil
 }
 
-// GetSummonerMatchHistory returns a [MatchHistoryBlockCard] which are all
-// the matches played on date. The method will fetch riot first to ensure all
-// matches played on date are in store.
-func (h *Handler) GetSummonerMatchHistory(ctx context.Context, region riot.Region, puuid string, date time.Time) (templ.Component, error) {
-	if err := h.Datasource.ZUpdateMatchHistory(ctx, region, puuid, date); err != nil {
+// GetSummonerMatchHistory returns a [MatchHistoryList], being the matches
+// played on date to date + 24 hours. The method will fetch riot first to
+// ensure all matches played on date are in store.
+func (h *Handler) GetSummonerMatchHistory(ctx context.Context, region riot.Region, puuid string, date int64) (templ.Component, error) {
+	ts := time.Unix(date, 0)
+
+	if err := h.Datasource.ZUpdateMatchHistory(ctx, region, puuid, ts, ts.Add(24*time.Hour)); err != nil {
 		return nil, err
 	}
 
-	storeMatches, err := h.Datasource.GetStore().GetZMatches(ctx, puuid, date)
+	storeMatches, err := h.Datasource.GetStore().GetZMatches(ctx, puuid, ts, ts.Add(24*time.Hour))
 	if err != nil {
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
 
-	cards := []MatchHistoryCard{}
+	list := MatchHistoryList{Matches: []MatchHistoryRow{}}
+
 	for _, m := range storeMatches {
-		cards = append(cards, MatchHistoryCard{
-			MatchID:     m.MatchID,
-			Champion:    m.ChampionID,
-			Summoners:   m.SummonerIDs,
-			Kills:       m.Kills,
-			Deaths:      m.Deaths,
-			Assists:     m.Assists,
-			CS:          m.CreepScore,
-			CSPerMinute: m.CreepScorePerMinute,
-			RunePage:    m.Runes,
-			Items:       m.Items,
-			Rank:        &internal.RankDetail{},
-			LPChange:    new(int),
-		})
+		list.Matches = append(
+			list.Matches,
+			MatchHistoryRow{
+				MatchID:     m.MatchID,
+				Champion:    m.ChampionID,
+				Summoners:   m.SummonerIDs,
+				Kills:       m.Kills,
+				Deaths:      m.Deaths,
+				Assists:     m.Assists,
+				CS:          m.CreepScore,
+				CSPerMinute: m.CreepScorePerMinute,
+				RunePage:    m.Runes,
+				Items:       m.Items,
+				Rank:        &internal.RankDetail{},
+				LPChange:    new(int),
+			},
+		)
 	}
 
-	block := MatchHistoryBlockCard{
-		Date:    date,
-		Matches: cards,
-	}
-
-	return block, nil
+	return list, nil
 }
 
 // GetMatchScoreboard returns the scoreboard of a match.

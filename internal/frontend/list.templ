@@ -1,0 +1,165 @@
+package frontend
+
+import "context"
+import "io"
+import "github.com/rank1zen/kevin/internal"
+import "fmt"
+
+type List struct {
+	Style int
+
+	Items []templ.Component
+}
+
+templ (m List) buildEmpty() {
+	<div class="bg-white h-9 dark:bg-black border border-gray-900/20 dark:border-gray-100/20 shadow shadow-gray-900/20 dark:shadow-gray-100/20 rounded-2xl">
+	</div>
+}
+
+templ (m List) buildFlat() {
+	<ol>
+		for _, c := range m.Items {
+			<li class="block">
+				@c
+			</li>
+		}
+	</ol>
+}
+
+templ (m List) build() {
+	<ol class="bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10 rounded-2xl">
+		for _, c := range m.Items {
+			<li class="block bg-white dark:bg-gray-950 hover:bg-gray-900/5 dark:hover:bg-gray-100/5 border-b border-gray-900/10 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none">
+				@c
+			</li>
+		}
+	</ol>
+}
+
+func (m List) Render(ctx context.Context, w io.Writer) error {
+	if len(m.Items) == 0 {
+		return m.buildEmpty().Render(ctx, w)
+	}
+
+	if m.Style == 1 {
+		return m.buildFlat().Render(ctx, w)
+	}
+
+	return m.build().Render(ctx, w)
+}
+
+// MatchHistoryRow displays a match in a summoner's match history.
+type MatchHistoryRow struct {
+	MatchID                string
+	Champion               int
+	Summoners              [2]int
+	Kills, Deaths, Assists int
+	CS                     int
+	CSPerMinute            float32
+	RunePage               internal.RunePage
+	Items                  [7]int
+	Rank                   *internal.RankDetail
+	LPChange               *int
+}
+
+templ (m MatchHistoryRow) buildRankDeltaWidget() {
+	<div class="h-9">
+		<div class="text-sm">
+			C 100 LP
+		</div>
+		<div class="text-xs">
+			WIN +17 LP
+		</div>
+	</div>
+}
+
+templ (m MatchHistoryRow) buildKDAWidget() {
+	<div class="h-9">
+		<div class="text-sm">
+			{ fmt.Sprintf("%d / %d / %d", m.Kills, m.Assists, m.Deaths)}
+		</div>
+		<div class="text-xs">
+			4.5
+		</div>
+	</div>
+}
+
+templ (m MatchHistoryRow) build() {
+	<div class="flex h-15 gap-x-4 px-4 items-center">
+		@ChampionWidget{
+			Champion:  m.Champion,
+			Summoners: &m.Summoners,
+		}
+		<div class="h-9">
+			@KDAWidget{
+				Kills:   m.Kills,
+				Deaths:  m.Deaths,
+				Assists: m.Assists,
+			}
+			<div class="text-xs">
+				3.4
+			</div>
+		</div>
+		@CSWidget{
+			CS:          m.CS,
+			CSPerMinute: m.CSPerMinute,
+		}
+		@RuneWidget{
+			RunePage: m.RunePage,
+		}
+		@ItemWidget{
+			Items: m.Items,
+		}
+		@m.buildRankDeltaWidget()
+		@Popover{}
+	</div>
+}
+
+func (m MatchHistoryRow) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// MatchHistoryList displays a full day of matches.
+type MatchHistoryList struct {
+	Matches []MatchHistoryRow
+}
+
+templ (m MatchHistoryList) buildNoMatchesCard() {
+	<div class="flex items-center justify-center h-15 bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 shadow shadow-gray-900/10 dark:shadow-gray-100/10 rounded-2xl">
+		<div class="text-sm">
+			No matches played
+		</div>
+	</div>
+}
+
+func (m MatchHistoryList) Render(ctx context.Context, w io.Writer) error {
+	list := List{Items: []templ.Component{}}
+
+	if len(m.Matches) == 0 {
+		return m.buildNoMatchesCard().Render(ctx, w)
+	}
+
+	for _, row := range m.Matches {
+		list.Items = append(list.Items, row)
+	}
+
+	return list.Render(ctx, w)
+}
+
+type SummonerChampionList struct {
+	Champions []ChampionPopover
+}
+
+func (m SummonerChampionList) Render(ctx context.Context, w io.Writer) error {
+	list := List{Style: 1, Items: []templ.Component{}}
+
+	if len(m.Champions) == 0 {
+		return list.Render(ctx, w)
+	}
+
+	for _, row := range m.Champions {
+		list.Items = append(list.Items, row)
+	}
+
+	return list.Render(ctx, w)
+}

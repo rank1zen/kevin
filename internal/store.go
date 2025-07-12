@@ -50,7 +50,7 @@ type Store interface {
 
 	// GetZMatches returns a every match a summoner has played starting at
 	// date, to 24 hours after date, exclusive.
-	GetZMatches(ctx context.Context, puuid string, date time.Time) ([]SummonerMatch, error)
+	GetZMatches(ctx context.Context, puuid string, start, end time.Time) ([]SummonerMatch, error)
 
 	GetChampions(ctx context.Context, puuid string) ([]SummonerChampion, error)
 

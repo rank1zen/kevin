@@ -7,6 +7,7 @@ import (
 	"io"
 	"time"
 	"github.com/rank1zen/kevin/internal/riot"
+	"encoding/json"
 )
 
 // Page is the main html component returned the to browser.
@@ -67,29 +68,78 @@ type SummonerPage struct {
 	LastUpdated time.Time
 }
 
+templ (m SummonerPage) buildMatchListDay(offset int) {
+	{{
+		now := time.Now() // FIXME: this should be the location of the browser client
+		y, mo, d := now.Date()
+		today := time.Date(y, mo, d, 0, 0, 0, 0, now.Location())
+
+		offset := today.Add(time.Duration(offset) * (-24*time.Hour))
+
+		vals := struct{
+			Region riot.Region `json:"region"`
+			PUUID string `json:"puuid"`
+			Date  int64 `json:"date"`
+		}{
+			m.Region,
+			m.PUUID,
+			offset.Unix(),
+		}
+
+		bytes, _ := json.Marshal(vals)
+	}}
+	<div>
+		<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90 pb-3">
+			{ offset.Format("Monday, Jan 2") }
+		</h2>
+		<div
+			hx-post="/summoner/matchlist"
+			hx-trigger="load once"
+			hx-vals={ string(bytes) }
+		>
+			Spinning...
+		</div>
+	</div>
+}
+
 templ (m SummonerPage) buildContent() {
 	<div>
 		@buildHeaderBar() {
 			@PageHeaderLayout{Region: m.Region}
 		}
+		<div class="w-full">
+			<div class="flex justify-between items-center px-4 pt-10 w-full mx-auto">
+				<div class="flex items-center gap-4">
+					@h1(fmt.Sprintf("%s#%s", m.Name, m.Tag))
+					@RankWidget{Rank: m.Rank, UsePill: true, ShowTierName: true}
+				</div>
+				<div>
+					// placeholder
+				</div>
+			</div>
+		</div>
 		<div class="flex justify-center">
-			<div>
-				<div class="flex justify-between items-center px-4 pt-10 w-full mx-auto">
-					<div class="flex items-center gap-4">
-						@h1(fmt.Sprintf("%s#%s", m.Name, m.Tag))
-						@RankWidget{Rank: m.Rank, UsePill: true, ShowTierName: true}
-					</div>
-					<div>
-						// placeholder
+			<div class="flex gap-x-9 mt-9">
+				<ol class="flex flex-col justify-center gap-8">
+					for i := range 7 {
+						@m.buildMatchListDay(i)
+					}
+				</ol>
+				<div class="w-64">
+					<div class="h-64">
+						<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90 pb-4">
+							Last 7 Days
+						</h2>
+						@SummonerChampionList{
+							Champions: []ChampionPopover{
+								ChampionPopover{},
+								ChampionPopover{},
+								ChampionPopover{},
+								ChampionPopover{},
+							},
+						}
 					</div>
 				</div>
-				<ol
-					class="flex flex-col justify-center px-4 pt-10 w-full gap-8"
-				>
-					@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now()}
-					@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now().Add(-24*time.Hour)}
-					@MatchHistoryLoader{Region: riot.RegionNA1, PUUID: m.PUUID, Date: time.Now().Add(-48*time.Hour)}
-				</ol>
 			</div>
 		</div>
 	</div>

@@ -95,11 +95,12 @@ func TestGetSummonerMatchHistory(t *testing.T) {
 		func(t *testing.T) {
 			location, _ := time.LoadLocation("America/Toronto")
 			localTime := time.Date(2025, 7, 4, 0, 0, 0, 0, location)
+			localTimeUnix := localTime.Unix()
 
-			component, err := handler.GetSummonerMatchHistory(ctx, riot.RegionNA1, "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg", localTime)
+			component, err := handler.GetSummonerMatchHistory(ctx, riot.RegionNA1, "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg", localTimeUnix)
 			require.NoError(t, err)
 
-			block, ok := component.(frontend.MatchHistoryBlockCard)
+			list, ok := component.(frontend.MatchHistoryList)
 			if assert.True(t, ok) {
 				expectedIDs := []string{
 					"NA1_5319611168",
@@ -119,7 +120,7 @@ func TestGetSummonerMatchHistory(t *testing.T) {
 				}
 
 				actualIDs := []string{}
-				for _, match := range block.Matches {
+				for _, match := range list.Matches {
 					actualIDs = append(actualIDs, match.MatchID)
 				}
 

@@ -37,11 +37,8 @@ func (ds *Datasource) GetStore() Store {
 	return ds.store
 }
 
-// ZUpdateMatchHistory fetches every match played on date (the start of the day
-// to the end).
-func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Region, puuid string, date time.Time) error {
-	start, end := GetStartAndEndUnix(date)
-
+// ZUpdateMatchHistory fetches every match played from start to end.
+func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Region, puuid string, start, end time.Time) error {
 	options := riot.MatchListOptions{
 		StartTime: new(int64),
 		EndTime:   new(int64),
@@ -51,8 +48,8 @@ func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Regio
 	}
 
 	*options.Queue = 420
-	*options.StartTime = start
-	*options.EndTime = end
+	*options.StartTime = start.Unix()
+	*options.EndTime = end.Unix()
 
 	continent := riot.RegionToContinent(region)
 

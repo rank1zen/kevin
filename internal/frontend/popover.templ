@@ -144,3 +144,42 @@ func (m RegionPopover) Render(ctx context.Context, w io.Writer) error {
 
 	return popover.Render(ctx, w)
 }
+
+type ChampionPopover struct {
+	Champion               int
+	GamesPlayed            int
+	Wins, Losses           int
+	Kills, Deaths, Assists float32
+	KillParticipation      float32
+	CS                     int
+	CSPerMinute            float32
+	DamageDealt            int
+	DamageTaken            int
+	DamageDeltaEnemy       int
+	DamagePercentageTeam   float32
+	GoldEarned             int
+	GoldDeltaEnemy         int
+	GoldPercentageTeam     float32
+	VisionScore            int
+	PinkWardsBought        int
+}
+
+templ (m ChampionPopover) buildButtonLayout() {
+	<div class="flex h-9 items-center gap-x-2 px-2">
+		<div class="size-7">
+		</div>
+		@GamesPlayedWidget{}
+		<div class="text-sm">
+			+231 LP
+		</div>
+	</div>
+}
+
+func (m ChampionPopover) Render(ctx context.Context, w io.Writer) error {
+	popover := Popover{
+		ButtonChildren: m.buildButtonLayout(),
+		PanelChildren: nil,
+	}
+
+	return popover.Render(ctx, w)
+}

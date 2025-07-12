@@ -33,7 +33,7 @@ func (s *Store) GetPUUID(ctx context.Context, name, tag string) (puuid string, e
 	return puuid, err
 }
 
-func (s *Store) GetZMatches(ctx context.Context, puuid string, date time.Time) ([]internal.SummonerMatch, error) {
+func (s *Store) GetZMatches(ctx context.Context, puuid string, start, end time.Time) ([]internal.SummonerMatch, error) {
 	rows, _ := s.conn.Query(ctx, `
 		SELECT
 			m.match_id,
@@ -68,15 +68,16 @@ func (s *Store) GetZMatches(ctx context.Context, puuid string, date time.Time) (
 		WHERE
 			puuid = @puuid
 		AND
-			m.date < (@date::timestamp + interval '24 hours')
+			m.date >= @start
 		AND
-			m.date >= @date
+			m.date <= @end
 		ORDER BY
 			m.date desc
 	`,
 		pgx.NamedArgs{
 			"puuid": puuid,
-			"date": date,
+			"start": start,
+			"end": end,
 		},
 	)
 
