@@ -20,8 +20,11 @@ type SummonerMatch struct {
 	Participant
 }
 
-// SummonerChampion is stats averaged by champion
+// SummonerChampion is a summoner's champion stats average over GamesPlayed.
 type SummonerChampion struct {
+	PUUID                  string
+	GamesPlayed            int
+	Wins, Losses           int
 	Champion               Champion
 	Kills, Deaths, Assists int
 	KillParticipation      float32
