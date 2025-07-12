@@ -577,7 +577,7 @@ func (s *Store) GetMatch(ctx context.Context, id string) (internal.Match, [10]in
 func (s *Store) GetChampions(ctx context.Context, puuid string) (_ []internal.SummonerChampion, err error) {
 	rows, _ := s.conn.Query(ctx, `
 		select
-			champion_id,
+			champion,
 			round(avg(kills)),
 			round(avg(deaths)),
 			round(avg(assists)),
@@ -595,8 +595,8 @@ func (s *Store) GetChampions(ctx context.Context, puuid string) (_ []internal.Su
 			round(avg(pink_wards_bought))
 		from Participant
 		where puuid = $1
-		group by champion_id
-		order by champion_id asc;
+		group by champion
+		order by champion asc;
 	`, puuid)
 
 	collect := func(row pgx.CollectableRow) (m internal.SummonerChampion, err error) {
