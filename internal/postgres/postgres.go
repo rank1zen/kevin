@@ -583,7 +583,7 @@ func (s *Store) GetChampions(ctx context.Context, puuid string) (_ []internal.Su
 			round(avg(assists)),
 			avg(kill_participation),
 			round(avg(creep_score)),
-			avg(creep_score_per_minte),
+			avg(creep_score_per_minute),
 			round(avg(gold_earned)),
 			round(avg(gold_delta_enemy)),
 			avg(gold_percentage_team),
