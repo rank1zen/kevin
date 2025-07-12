@@ -103,6 +103,17 @@ templ (m SummonerPage) buildMatchListDay(offset int) {
 }
 
 templ (m SummonerPage) buildContent() {
+	{{
+		vals := struct{
+			Region riot.Region `json:"region"`
+			PUUID string `json:"puuid"`
+		}{
+			m.Region,
+			m.PUUID,
+		}
+
+		bytes, _ := json.Marshal(vals)
+	}}
 	<div>
 		@buildHeaderBar() {
 			@PageHeaderLayout{Region: m.Region}
@@ -130,14 +141,13 @@ templ (m SummonerPage) buildContent() {
 						<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90 pb-4">
 							Last 7 Days
 						</h2>
-						@SummonerChampionList{
-							Champions: []ChampionPopover{
-								ChampionPopover{},
-								ChampionPopover{},
-								ChampionPopover{},
-								ChampionPopover{},
-							},
-						}
+						<div
+							hx-post="/summoner/champions"
+							hx-trigger="load once"
+							hx-vals={ string(bytes) }
+							class="w-[208px] h-[152px]"
+						>
+						</div>
 					</div>
 				</div>
 			</div>

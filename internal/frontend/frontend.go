@@ -229,7 +229,7 @@ func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
 	logger := fromCtx(ctx)
 
 	var (
-		region = r.FormValue("puuid")
+		region = r.FormValue("region")
 		puuid  = r.FormValue("puuid")
 	)
 
