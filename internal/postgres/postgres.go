@@ -574,14 +574,20 @@ func (s *Store) GetMatch(ctx context.Context, id string) (internal.Match, [10]in
 	return match, p, nil
 }
 
+// currently cannot get number of wins and losses
 func (s *Store) GetChampions(ctx context.Context, puuid string, start, end time.Time) ([]internal.SummonerChampion, error) {
+	type row struct {
+		PUUID string
+	}
+
 	rows, _ := s.conn.Query(ctx, `
 		SELECT
 			puuid,
-			count(*),
-			round(avg(kills)),
-			round(avg(deaths)),
-			round(avg(assists)),
+			count(*)          AS games_played,
+			champion,
+			round(avg(kills)) AS avg_kills,
+			round(avg(deaths)) AS avg_deaths,
+			round(avg(assists)) AS avg_assists,
 			avg(kill_participation),
 			round(avg(creep_score)),
 			avg(creep_score_per_minute),
@@ -599,21 +605,27 @@ func (s *Store) GetChampions(ctx context.Context, puuid string, start, end time.
 		JOIN
 			Match m USING (match_id)
 		WHERE
-			puuid = $1
+			puuid = @puuid
 		AND
-			m.date - now() < internal '7 days'
+			m.date >= @start
+		AND
+			m.date <= @end
 		GROUP BY
-			champion
+			puuid, champion
 		ORDER BY
 			count(*) DESC;
-	`, puuid)
+	`,
+		pgx.NamedArgs{
+			"puuid": puuid,
+			"start": start,
+			"end": end,
+		},
+	)
 
 	collect := func(row pgx.CollectableRow) (m internal.SummonerChampion, err error) {
 		err = row.Scan(
 			&m.PUUID,
 			&m.GamesPlayed,
-			&m.Wins,
-			&m.Losses,
 			&m.Champion,
 			&m.Kills,
 			&m.Deaths,

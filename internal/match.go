@@ -1,9 +1,7 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/rank1zen/kevin/internal/riot"
@@ -32,40 +30,38 @@ type Match struct {
 func NewMatch(opts ...MatchOption) Match {
 	var match Match
 	for _, f := range opts {
-		f(&match)
+		if err := f(&match); err != nil {
+			panic(err)
+		}
 	}
+
 	return match
 }
 
 type MatchOption func(*Match) error
 
 func WithRiotMatch(match *riot.Match) MatchOption {
-	var winner int
-	if match.Info.Teams[0].Win {
-		winner = match.Info.Teams[0].TeamID
-	} else {
-		winner = match.Info.Teams[1].TeamID
-	}
 	return func(m *Match) error {
 		m.ID = match.Metadata.MatchID
 		m.Date = makeRiotUnixTimeStamp(match.Info.GameEndTimestamp)
 		m.Duration = makeRiotTimeDuration(match.Info.GameDuration)
 		m.Version = match.Info.GameVersion
+
+		var winner int
+		if match.Info.Teams[0].Win {
+			winner = match.Info.Teams[0].TeamID
+		} else {
+			winner = match.Info.Teams[1].TeamID
+		}
+
 		m.WinnerID = winner
+
+		for i, p := range match.Info.Participants {
+			m.Participants[i] = NewParticipant(RiotMatchToParticipant(*match, p.PUUID))
+		}
+
 		return nil
 	}
-}
-
-// WithDefaultMatch instantiates some valid [Match], usually used for testing.
-func WithDefaultMatch() MatchOption {
-	testdata := os.DirFS("../testdata")
-
-	matchFile, _ := testdata.Open("NA1_5304757838.json")
-
-	var riotMatch riot.Match
-	_ = json.NewDecoder(matchFile).Decode(&riotMatch)
-
-	return WithRiotMatch(&riotMatch)
 }
 
 type LiveMatch struct {
