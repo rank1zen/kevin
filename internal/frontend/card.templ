@@ -41,7 +41,7 @@ func (m LiveMatchSummonerCard) Render(ctx context.Context, w io.Writer) error {
 
 type SummonerChampionCard struct {
 	Champion               int
-	Kills, Deaths, Assists int
+	Kills, Deaths, Assists float32
 	KillParticipation      float32
 	CS                     int
 	CSPerMinute            float32

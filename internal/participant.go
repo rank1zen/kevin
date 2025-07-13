@@ -6,6 +6,7 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+// Participant represents a record of a summoner in a ranked match.
 type Participant struct {
 	PUUID                  string
 	MatchID                string
@@ -38,6 +39,37 @@ func NewParticipant(opts ...ParticipantOption) Participant {
 		f(&p)
 	}
 	return p
+}
+
+// WithDefaultParticipant instantiates some valid [Participant], usually used
+// for testing.
+func WithDefaultParticipant() ParticipantOption {
+	return func(p *Participant) error {
+		p.PUUID = "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"
+		p.MatchID = "NA1_5304757838"
+		p.TeamID = 100
+		p.ChampionID = 63
+		p.ChampionLevel = 12
+		p.SummonerIDs = [2]int{4, 14}
+		p.Runes = RunePage{}
+		p.Items = [7]int{1056,3116,3020,2508,3802,0,3363}
+		p.Kills = 2
+		p.Deaths = 0
+		p.Assists = 8
+		p.KillParticipation = 1
+		p.CreepScore = 131
+		p.CreepScorePerMinute = 1
+		p.DamageDealt = 1
+		p.DamageTaken = 1
+		p.DamageDeltaEnemy = 1
+		p.DamagePercentageTeam = 1
+		p.GoldEarned = 1
+		p.GoldDeltaEnemy = 1
+		p.GoldPercentageTeam = 1
+		p.VisionScore = 1
+		p.PinkWardsBought = 1
+		return nil
+	}
 }
 
 func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {

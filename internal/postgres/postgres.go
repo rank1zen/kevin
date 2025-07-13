@@ -95,7 +95,7 @@ func (s *Store) GetZMatches(ctx context.Context, puuid string, start, end time.T
 			&m.SummonerIDs,
 			&runeList,
 			&m.Items,
-			&m.Kills,
+&m.Kills,
 			&m.Deaths,
 			&m.Assists,
 			&m.KillParticipation,
@@ -574,11 +574,11 @@ func (s *Store) GetMatch(ctx context.Context, id string) (internal.Match, [10]in
 	return match, p, nil
 }
 
-// GetChampions returns summoner champions stats in the last 7 days.
-func (s *Store) GetChampions(ctx context.Context, puuid string) ([]internal.SummonerChampion, error) {
+func (s *Store) GetChampions(ctx context.Context, puuid string, start, end time.Time) ([]internal.SummonerChampion, error) {
 	rows, _ := s.conn.Query(ctx, `
 		SELECT
-			champion,
+			puuid,
+			count(*),
 			round(avg(kills)),
 			round(avg(deaths)),
 			round(avg(assists)),
@@ -596,8 +596,12 @@ func (s *Store) GetChampions(ctx context.Context, puuid string) ([]internal.Summ
 			round(avg(pink_wards_bought))
 		FROM
 			Participant
+		JOIN
+			Match m USING (match_id)
 		WHERE
 			puuid = $1
+		AND
+			m.date - now() < internal '7 days'
 		GROUP BY
 			champion
 		ORDER BY
@@ -606,6 +610,10 @@ func (s *Store) GetChampions(ctx context.Context, puuid string) ([]internal.Summ
 
 	collect := func(row pgx.CollectableRow) (m internal.SummonerChampion, err error) {
 		err = row.Scan(
+			&m.PUUID,
+			&m.GamesPlayed,
+			&m.Wins,
+			&m.Losses,
 			&m.Champion,
 			&m.Kills,
 			&m.Deaths,
@@ -827,7 +835,7 @@ func (s *Store) SearchSummoner(ctx context.Context, q string) (_ []internal.Sear
 	return results, err
 }
 
-func (s *Store) RecordMatch(ctx context.Context, match internal.Match, participants [10]internal.Participant) error {
+func (s *Store) RecordMatch(ctx context.Context, match internal.Match) error {
 	batch := pgx.Batch{}
 
 	batch.Queue(`
@@ -855,7 +863,7 @@ func (s *Store) RecordMatch(ctx context.Context, match internal.Match, participa
 		},
 	)
 
-	for _, participant := range participants {
+	for _, participant := range match.Participants {
 		batch.Queue(`
 			INSERT INTO Participant (
 				match_id,

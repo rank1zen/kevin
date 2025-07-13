@@ -163,15 +163,7 @@ func (ds *Datasource) recordMatch(ctx context.Context, continent riot.Continent,
 		return fmt.Errorf("fetching match: %w", err)
 	}
 
-	var participants [10]Participant
-	for i := range 10 {
-		puuid := riotMatch.Metadata.Participants[i]
-		participants[i] = NewParticipant(RiotMatchToParticipant(*riotMatch, puuid))
-	}
-
-	match := NewMatch(WithRiotMatch(riotMatch))
-
-	err = ds.store.RecordMatch(ctx, match, participants)
+	err = ds.store.RecordMatch(ctx, NewMatch(WithRiotMatch(riotMatch)))
 	if err != nil {
 		return fmt.Errorf("saving match: %w", err)
 	}

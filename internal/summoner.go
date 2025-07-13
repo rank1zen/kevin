@@ -26,7 +26,7 @@ type SummonerChampion struct {
 	GamesPlayed            int
 	Wins, Losses           int
 	Champion               Champion
-	Kills, Deaths, Assists int
+	Kills, Deaths, Assists float32
 	KillParticipation      float32
 	CreepScore             int
 	CreepScorePerMinute    float32

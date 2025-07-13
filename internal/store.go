@@ -23,15 +23,12 @@ var (
 	ErrMatchNotFound = errors.New("rank unavailable")
 )
 
+// Store manages persistent data.
 type Store interface {
 	// GetPUUID returns a summoner's puuid.
 	GetPUUID(ctx context.Context, name, tag string) (puuid string, err error)
 
 	GetMatch(ctx context.Context, id string) (Match, [10]Participant, error)
-
-	// GetItemEvents(ctx context.Context, matchID string, puuid string) ()
-	//
-	// GetSkillEvents(ctx context.Context, matchID string, puuid string) ()
 
 	// GetRank returns the most recent rank for a summoner before or at
 	// time ts if recent is true, otherwise returns the oldest rank after
@@ -48,17 +45,18 @@ type Store interface {
 	// Might be deprecated
 	GetMatches(ctx context.Context, puuid string, page int) ([]SummonerMatch, error)
 
-	// GetZMatches returns a every match a summoner has played starting at
-	// date, to 24 hours after date, exclusive.
+	// GetZMatches returns matches a summoner has played in the given time
+	// range.
 	GetZMatches(ctx context.Context, puuid string, start, end time.Time) ([]SummonerMatch, error)
 
-	GetChampions(ctx context.Context, puuid string) ([]SummonerChampion, error)
+	// GetChampions returns summoner champions stats in the given time range.
+	GetChampions(ctx context.Context, puuid string, start, end time.Time) ([]SummonerChampion, error)
 
 	// GetNewMatchIDs returns the ids of matches not in store.
 	GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error)
 
 	// RecordMatch creates the match records.
-	RecordMatch(ctx context.Context, match Match, participants [10]Participant) error
+	RecordMatch(ctx context.Context, match Match) error
 
 	// RecordMatchTimeline creates the match timeline event records.
 	RecordTimeline(ctx context.Context, id string, items []ItemEvent, skills []SkillEvent) error
@@ -67,5 +65,6 @@ type Store interface {
 	// The rank is set as the most recent available record of rank.
 	RecordSummoner(ctx context.Context, summoner Summoner, rank RankStatus) error
 
+	// SearchSummoner returns the best matches for query q.
 	SearchSummoner(ctx context.Context, q string) ([]SearchResult, error)
 }

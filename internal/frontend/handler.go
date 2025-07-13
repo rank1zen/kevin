@@ -138,7 +138,7 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 // GetSummonerChampions returns [SummonerChampionList] consisting of stats for
 // the last week of games.
 func (h *Handler) ZGetSummonerChampions(ctx context.Context, region riot.Region, puuid string) (templ.Component, error) {
-	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid)
+	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid, time.Now().Add(-72*time.Hour), time.Now())
 	if err != nil {
 		return nil, err
 	}
@@ -170,8 +170,10 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, region riot.Region,
 }
 
 // GetSummonerChampions returns a [ChampionsModal].
+//
+// Deprecated: Not using this.
 func (h *Handler) GetSummonerChampions(ctx context.Context, region riot.Region, puuid string) (templ.Component, error) {
-	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid)
+	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid, time.Now(), time.Now())
 	if err != nil {
 		return nil, err
 	}

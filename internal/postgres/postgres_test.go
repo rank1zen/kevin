@@ -18,6 +18,81 @@ import (
 	pg "github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
+func TestGetChampions(t *testing.T) {
+	ctx := context.Background()
+
+	store := DefaultPGInstance.SetupStore(ctx, t)
+
+	match := internal.NewMatch(internal.WithDefaultMatch())
+	match.Date = time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC)
+	match.Participants[1].PUUID = "P1"
+	match.Participants[1].ChampionID = 13
+	match.Participants[1].Kills = 2
+
+	err := store.RecordMatch(ctx, match)
+
+	match = internal.NewMatch(internal.WithDefaultMatch())
+	match.Date = time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC)
+	match.Participants[1].PUUID = "P1"
+	match.Participants[1].ChampionID = 13
+	match.Participants[1].Kills = 3
+
+	err = store.RecordMatch(ctx, match)
+
+	require.NoError(t, err)
+
+	match = internal.NewMatch(internal.WithDefaultMatch())
+	match.Date = time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC)
+	match.Participants[1].PUUID = "P1"
+	match.Participants[1].ChampionID = 12
+	err = store.RecordMatch(ctx, match)
+	require.NoError(t, err)
+
+	t.Run(
+		"expects inclusive date range",
+		func(t *testing.T) {
+			champions, err := store.GetChampions(ctx, "P1", time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC))
+			require.NoError(t, err)
+			require.Equal(t, 1, len(champions))
+			assert.Equal(t, 2, champions[0].GamesPlayed)
+		},
+	)
+
+	t.Run(
+		"expects kills averaged correctly",
+		func(t *testing.T) {
+			champions, err := store.GetChampions(ctx, "P1", time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC))
+			require.NoError(t, err)
+
+			require.Equal(t, 1, len(champions))
+
+			assert.Equal(t, "P1", champions[0].PUUID)
+			assert.Equal(t, 13, champions[0].Champion)
+			assert.Equal(t, 2.5, champions[0].Kills)
+		},
+	)
+
+	t.Run(
+		"expects all champions included",
+		func(t *testing.T) {
+			champions, err := store.GetChampions(ctx, "P1", time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC))
+			require.NoError(t, err)
+			assert.Equal(t, 2, len(champions))
+		},
+	)
+
+	t.Run(
+		"expects order by games played",
+		func(t *testing.T) {
+			champions, err := store.GetChampions(ctx, "P1", time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC))
+			require.NoError(t, err)
+			require.Equal(t, 2, len(champions))
+			assert.Equal(t, 13, champions[0].Champion)
+			assert.Equal(t, 12, champions[1].Champion)
+		},
+	)
+}
+
 func TestGetRank(t *testing.T) {
 	ctx := context.Background()
 

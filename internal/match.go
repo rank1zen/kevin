@@ -1,18 +1,32 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+// Match represents a record of a ranked match.
 type Match struct {
-	ID       string
-	Date     time.Time
+	// ID is a region+number, which forms an identifier.
+	ID string
+
+	// Date is the end timestamp of the match.
+	Date time.Time
+
+	// Duration is the length of the match.
 	Duration time.Duration
-	Version  string
+
+	// Version is the game version.
+	Version string
+
+	// WinnerID is the ID of the winning team.
 	WinnerID int
+
+	Participants [10]Participant
 }
 
 func NewMatch(opts ...MatchOption) Match {
@@ -40,6 +54,18 @@ func WithRiotMatch(match *riot.Match) MatchOption {
 		m.WinnerID = winner
 		return nil
 	}
+}
+
+// WithDefaultMatch instantiates some valid [Match], usually used for testing.
+func WithDefaultMatch() MatchOption {
+	testdata := os.DirFS("../testdata")
+
+	matchFile, _ := testdata.Open("NA1_5304757838.json")
+
+	var riotMatch riot.Match
+	_ = json.NewDecoder(matchFile).Decode(&riotMatch)
+
+	return WithRiotMatch(&riotMatch)
 }
 
 type LiveMatch struct {
@@ -85,7 +111,6 @@ func WithRiotLiveMatch(match *riot.LiveMatch) LiveMatchOption {
 		return nil
 	}
 }
-
 
 func makeRiotUnixTimeStamp(ts int64) time.Time {
 	return time.UnixMilli(ts)
