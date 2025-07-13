@@ -7,6 +7,8 @@ import (
 
 type AccountService service
 
+type PUUID [78]byte
+
 type Account struct {
 	PUUID    string `json:"puuid"`
 	GameName string `json:"gameName"`
