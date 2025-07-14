@@ -20,7 +20,7 @@ func TestGetChampions(t *testing.T) {
 
 	store := DefaultPGInstance.SetupStore(ctx, t)
 
-	p1PUUID := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
+	p1PUUID := internal.NewPUUIDFromString("111111111111111111111111111111111111111111111111111111111111111111111111111111")
 
 	match := internal.NewMatch(sample.WithSampleMatch())
 
@@ -69,12 +69,12 @@ func TestGetChampions(t *testing.T) {
 	t.Run(
 		"expects inclusive date range",
 		func(t *testing.T) {
-			champions, err := store.GetChampions(ctx, "P1", time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC))
+			champions, err := store.GetChampions(ctx, p1PUUID, time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC))
 			require.NoError(t, err)
 
 			require.Equal(t, 2, len(champions))
 			require.EqualValues(t, 13, champions[0].Champion)
-			require.Equal(t, "P1", champions[0].PUUID)
+			require.Equal(t, p1PUUID, champions[0].PUUID)
 
 			assert.Equal(t, 2, champions[0].GamesPlayed)
 		},
@@ -83,21 +83,21 @@ func TestGetChampions(t *testing.T) {
 	t.Run(
 		"expects kills averaged correctly",
 		func(t *testing.T) {
-			champions, err := store.GetChampions(ctx, "P1", time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 10, 0, 0, 0, 0, time.UTC))
+			champions, err := store.GetChampions(ctx, p1PUUID, time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 10, 0, 0, 0, 0, time.UTC))
 			require.NoError(t, err)
 
 			require.Equal(t, 2, len(champions))
 			require.EqualValues(t, 13, champions[0].Champion)
-			require.Equal(t, "P1", champions[0].PUUID)
+			require.Equal(t, p1PUUID, champions[0].PUUID)
 
-			assert.Equal(t, 2.5, champions[0].Kills)
+			assert.EqualValues(t, 2.5, champions[0].Kills)
 		},
 	)
 
 	t.Run(
 		"expects order by games played",
 		func(t *testing.T) {
-			champions, err := store.GetChampions(ctx, "P1", time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 10, 0, 0, 0, 0, time.UTC))
+			champions, err := store.GetChampions(ctx, p1PUUID, time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 10, 0, 0, 0, 0, time.UTC))
 			require.NoError(t, err)
 
 			require.Equal(t, 2, len(champions))

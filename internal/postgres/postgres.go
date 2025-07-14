@@ -14,7 +14,7 @@ import (
 )
 
 // Store manages connections with a postgres database.
-type Store struct{
+type Store struct {
 	conn *pgxpool.Pool
 }
 
@@ -40,7 +40,7 @@ func (s *Store) GetPUUID(ctx context.Context, name, tag string) (riot.PUUID, err
 	`,
 		pgx.NamedArgs{
 			"name": name,
-			"tag": tag,
+			"tag":  tag,
 		},
 	).Scan(&strPUUID)
 
@@ -95,7 +95,7 @@ func (s *Store) GetZMatches(ctx context.Context, puuid riot.PUUID, start, end ti
 		pgx.NamedArgs{
 			"puuid": puuid,
 			"start": start,
-			"end": end,
+			"end":   end,
 		},
 	)
 
@@ -594,18 +594,14 @@ func (s *Store) GetMatch(ctx context.Context, id riot.PUUID) (internal.Match, er
 
 // currently cannot get number of wins and losses
 func (s *Store) GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerChampion, error) {
-	type row struct {
-		PUUID string
-	}
-
 	rows, _ := s.conn.Query(ctx, `
 		SELECT
 			puuid,
 			count(*)          AS games_played,
 			champion,
-			round(avg(kills)) AS avg_kills,
-			round(avg(deaths)) AS avg_deaths,
-			round(avg(assists)) AS avg_assists,
+			avg(kills) AS avg_kills,
+			avg(deaths) AS avg_deaths,
+			avg(assists) AS avg_assists,
 			avg(kill_participation),
 			round(avg(creep_score)),
 			avg(creep_score_per_minute),
@@ -636,7 +632,7 @@ func (s *Store) GetChampions(ctx context.Context, puuid riot.PUUID, start, end t
 		pgx.NamedArgs{
 			"puuid": puuid,
 			"start": start,
-			"end": end,
+			"end":   end,
 		},
 	)
 
@@ -760,7 +756,7 @@ func (s *Store) GetMatches(ctx context.Context, puuid string, page int) ([]inter
 func (s *Store) GetRank(ctx context.Context, puuid riot.PUUID, ts time.Time, recent bool) (m internal.RankRecord, err error) {
 	args := pgx.NamedArgs{
 		"puuid": puuid,
-		"ts": ts,
+		"ts":    ts,
 	}
 
 	genQuery := func(s string) string {
@@ -798,9 +794,9 @@ func (s *Store) GetRank(ctx context.Context, puuid riot.PUUID, ts time.Time, rec
 	}
 
 	var (
-		statusID int
+		statusID  int
 		timestamp pgtype.Timestamp
-		isRanked bool
+		isRanked  bool
 	)
 
 	if err = s.conn.QueryRow(ctx, q, args).Scan(
