@@ -50,7 +50,7 @@ func NewPGInstance(ctx context.Context) *PGInstance {
 
 	pgInstance.migrateSchema(ctx)
 
-	if err :=pgInstance.container.Snapshot(ctx, pg.WithSnapshotName("test-snapshot")); err != nil {
+	if err := pgInstance.container.Snapshot(ctx, pg.WithSnapshotName("test-snapshot")); err != nil {
 		log.Fatalf("creating snapshot: %s", err)
 	}
 
@@ -93,4 +93,8 @@ func (p *PGInstance) migrateSchema(ctx context.Context) {
 	if err = m.Migrate(ctx); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (p *PGInstance) Terminate(ctx context.Context) error {
+	return p.container.Terminate(ctx)
 }

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -48,7 +49,7 @@ func TestParticipant(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := internal.Participant{
-		PUUID:         [78]byte("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"),
+		PUUID:         internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"),
 		MatchID:       "NA1_5304757838",
 		TeamID:        100,
 		ChampionID:    63,

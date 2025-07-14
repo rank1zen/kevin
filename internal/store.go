@@ -30,7 +30,7 @@ var (
 type Store interface {
 	// GetSummoner returns the summoner, if found in store, otherwise,
 	// return ErrSummonerNotFound.
-	GetSummoner(ctx context.Context, puuid string) (Summoner, error)
+	GetSummoner(ctx context.Context, puuid riot.PUUID) (Summoner, error)
 
 	// GetPUUID returns the summoner's puuid, if found in store, otherwise,
 	// return ErrSummonerNotFound.
@@ -38,21 +38,21 @@ type Store interface {
 
 	// GetMatch returns the match, if found in store, otherwise,
 	// return ...
-	GetMatch(ctx context.Context, id string) (Match, error)
+	GetMatch(ctx context.Context, id riot.PUUID) (Match, error)
 
 	// GetRank returns the most recent rank for a summoner before or at
 	// time ts if recent is true, otherwise returns the oldest rank after
 	// time ts. Returns ErrRankUnavailable if a rank record satisfying the
 	// criteria does not exist.
-	GetRank(ctx context.Context, puuid string, ts time.Time, recent bool) (RankRecord, error)
+	GetRank(ctx context.Context, puuid riot.PUUID, ts time.Time, recent bool) (RankRecord, error)
 
 	// GetZMatches returns matches a summoner has played in the given time
 	// range.
-	GetZMatches(ctx context.Context, puuid string, start, end time.Time) ([]SummonerMatch, error)
+	GetZMatches(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch, error)
 
 	// GetChampions returns the summoner champion stats in the given time
 	// range.
-	GetChampions(ctx context.Context, puuid string, start, end time.Time) ([]SummonerChampion, error)
+	GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerChampion, error)
 
 	// GetNewMatchIDs returns the ids of matches not in store.
 	GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error)
@@ -127,7 +127,7 @@ func WithRiotMatch(match *riot.Match) MatchOption {
 		m.WinnerID = winner
 
 		for i, p := range match.Info.Participants {
-			m.Participants[i] = NewParticipant(RiotMatchToParticipant(*match, p.PUUID))
+			m.Participants[i] = NewParticipant(RiotMatchToParticipant(*match, riot.PUUID(p.PUUID)))
 		}
 
 		return nil
@@ -178,10 +178,10 @@ func NewParticipant(opts ...ParticipantOption) Participant {
 	return p
 }
 
-func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {
+func RiotMatchToParticipant(match riot.Match, puuid riot.PUUID) ParticipantOption {
 	var s *riot.MatchParticipant
 	for _, p := range match.Info.Participants {
-		if p.PUUID == puuid {
+		if p.PUUID == string(puuid) {
 			s = p
 		}
 	}
@@ -345,7 +345,7 @@ func WithRiotCurrentGame(r riot.LiveMatch, puuid string) LiveParticipantOption {
 }
 
 type Summoner struct {
-	PUUID         string
+	PUUID         riot.PUUID
 	Name, Tagline string
 	Platform      string
 	SummonerID    string
@@ -362,7 +362,7 @@ type SummonerMatch struct {
 
 // SummonerChampion is a summoner's champion stats average over GamesPlayed.
 type SummonerChampion struct {
-	PUUID                  string
+	PUUID                  riot.PUUID
 	GamesPlayed            int
 	Wins, Losses           int
 	Champion               Champion
@@ -383,7 +383,58 @@ type SummonerChampion struct {
 
 type SearchResult struct {
 	Page    string
-	Puuid   string
+	Puuid   riot.PUUID
 	Name    string
 	Tagline string
+}
+
+type Rank struct {
+	Tier   riot.Tier
+	Division   riot.Division
+	LP     int
+}
+
+type RankStatus struct {
+	PUUID         riot.PUUID
+	EffectiveDate time.Time
+	Detail        *RankDetail
+}
+
+type RankRecord struct {
+	PUUID         riot.PUUID
+	EffectiveDate time.Time
+	EndDate       *time.Time
+	IsCurrent     bool
+	Detail        *RankDetail
+}
+
+type RankDetail struct {
+	Wins   int
+	Losses int
+	Tier   riot.Tier
+	Division   riot.Division
+	LP     int
+}
+
+func NewRankDetail(opts ...RankDetailOption) RankDetail {
+	var m RankDetail
+	for _, f := range opts {
+		if err := f(&m); err != nil {
+			panic(err)
+		}
+	}
+	return m
+}
+
+type RankDetailOption func(*RankDetail) error
+
+func WithRiotLeagueEntry(rank riot.LeagueEntry) RankDetailOption {
+	return func(m *RankDetail) error {
+		m.Wins = rank.Wins
+		m.Losses = rank.Losses
+		m.Tier = rank.Tier
+		m.Division = rank.Division
+		m.LP = rank.LeaguePoints
+		return nil
+	}
 }

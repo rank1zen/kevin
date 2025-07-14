@@ -45,13 +45,13 @@ func (s *Store) GetPUUID(ctx context.Context, name, tag string) (riot.PUUID, err
 	).Scan(&strPUUID)
 
 	if err != nil {
-		return riot.PUUID{}, err
+		return "", err
 	}
 
 	return internal.NewPUUIDFromString(strPUUID), nil
 }
 
-func (s *Store) GetZMatches(ctx context.Context, puuid string, start, end time.Time) ([]internal.SummonerMatch, error) {
+func (s *Store) GetZMatches(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerMatch, error) {
 	rows, _ := s.conn.Query(ctx, `
 		SELECT
 			m.match_id,
@@ -487,7 +487,7 @@ func (s *Store) RecordSummoner(ctx context.Context, summoner internal.Summoner, 
 	return tx.Commit(ctx)
 }
 
-func (s *Store) GetSummoner(ctx context.Context, puuid string) (internal.Summoner, error) {
+func (s *Store) GetSummoner(ctx context.Context, puuid riot.PUUID) (internal.Summoner, error) {
 	var summoner internal.Summoner
 	if err := s.conn.QueryRow(ctx, `
 		SELECT
@@ -516,7 +516,7 @@ func (s *Store) GetSummoner(ctx context.Context, puuid string) (internal.Summone
 	return summoner, nil
 }
 
-func (s *Store) GetMatch(ctx context.Context, id string) (internal.Match, error) {
+func (s *Store) GetMatch(ctx context.Context, id riot.PUUID) (internal.Match, error) {
 	var match internal.Match
 	s.conn.QueryRow(ctx, `
 		select date, duration, version, winner from Match where match_id = $1;
@@ -593,7 +593,7 @@ func (s *Store) GetMatch(ctx context.Context, id string) (internal.Match, error)
 }
 
 // currently cannot get number of wins and losses
-func (s *Store) GetChampions(ctx context.Context, puuid string, start, end time.Time) ([]internal.SummonerChampion, error) {
+func (s *Store) GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerChampion, error) {
 	type row struct {
 		PUUID string
 	}
@@ -757,7 +757,7 @@ func (s *Store) GetMatches(ctx context.Context, puuid string, page int) ([]inter
 	return matches, nil
 }
 
-func (s *Store) GetRank(ctx context.Context, puuid string, ts time.Time, recent bool) (m internal.RankRecord, err error) {
+func (s *Store) GetRank(ctx context.Context, puuid riot.PUUID, ts time.Time, recent bool) (m internal.RankRecord, err error) {
 	args := pgx.NamedArgs{
 		"puuid": puuid,
 		"ts": ts,

@@ -7,16 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/jackc/tern/v2/migrate"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	pg "github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
 func TestGetChampions(t *testing.T) {
@@ -117,7 +113,7 @@ func TestGetRank(t *testing.T) {
 
 	store := DefaultPGInstance.SetupStore(ctx, t)
 
-	puuid := "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"
+	puuid := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 
 	summoner := internal.Summoner{
 		PUUID:      puuid,
@@ -227,7 +223,7 @@ func TestGetSummoner(t *testing.T) {
 
 	store := DefaultPGInstance.SetupStore(ctx, t)
 
-	puuid := "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"
+	puuid := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 
 	t.Run(
 		"fails when summoner is not found",
@@ -264,97 +260,18 @@ func TestGetSummoner(t *testing.T) {
 	)
 }
 
+var DefaultPGInstance *postgres.PGInstance
+
 func TestMain(t *testing.M) {
 	ctx := context.Background()
 
-	DefaultPGInstance = NewPGInstance(context.Background())
+	DefaultPGInstance = postgres.NewPGInstance(context.Background())
 
 	code := t.Run()
 
-	if err := DefaultPGInstance.container.Terminate(ctx); err != nil {
+	if err := DefaultPGInstance.Terminate(ctx); err != nil {
 		log.Fatalf("terminating: %s", err)
 	}
 
 	os.Exit(code)
-}
-
-var DefaultPGInstance *PGInstance
-
-type PGInstance struct {
-	container *pg.PostgresContainer
-
-	pgURL string
-}
-
-func NewPGInstance(ctx context.Context) *PGInstance {
-	const (
-		pgDBName   = "postgres_test"
-		pgUser     = "kevin"
-		pgPassword = "secret"
-		pgImage    = "docker.io/postgres:16-alpine"
-	)
-
-	container, err := pg.Run(ctx, pgImage,
-		pg.WithDatabase(pgDBName),
-		pg.WithUsername(pgUser),
-		pg.WithPassword(pgPassword),
-		pg.BasicWaitStrategies(),
-		pg.WithSQLDriver("pgx"),
-	)
-
-	if err != nil {
-		log.Fatalf("running postgres container: %s", err)
-	}
-
-	pgURL, err := container.ConnectionString(ctx)
-
-	pgInstance := &PGInstance{
-		container,
-		pgURL,
-	}
-
-	pgInstance.migrateSchema(ctx)
-
-	if err :=pgInstance.container.Snapshot(ctx, pg.WithSnapshotName("test-snapshot")); err != nil {
-		log.Fatalf("creating snapshot: %s", err)
-	}
-
-	return pgInstance
-}
-
-func (p *PGInstance) SetupStore(ctx context.Context, t testing.TB) *postgres.Store {
-	conn, err := pgxpool.New(ctx, p.pgURL)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Cleanup(func() {
-		conn.Close()
-
-		if err := p.container.Restore(ctx); err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	return postgres.NewStore(conn)
-}
-
-func (p *PGInstance) migrateSchema(ctx context.Context) {
-	conn, err := pgx.Connect(ctx, p.pgURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer conn.Close(ctx)
-
-	m, err := migrate.NewMigrator(ctx, conn, "public.schema_version")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	m.LoadMigrations(os.DirFS("../../migrations"))
-
-	if err = m.Migrate(ctx); err != nil {
-		log.Fatal(err)
-	}
 }

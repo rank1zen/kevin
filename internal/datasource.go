@@ -38,7 +38,7 @@ func (ds *Datasource) GetStore() Store {
 }
 
 // ZUpdateMatchHistory fetches every match played from start to end.
-func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Region, puuid string, start, end time.Time) error {
+func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, start, end time.Time) error {
 	options := riot.MatchListOptions{
 		StartTime: new(int64),
 		EndTime:   new(int64),
@@ -53,7 +53,7 @@ func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Regio
 
 	continent := riot.RegionToContinent(region)
 
-	ids, err := ds.riot.Match.GetMatchList(ctx, continent, puuid, options)
+	ids, err := ds.riot.Match.GetMatchList(ctx, continent, string(puuid), options)
 	if err != nil {
 		return fmt.Errorf("fetching ids: %w", err)
 	}
@@ -79,8 +79,8 @@ func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Regio
 
 // GetLiveMatch fetches riot for the a live match. If summoner is not in
 // a game, return ErrNoLiveMatch.
-func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puuid string) (LiveMatch, error) {
-	riotGame, err := ds.riot.Spectator.GetLiveMatch(ctx, region, puuid)
+func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puuid riot.PUUID) (LiveMatch, error) {
+	riotGame, err := ds.riot.Spectator.GetLiveMatch(ctx, region, string(puuid))
 	if err != nil {
 		return LiveMatch{}, err
 	}
@@ -89,10 +89,10 @@ func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puui
 }
 
 // GetRiotName returns the Riot ID (name#tag) associated with puuid.
-func (ds *Datasource) GetRiotName(ctx context.Context, puuid string) (name, tag string, err error) {
+func (ds *Datasource) GetRiotName(ctx context.Context, puuid riot.PUUID) (name, tag string, err error) {
 
 	// Using AMER for now since puuid is globally unique ...
-	account, err := ds.riot.Account.GetAccountByPUUID(ctx, riot.ContinentAmericas, puuid)
+	account, err := ds.riot.Account.GetAccountByPUUID(ctx, riot.ContinentAmericas, string(puuid))
 	if err != nil {
 		return "", "", err
 	}
@@ -104,7 +104,7 @@ func (ds *Datasource) GetRiotName(ctx context.Context, puuid string) (name, tag 
 // otherwise, it returns [ErrSummonerDoesNotExist].
 //
 // Note that internal store might be stale.
-func (ds *Datasource) GetPUUID(ctx context.Context, name, tag string) (puuid string, err error) {
+func (ds *Datasource) GetPUUID(ctx context.Context, name, tag string) (riot.PUUID, error) {
 	// Using AMER for now...
 	account, err := ds.riot.Account.GetAccountByRiotID(ctx, riot.ContinentAmericas, name, tag)
 	if err != nil {
@@ -115,14 +115,14 @@ func (ds *Datasource) GetPUUID(ctx context.Context, name, tag string) (puuid str
 		return "", err
 	}
 
-	return account.PUUID, nil
+	return riot.PUUID(account.PUUID), nil
 }
 
 // UpdateMatchHistory syncs the matchlist of summoner with puuid from start to
 // start + count.
 //
 // Deprecated: We switched to using date instead of index for match list.
-func (ds *Datasource) UpdateMatchHistory(ctx context.Context, region riot.Region, puuid string, start, count int) error {
+func (ds *Datasource) UpdateMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, start, count int) error {
 	options := riot.MatchListOptions{
 		Queue:     new(int),
 		Start:     start,
@@ -133,7 +133,7 @@ func (ds *Datasource) UpdateMatchHistory(ctx context.Context, region riot.Region
 
 	continent := riot.RegionToContinent(region)
 
-	ids, err := ds.riot.Match.GetMatchList(ctx, continent, puuid, options)
+	ids, err := ds.riot.Match.GetMatchList(ctx, continent, string(puuid), options)
 	if err != nil {
 		return fmt.Errorf("fetching ids: %w", err)
 	}
@@ -172,11 +172,11 @@ func (ds *Datasource) recordMatch(ctx context.Context, continent riot.Continent,
 }
 
 // ListNewMatches returns the 100 most recent matches that are not in store.
-func (ds *Datasource) ListNewMatches(ctx context.Context, region riot.Region, puuid string) ([]string, error) {
+func (ds *Datasource) ListNewMatches(ctx context.Context, region riot.Region, puuid riot.PUUID) ([]string, error) {
 	// use the continent for now
 	continent := riot.RegionToContinent(region)
 
-	ids, err := ds.riot.Match.GetMatchList(ctx, continent, puuid, riot.MatchListOptions{Count: 100})
+	ids, err := ds.riot.Match.GetMatchList(ctx, continent, string(puuid), riot.MatchListOptions{Count: 100})
 	if err != nil {
 		return nil, fmt.Errorf("fetching ids: %w", err)
 	}
@@ -191,13 +191,13 @@ func (ds *Datasource) ListNewMatches(ctx context.Context, region riot.Region, pu
 }
 
 // UpdateSummoner syncs a summoner-rank with riot.
-func (ds *Datasource) UpdateSummoner(ctx context.Context, region riot.Region, puuid string) error {
+func (ds *Datasource) UpdateSummoner(ctx context.Context, region riot.Region, puuid riot.PUUID) error {
 	name, tag, err := ds.GetRiotName(ctx, puuid)
 	if err != nil {
 		return err
 	}
 
-	entries, err := ds.riot.League.GetLeagueEntriesByPUUID(ctx, region, puuid)
+	entries, err := ds.riot.League.GetLeagueEntriesByPUUID(ctx, region, string(puuid))
 	if err != nil {
 		return fmt.Errorf("fetching summoner id: %w", err)
 	}
@@ -232,23 +232,8 @@ func (ds *Datasource) UpdateSummoner(ctx context.Context, region riot.Region, pu
 }
 
 // GetRank returns the up-to-date rank for a summoner.
-func (ds *Datasource) GetRank(ctx context.Context, puuid string) (*RankDetail, error) {
+func (ds *Datasource) GetRank(ctx context.Context, puuid riot.PUUID) (*RankDetail, error) {
 	return nil, nil
-}
-
-// GetStartAndEndUnix returns the start and end of the day as unix timestamps.
-func GetStartAndEndUnix(t time.Time) (start, end int64) {
-	y, m, d := t.Date()
-	// start of day
-	startTime := time.Date(y, m, d, 0, 0, 0, 0, t.Location())
-
-	start = startTime.Unix()
-
-	// end of day
-	// NOTE: we might need to consider DST here.
-	end = startTime.Add(24*time.Hour - 1*time.Second).Unix()
-
-	return start, end
 }
 
 func findSoloQLeagueEntry(entries riot.LeagueList) (soloq *riot.LeagueEntry) {
