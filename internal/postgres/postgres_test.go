@@ -24,6 +24,8 @@ func TestGetChampions(t *testing.T) {
 
 	store := DefaultPGInstance.SetupStore(ctx, t)
 
+	p1PUUID := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
+
 	match := internal.NewMatch(sample.WithSampleMatch())
 
 	match.ID = "M1"
@@ -32,7 +34,7 @@ func TestGetChampions(t *testing.T) {
 	}
 
 	match.Date = time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC)
-	match.Participants[1].PUUID = "P1"
+	match.Participants[1].PUUID = p1PUUID
 	match.Participants[1].ChampionID = 13
 	match.Participants[1].Kills = 2
 
@@ -47,7 +49,7 @@ func TestGetChampions(t *testing.T) {
 	}
 
 	match.Date = time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC)
-	match.Participants[1].PUUID = "P1"
+	match.Participants[1].PUUID = p1PUUID
 	match.Participants[1].ChampionID = 13
 	match.Participants[1].Kills = 3
 
@@ -62,7 +64,7 @@ func TestGetChampions(t *testing.T) {
 	}
 
 	match.Date = time.Date(2025, 7, 2, 0, 0, 0, 0, time.UTC)
-	match.Participants[1].PUUID = "P1"
+	match.Participants[1].PUUID = p1PUUID
 	match.Participants[1].ChampionID = 12
 
 	err = store.RecordMatch(ctx, match)

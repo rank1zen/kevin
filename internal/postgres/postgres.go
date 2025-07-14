@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 // Store manages connections with a postgres database.
@@ -25,12 +26,29 @@ func NewStore(conn *pgxpool.Pool) *Store {
 	return &Store{conn}
 }
 
-func (s *Store) GetPUUID(ctx context.Context, name, tag string) (puuid string, err error) {
-	err = s.conn.QueryRow(ctx, `
-		SELECT puuid FROM summoner WHERE name = $1 AND tagline = $2;
-	`, name, tag).Scan(&puuid)
+func (s *Store) GetPUUID(ctx context.Context, name, tag string) (riot.PUUID, error) {
+	var strPUUID string
+	err := s.conn.QueryRow(ctx, `
+		SELECT
+			puuid
+		FROM
+			summoner
+		WHERE
+			name = @name
+		AND
+			tagline = @tag;
+	`,
+		pgx.NamedArgs{
+			"name": name,
+			"tag": tag,
+		},
+	).Scan(&strPUUID)
 
-	return puuid, err
+	if err != nil {
+		return riot.PUUID{}, err
+	}
+
+	return internal.NewPUUIDFromString(strPUUID), nil
 }
 
 func (s *Store) GetZMatches(ctx context.Context, puuid string, start, end time.Time) ([]internal.SummonerMatch, error) {
@@ -95,7 +113,7 @@ func (s *Store) GetZMatches(ctx context.Context, puuid string, start, end time.T
 			&m.SummonerIDs,
 			&runeList,
 			&m.Items,
-&m.Kills,
+			&m.Kills,
 			&m.Deaths,
 			&m.Assists,
 			&m.KillParticipation,
@@ -498,7 +516,7 @@ func (s *Store) GetSummoner(ctx context.Context, puuid string) (internal.Summone
 	return summoner, nil
 }
 
-func (s *Store) GetMatch(ctx context.Context, id string) (internal.Match, [10]internal.Participant, error) {
+func (s *Store) GetMatch(ctx context.Context, id string) (internal.Match, error) {
 	var match internal.Match
 	s.conn.QueryRow(ctx, `
 		select date, duration, version, winner from Match where match_id = $1;
@@ -559,19 +577,19 @@ func (s *Store) GetMatch(ctx context.Context, id string) (internal.Match, [10]in
 
 	participants, err := pgx.CollectRows(rows, collect)
 	if err != nil {
-		return internal.Match{}, [10]internal.Participant{}, err
+		return internal.Match{}, err
 	}
 
 	var p [10]internal.Participant
 	if len(participants) != 10 {
-		return internal.Match{}, [10]internal.Participant{}, err
+		return internal.Match{}, err
 	} else {
 		for i := range 10 {
 			p[i] = participants[i]
 		}
 	}
 
-	return match, p, nil
+	return match, nil
 }
 
 // currently cannot get number of wins and losses

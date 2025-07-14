@@ -3,7 +3,10 @@ package internal
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
+
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 var (
@@ -25,10 +28,17 @@ var (
 
 // Store manages persistent data.
 type Store interface {
-	// GetPUUID returns a summoner's puuid.
-	GetPUUID(ctx context.Context, name, tag string) (puuid string, err error)
+	// GetSummoner returns the summoner, if found in store, otherwise,
+	// return ErrSummonerNotFound.
+	GetSummoner(ctx context.Context, puuid string) (Summoner, error)
 
-	GetMatch(ctx context.Context, id string) (Match, [10]Participant, error)
+	// GetPUUID returns the summoner's puuid, if found in store, otherwise,
+	// return ErrSummonerNotFound.
+	GetPUUID(ctx context.Context, name, tag string) (riot.PUUID, error)
+
+	// GetMatch returns the match, if found in store, otherwise,
+	// return ...
+	GetMatch(ctx context.Context, id string) (Match, error)
 
 	// GetRank returns the most recent rank for a summoner before or at
 	// time ts if recent is true, otherwise returns the oldest rank after
@@ -36,8 +46,16 @@ type Store interface {
 	// criteria does not exist.
 	GetRank(ctx context.Context, puuid string, ts time.Time, recent bool) (RankRecord, error)
 
-	// ... returns ErrSummonerNotFound when summoner is not in store.
-	GetSummoner(ctx context.Context, puuid string) (Summoner, error)
+	// GetZMatches returns matches a summoner has played in the given time
+	// range.
+	GetZMatches(ctx context.Context, puuid string, start, end time.Time) ([]SummonerMatch, error)
+
+	// GetChampions returns the summoner champion stats in the given time
+	// range.
+	GetChampions(ctx context.Context, puuid string, start, end time.Time) ([]SummonerChampion, error)
+
+	// GetNewMatchIDs returns the ids of matches not in store.
+	GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error)
 
 	// GetMatches returns a summoners match history in chronological order.
 	// Each page is 10 matches.
@@ -45,17 +63,7 @@ type Store interface {
 	// Might be deprecated
 	GetMatches(ctx context.Context, puuid string, page int) ([]SummonerMatch, error)
 
-	// GetZMatches returns matches a summoner has played in the given time
-	// range.
-	GetZMatches(ctx context.Context, puuid string, start, end time.Time) ([]SummonerMatch, error)
-
-	// GetChampions returns summoner champions stats in the given time range.
-	GetChampions(ctx context.Context, puuid string, start, end time.Time) ([]SummonerChampion, error)
-
-	// GetNewMatchIDs returns the ids of matches not in store.
-	GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error)
-
-	// RecordMatch creates the match records.
+	// RecordMatch creates the match record.
 	RecordMatch(ctx context.Context, match Match) error
 
 	// RecordMatchTimeline creates the match timeline event records.
@@ -67,4 +75,315 @@ type Store interface {
 
 	// SearchSummoner returns the best matches for query q.
 	SearchSummoner(ctx context.Context, q string) ([]SearchResult, error)
+}
+
+// Match represents a record of a ranked match.
+type Match struct {
+	// ID is a region+number, which forms an identifier.
+	ID string
+
+	// Date is the end timestamp of the match.
+	Date time.Time
+
+	// Duration is the length of the match.
+	Duration time.Duration
+
+	// Version is the game version.
+	Version string
+
+	// WinnerID is the ID of the winning team.
+	WinnerID int
+
+	Participants [10]Participant
+}
+
+func NewMatch(opts ...MatchOption) Match {
+	var match Match
+	for _, f := range opts {
+		if err := f(&match); err != nil {
+			panic(err)
+		}
+	}
+
+	return match
+}
+
+type MatchOption func(*Match) error
+
+func WithRiotMatch(match *riot.Match) MatchOption {
+	return func(m *Match) error {
+		m.ID = match.Metadata.MatchID
+		m.Date = makeRiotUnixTimeStamp(match.Info.GameEndTimestamp)
+		m.Duration = makeRiotTimeDuration(match.Info.GameDuration)
+		m.Version = match.Info.GameVersion
+
+		var winner int
+		if match.Info.Teams[0].Win {
+			winner = match.Info.Teams[0].TeamID
+		} else {
+			winner = match.Info.Teams[1].TeamID
+		}
+
+		m.WinnerID = winner
+
+		for i, p := range match.Info.Participants {
+			m.Participants[i] = NewParticipant(RiotMatchToParticipant(*match, p.PUUID))
+		}
+
+		return nil
+	}
+}
+
+func NewPUUIDFromString(s string) riot.PUUID {
+	if len(s) != 78 {
+		panic("puuid string not of len 78")
+	}
+
+	return riot.PUUID(s)
+}
+
+// Participant represents a record of a summoner in a ranked match.
+type Participant struct {
+	PUUID                  riot.PUUID
+	MatchID                string
+	TeamID                 int
+	ChampionID             int
+	ChampionLevel          int
+	SummonerIDs            [2]int
+	Runes                  RunePage
+	Items                  [7]int
+	Kills, Deaths, Assists int
+	KillParticipation      float32
+	CreepScore             int
+	CreepScorePerMinute    float32
+	DamageDealt            int
+	DamageTaken            int
+	DamageDeltaEnemy       int
+	DamagePercentageTeam   float32
+	GoldEarned             int
+	GoldDeltaEnemy         int
+	GoldPercentageTeam     float32
+	VisionScore            int
+	PinkWardsBought        int
+}
+
+type ParticipantOption func(*Participant) error
+
+func NewParticipant(opts ...ParticipantOption) Participant {
+	var p Participant
+	for _, f := range opts {
+		f(&p)
+	}
+
+	return p
+}
+
+func RiotMatchToParticipant(match riot.Match, puuid string) ParticipantOption {
+	var s *riot.MatchParticipant
+	for _, p := range match.Info.Participants {
+		if p.PUUID == puuid {
+			s = p
+		}
+	}
+
+	if s == nil {
+		panic("yo puuid is not in this match")
+	}
+
+	var teamDamage, teamGold, teamKills int
+	for _, p := range match.Info.Participants {
+		if p.TeamID == s.TeamID {
+			teamDamage += p.TotalDamageDealtToChampions
+			teamGold += p.GoldEarned
+			teamKills += p.Kills
+		}
+	}
+
+	var counterpart *riot.MatchParticipant
+	for _, p := range match.Info.Participants {
+		if p.TeamPosition == s.TeamPosition && p.PUUID != s.PUUID {
+			counterpart = p
+		}
+	}
+
+	var (
+		cs       = s.TotalMinionsKilled + s.NeutralMinionsKilled
+		csPerMin = float32(cs*60) / float32(match.Info.GameDuration)
+		kp       = float32(s.Assists+s.Kills) / float32(teamKills)
+
+		damageDelta = s.TotalDamageDealtToChampions - counterpart.TotalDamageDealtToChampions
+		goldDelta   = s.GoldEarned - counterpart.GoldEarned
+		damageShare = float32(s.TotalDamageDealtToChampions) / float32(teamDamage)
+		goldShare   = float32(s.GoldEarned) / float32(teamGold)
+
+		runes     = NewRunePage(WithRiotPerks(s.Perks))
+		items     = [7]int{s.Item0, s.Item1, s.Item2, s.Item3, s.Item4, s.Item5, s.Item6}
+		summoners = [2]int{s.Summoner1ID, s.Summoner2ID}
+	)
+
+	return func(p *Participant) error {
+		p.PUUID = NewPUUIDFromString(s.PUUID)
+		p.MatchID = match.Metadata.MatchID
+		p.TeamID = s.TeamID
+		p.ChampionID = s.ChampionID
+		p.ChampionLevel = s.ChampLevel
+		p.SummonerIDs = summoners
+		p.Runes = runes
+		p.Items = items
+		p.Kills = s.Kills
+		p.Deaths = s.Deaths
+		p.Assists = s.Assists
+		p.KillParticipation = kp
+		p.CreepScore = cs
+		p.CreepScorePerMinute = csPerMin
+		p.DamageDealt = s.TotalDamageDealtToChampions
+		p.DamageTaken = s.TotalDamageTaken
+		p.DamageDeltaEnemy = damageDelta
+		p.DamagePercentageTeam = damageShare
+		p.GoldEarned = s.GoldEarned
+		p.GoldDeltaEnemy = goldDelta
+		p.GoldPercentageTeam = goldShare
+		p.VisionScore = s.VisionScore
+		p.PinkWardsBought = s.DetectorWardsPlaced
+		return nil
+	}
+}
+
+type LiveMatch struct {
+	ID string
+
+	// Date is game start timestamp
+	Date time.Time
+
+	Participants [10]LiveParticipant
+}
+
+func NewLiveMatch(opts ...LiveMatchOption) LiveMatch {
+	var match LiveMatch
+
+	for _, f := range opts {
+		f(&match)
+	}
+
+	return match
+}
+
+type LiveMatchOption func(*LiveMatch) error
+
+func WithRiotLiveMatch(match *riot.LiveMatch) LiveMatchOption {
+	matchID := fmt.Sprintf("%s_%d", match.PlatformID, match.GameID)
+
+	participants := []LiveParticipant{}
+	for _, p := range match.Participants {
+		participants = append(participants, LiveParticipant{
+			PUUID:        p.PUUID,
+			MatchID:      matchID,
+			ChampionID:   p.ChampionID,
+			Runes:        NewRunePage(WithRiotSpectatorPerks(&p.Perks)),
+			TeamID:       p.TeamID,
+			SummonersIDs: [2]int{p.Spell1ID, p.Spell2ID},
+		})
+	}
+
+	return func(m *LiveMatch) error {
+		m.ID = matchID
+		m.Date = makeRiotUnixTimeStamp(match.GameStartTime)
+		m.Participants = [10]LiveParticipant(participants)
+		return nil
+	}
+}
+
+func makeRiotUnixTimeStamp(ts int64) time.Time {
+	return time.UnixMilli(ts)
+}
+
+func makeRiotTimeDuration(t int64) time.Duration {
+	return time.Second * time.Duration(t)
+}
+
+type LiveParticipant struct {
+	PUUID        string
+	MatchID      string
+	ChampionID   int
+	Runes        RunePage
+	TeamID       int
+	SummonersIDs [2]int
+}
+
+func NewLiveParticipant(opts ...LiveParticipantOption) LiveParticipant {
+	var m LiveParticipant
+	for _, f := range opts {
+		f(&m)
+	}
+	return m
+}
+
+type LiveParticipantOption func(*LiveParticipant) error
+
+func WithRiotCurrentGame(r riot.LiveMatch, puuid string) LiveParticipantOption {
+	var selected *riot.LiveMatchParticipant
+	for _, p := range r.Participants {
+		if p.PUUID == puuid {
+			selected = &p
+		}
+	}
+	if selected == nil {
+		panic("bro.")
+	}
+
+	matchID := fmt.Sprintf("%s_%d", r.PlatformID, r.GameID)
+
+	return func(m *LiveParticipant) error {
+		m.PUUID = selected.PUUID
+		m.MatchID = matchID
+		m.ChampionID = selected.ChampionID
+		m.Runes = NewRunePage(WithRiotSpectatorPerks(&selected.Perks))
+		m.TeamID = selected.TeamID
+		m.SummonersIDs = [2]int{selected.Spell1ID, selected.Spell2ID}
+		return nil
+	}
+}
+
+type Summoner struct {
+	PUUID         string
+	Name, Tagline string
+	Platform      string
+	SummonerID    string
+}
+
+type SummonerMatch struct {
+	Date     time.Time
+	Duration time.Duration
+	LpDelta  *int
+	Win      bool
+
+	Participant
+}
+
+// SummonerChampion is a summoner's champion stats average over GamesPlayed.
+type SummonerChampion struct {
+	PUUID                  string
+	GamesPlayed            int
+	Wins, Losses           int
+	Champion               Champion
+	Kills, Deaths, Assists float32
+	KillParticipation      float32
+	CreepScore             int
+	CreepScorePerMinute    float32
+	DamageDealt            int
+	DamageTaken            int
+	DamageDeltaEnemy       int
+	DamagePercentageTeam   float32
+	GoldEarned             int
+	GoldDeltaEnemy         int
+	GoldPercentageTeam     float32
+	VisionScore            int
+	PinkWardsBought        int
+}
+
+type SearchResult struct {
+	Page    string
+	Puuid   string
+	Name    string
+	Tagline string
 }
