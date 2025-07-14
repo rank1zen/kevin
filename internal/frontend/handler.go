@@ -37,7 +37,7 @@ func (h *Handler) UpdateSummoner(ctx context.Context, region riot.Region, name, 
 
 // GetLiveMatch the live match view if summoner is in a game in the region. If
 // no such game is found, return a view indicating such.
-func (h *Handler) GetLiveMatch(ctx context.Context, region riot.Region, puuid string) (view templ.Component, err error) {
+func (h *Handler) GetLiveMatch(ctx context.Context, region riot.Region, puuid riot.PUUID) (view templ.Component, err error) {
 	match, err := h.Datasource.GetLiveMatch(ctx, region, puuid)
 	if err != nil {
 		if errors.Is(err, internal.ErrNoLiveMatch) {
@@ -137,7 +137,7 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 
 // GetSummonerChampions returns [SummonerChampionList] consisting of stats for
 // the last week of games.
-func (h *Handler) ZGetSummonerChampions(ctx context.Context, region riot.Region, puuid string) (templ.Component, error) {
+func (h *Handler) ZGetSummonerChampions(ctx context.Context, region riot.Region, puuid riot.PUUID) (templ.Component, error) {
 	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid, time.Now().Add(-72*time.Hour), time.Now())
 	if err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, region riot.Region,
 // GetSummonerChampions returns a [ChampionsModal].
 //
 // Deprecated: Not using this.
-func (h *Handler) GetSummonerChampions(ctx context.Context, region riot.Region, puuid string) (templ.Component, error) {
+func (h *Handler) GetSummonerChampions(ctx context.Context, region riot.Region, puuid riot.PUUID) (templ.Component, error) {
 	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid, time.Now(), time.Now())
 	if err != nil {
 		return nil, err
@@ -209,7 +209,7 @@ func (h *Handler) GetSummonerChampions(ctx context.Context, region riot.Region, 
 // GetSummonerMatchHistory returns a [MatchHistoryList], being the matches
 // played on date to date + 24 hours. The method will fetch riot first to
 // ensure all matches played on date are in store.
-func (h *Handler) GetSummonerMatchHistory(ctx context.Context, region riot.Region, puuid string, date int64) (templ.Component, error) {
+func (h *Handler) GetSummonerMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, date int64) (templ.Component, error) {
 	ts := time.Unix(date, 0)
 
 	if err := h.Datasource.ZUpdateMatchHistory(ctx, region, puuid, ts, ts.Add(24*time.Hour)); err != nil {

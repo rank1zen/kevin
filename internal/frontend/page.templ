@@ -59,7 +59,7 @@ func (m Page) Render(ctx context.Context, w io.Writer) error {
 type SummonerPage struct {
 	Region riot.Region
 
-	PUUID string
+	PUUID riot.PUUID
 
 	Name, Tag string
 
@@ -78,7 +78,7 @@ templ (m SummonerPage) buildMatchListDay(offset int) {
 
 		vals := struct{
 			Region riot.Region `json:"region"`
-			PUUID string `json:"puuid"`
+			PUUID riot.PUUID `json:"puuid"`
 			Date  int64 `json:"date"`
 		}{
 			m.Region,
@@ -106,7 +106,7 @@ templ (m SummonerPage) buildContent() {
 	{{
 		vals := struct{
 			Region riot.Region `json:"region"`
-			PUUID string `json:"puuid"`
+			PUUID riot.PUUID `json:"puuid"`
 		}{
 			m.Region,
 			m.PUUID,

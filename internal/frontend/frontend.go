@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 var (
@@ -186,7 +187,7 @@ func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 
 	riotRegion := convertStringToRiotRegion(region)
 
-	component, err := f.handler.GetSummonerMatchHistory(ctx, riotRegion, puuid, date.Unix())
+	component, err := f.handler.GetSummonerMatchHistory(ctx, riotRegion, riot.PUUID(puuid), date.Unix())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)
@@ -237,7 +238,7 @@ func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
 
 	riotRegion := convertStringToRiotRegion(region)
 
-	component, err := f.handler.GetSummonerChampions(ctx, riotRegion, puuid)
+	component, err := f.handler.GetSummonerChampions(ctx, riotRegion, riot.PUUID(puuid))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)
@@ -260,7 +261,7 @@ func (f *Frontend) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 
 	riotRegion := convertStringToRiotRegion(region)
 
-	component, err := f.handler.GetLiveMatch(ctx, riotRegion, puuid)
+	component, err := f.handler.GetLiveMatch(ctx, riotRegion, riot.PUUID(puuid))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		slog.Debug("failed service", "err", err, payload)
