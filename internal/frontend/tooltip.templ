@@ -17,11 +17,12 @@ templ (m Tooltip) build() {
 			title={ m.Tip }
 		}
 		if m.ButtonStyle == 0 {
-			class="overflow-hidden shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 rounded-lg dark:hover:shadow-gray-100/90 hover:shadow-gray-900/90"
+			 class=""
 		} else {
-			class="overflow-hidden bg-transparent rounded-lg dark:hover:bg-gray-100/5 hover:bg-gray-900/5"
+			class="bg-transparent rounded-lg dark:hover:bg-gray-100/5 hover:bg-gray-900/5"
 		}
 	>
+		// class="shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 rounded-lg dark:hover:shadow-gray-100/90 hover:shadow-gray-900/90"
 		@m.ButtonChildren
 	</div>
 }

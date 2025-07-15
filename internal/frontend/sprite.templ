@@ -1,0 +1,133 @@
+package frontend
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal/ddragon"
+	"io"
+)
+
+// Sprite is a sprite.
+type Sprite struct {
+	SpriteMap string
+
+	BGHeight int
+
+	BGWidth int
+
+	Height int
+
+	Width int
+
+	X int
+
+	Y int
+}
+
+templ (m Sprite) build() {
+	{{
+		// dynamically generating these without tailwind might be easier
+		spriteMap := fmt.Sprintf("bg-[url(%s)]", m.SpriteMap)
+		bgPosition := fmt.Sprintf("bg-position-[-%dpx_-%dpx]", m.X, m.Y)
+		bgSize := fmt.Sprintf("bg-size-[%dpx_%dpx]", m.BGWidth, m.BGHeight)
+		height := fmt.Sprintf("h-[%dpx]", m.Height)
+		width := fmt.Sprintf("w-[%dpx]", m.Width)
+	}}
+	<div class={ "rounded", spriteMap, bgPosition, bgSize, height, width }></div>
+}
+
+func (m Sprite) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type ItemSprite struct {
+	ItemID int
+}
+
+func (m ItemSprite) Render(ctx context.Context, w io.Writer) error {
+	item := ddragon.ItemsMap[m.ItemID]
+
+	x, y := item.X/48, item.Y/48
+
+	sprite := Sprite{
+		SpriteMap: "/static/sprite/" + "small_" + item.Sprite,
+		BGHeight:  280,
+		BGWidth:   280,
+		Height:    28,
+		Width:     28,
+		X:         x * 28,
+		Y:         y * 28,
+	}
+
+	return sprite.Render(ctx, w)
+}
+
+// ChampionSprite is a sprite of a champion icon.
+type ChampionSprite struct {
+	ChampionID int
+
+	Size int
+}
+
+func (m ChampionSprite) Render(ctx context.Context, w io.Writer) error {
+	champion := ddragon.ChampionMap[m.ChampionID]
+	x, y := champion.X/48, champion.Y/48
+	if m.Size == 0 {
+		bgHeight := 84
+		if champion.Sprite == "champion_5" {
+			bgHeight = 56 // the last sprite map is not the usual height. this is bec.
+		}
+
+		sprite := Sprite{
+			SpriteMap: "/static/sprite/" + "small_" + champion.Sprite,
+			BGHeight:  bgHeight,
+			BGWidth:   280,
+			Height:    28,
+			Width:     28,
+			X:         x * 28,
+			Y:         y * 28,
+		}
+
+		return sprite.Render(ctx, w)
+	} else {
+		bgHeight := 108
+		if champion.Sprite == "champion_5" {
+			bgHeight = 72 // the last sprite map is not the usual height. this is bec.
+		}
+
+		sprite := Sprite{
+			SpriteMap: "/static/sprite/" + "small_" + champion.Sprite,
+			BGHeight:  108,
+			BGWidth:   bgHeight,
+			Height:    36,
+			Width:     36,
+			X:         x * 36,
+			Y:         y * 36,
+		}
+
+		return sprite.Render(ctx, w)
+	}
+}
+
+// SummonerSprite is a sprite of a summoner spell icon.
+type SummonerSprite struct {
+	SummonerID int
+}
+
+func (m SummonerSprite) Render(ctx context.Context, w io.Writer) error {
+	summ := ddragon.SummonerMap[m.SummonerID]
+
+	x, y := summ.X/24, summ.Y/24
+
+	sprite := Sprite{
+		SpriteMap: "/static/sprite/" + "tiny_" + summ.Sprite,
+		BGHeight:  72,
+		BGWidth:   180,
+		Height:    18,
+		Width:     18,
+		X:         x * 18,
+		Y:         y * 18,
+	}
+
+	return sprite.Render(ctx, w)
+}

@@ -147,6 +147,7 @@ func (m RegionPopover) Render(ctx context.Context, w io.Writer) error {
 
 type ChampionPopover struct {
 	Champion               int
+	TotalGamesPlayed       int
 	GamesPlayed            int
 	Wins, Losses           int
 	Kills, Deaths, Assists float32
@@ -166,9 +167,11 @@ type ChampionPopover struct {
 
 templ (m ChampionPopover) buildButtonLayout() {
 	<div class="flex h-9 items-center gap-x-2 px-2">
-		<div class="size-7">
+		@ChampionSprite{ChampionID: m.Champion}
+		<div class="flex-none h-3 bg-gray-900/5 w-24">
+			<div class="w-1/5 h-full bg-blue-500/50">
+			</div>
 		</div>
-		@GamesPlayedWidget{}
 		<div class="text-sm">
 			+231 LP
 		</div>

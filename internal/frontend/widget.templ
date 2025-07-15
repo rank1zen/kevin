@@ -34,7 +34,9 @@ func (m ChampionWidget) generateSpriteBG(id int) string {
 
 templ (m ChampionWidget) makeSummonerAtIndex(i int) {
 	{{ id := m.Summoners[i] }}
-	<div class={ "rounded-sm", "size-6", m.generateSpriteBG(id), m.generateSpriteBGPosition(id) }></div>
+	<div>
+		@SummonerSprite{SummonerID: id}
+	</div>
 }
 
 templ (m ChampionWidget) buildChampionIcon() {
@@ -56,9 +58,9 @@ templ (m ChampionWidget) build() {
 	if m.Summoners != nil {
 		<div class="flex flex-none items-start gap-0.5">
 			@championTooltip
-			<div class="flex flex-col gap-0.5">
-				@Tooltip{ButtonChildren: m.makeSummonerAtIndex(0)}
-				@Tooltip{ButtonChildren: m.makeSummonerAtIndex(1)}
+			<div class="flex flex-col">
+				@Tooltip{ButtonChildren: SummonerSprite{SummonerID: m.Summoners[0]}}
+				@Tooltip{ButtonChildren: SummonerSprite{SummonerID: m.Summoners[1]}}
 			</div>
 		</div>
 	} else {
@@ -118,19 +120,6 @@ type ItemWidget struct {
 	Items [7]int
 }
 
-func (m ItemWidget) generateSpriteBGPosition(id int) string {
-	item := ddragon.ItemsMap[id]
-	x := item.X / 48
-	y := item.Y / 48
-	return fmt.Sprintf("bg-position-[-%dpx_-%dpx]", x*28, y*28)
-}
-
-func (m ItemWidget) generateSpriteBG(id int) string {
-	item := ddragon.ItemsMap[id]
-	p := path.Join("/static/sprite", "small_"+item.Sprite)
-	return fmt.Sprintf("bg-[url(%s)]", p)
-}
-
 templ (m ItemWidget) makeItemAtIndex(i int) {
 	{{ id := m.Items[i] }}
 	if id == 0 {
@@ -145,7 +134,7 @@ templ (m ItemWidget) makeItemAtIndex(i int) {
 				class="size-7 shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 overflow-hidden cursor-pointer rounded"
 			}
 		>
-			<div class={ "size-7", m.generateSpriteBG(id), m.generateSpriteBGPosition(id), "bg-size-[280px_280px]" }></div>
+			@ItemSprite{ItemID: m.Items[i]}
 		</button>
 	}
 }
@@ -255,22 +244,5 @@ templ (m CSWidget) build() {
 }
 
 func (m CSWidget) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
-type GamesPlayedWidget struct {
-	GamesPlayed int
-
-	TotalGamesPlayed int
-}
-
-templ (m GamesPlayedWidget) build() {
-	<div class="flex-none h-5 bg-gray-900/5 w-24">
-		<div class="w-1/5 h-full bg-blue-500/50">
-		</div>
-	</div>
-}
-
-func (m GamesPlayedWidget) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }

@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -17,6 +18,7 @@ import (
 var (
 	ErrInvalidRegion = errors.New("invalid region")
 	ErrInvalidRiotID = errors.New("invalid riot id")
+	ErrInvalidPUUID = errors.New("invalid puuid")
 )
 
 // Frontend serves [templ.Component].
@@ -229,16 +231,11 @@ func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := fromCtx(ctx)
 
-	var (
-		region = r.FormValue("region")
-		puuid  = r.FormValue("puuid")
-	)
+	decoded, err := decode[ZGetSummonerChampionsRequest](r)
 
-	payload := slog.Group("payload", "region", region, "puuid", puuid)
+	payload := slog.Group("payload", "region", decoded.Region, "puuid", decoded.PUUID, "week", decoded.Week)
 
-	riotRegion := convertStringToRiotRegion(region)
-
-	component, err := f.handler.GetSummonerChampions(ctx, riotRegion, riot.PUUID(puuid))
+	component, err := f.handler.ZGetSummonerChampions(ctx, decoded)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)
@@ -333,4 +330,32 @@ func ParseRiotID(riotID string) (name, tag string, err error) {
 	}
 
 	return name, tag, nil
+}
+
+// ParsePUUID parses a string puuid to [riot.PUUID], and returns
+// [ErrInvalidPUUID] if puuid is not valid.
+func ParsePUUID(puuid string) (riot.PUUID, error) {
+	if len(puuid) != 78 {
+		return "", ErrInvalidPUUID
+	}
+
+	// lol
+	return riot.PUUID(puuid), nil
+}
+
+type Validator interface {
+	Validate() (problems map[string]string)
+}
+
+func decode[T Validator](r *http.Request) (T, error) {
+	var v T
+	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
+		return v, fmt.Errorf("decode json: %w", err)
+	}
+
+	if problems := v.Validate(); len(problems) != 0 {
+		return v, errors.New("validation error")
+	}
+
+	return v, nil
 }

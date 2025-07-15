@@ -12,6 +12,26 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+type ZGetSummonerChampionsRequest struct {
+	Region riot.Region `json:"region"`
+	PUUID  riot.PUUID  `json:"puuid"`
+	Week   time.Time   `json:"week"`
+}
+
+func (r ZGetSummonerChampionsRequest) Validate() (problems map[string]string) {
+	problems = make(map[string]string)
+
+	if r.PUUID == "" {
+		problems["puuid"] = "no puuid"
+	}
+
+	if r.Week.Minute() != 0 {
+		problems["week"] = "not start of day"
+	}
+
+	return problems
+}
+
 // Handler provides the API for server operations.
 type Handler struct {
 	Datasource *internal.Datasource
@@ -19,6 +39,11 @@ type Handler struct {
 
 func NewHandler(datasource *internal.Datasource) *Handler {
 	return &Handler{datasource}
+}
+
+func (h *Handler) CheckHealth(ctx context.Context) error {
+	_, err := h.Datasource.GetPUUID(ctx, "orrange", "NA1")
+	return err
 }
 
 // UpdateSummoner
@@ -124,21 +149,36 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	}
 
 	page := SummonerPage{
-		Region:      region,
-		PUUID:       puuid,
-		Name:        summoner.Name,
-		Tag:         summoner.Tagline,
-		Rank:        rank.Detail,
-		LastUpdated: rank.EffectiveDate,
+		Region:              region,
+		PUUID:               puuid,
+		Name:                summoner.Name,
+		Tag:                 summoner.Tagline,
+		Rank:                rank.Detail,
+		LastUpdated:         rank.EffectiveDate,
+
+		GetChampionsRequest: ZGetSummonerChampionsRequest{
+			Region: region,
+			PUUID:  puuid,
+			Week:   GetCurrentWeek(),
+		},
 	}
 
 	return page, nil
 }
 
 // GetSummonerChampions returns [SummonerChampionList] consisting of stats for
-// the last week of games.
-func (h *Handler) ZGetSummonerChampions(ctx context.Context, region riot.Region, puuid riot.PUUID) (templ.Component, error) {
-	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid, time.Now().Add(-72*time.Hour), time.Now())
+// the 7 days starting at week. The method will fetch all games played in the
+// specified interval.
+func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerChampionsRequest) (templ.Component, error) {
+	start := req.Week
+	end := start.Add(7 * 24 * time.Hour)
+
+	err := h.Datasource.ZUpdateMatchHistory(ctx, req.Region, req.PUUID, start, end)
+	if err != nil {
+		return nil, fmt.Errorf("updating matchlist failed: %w", err)
+	}
+
+	champions, err := h.Datasource.GetStore().GetChampions(ctx, req.PUUID, start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -150,6 +190,12 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, region riot.Region,
 			list.Champions,
 			ChampionPopover{
 				Champion:             int(champion.Champion),
+				GamesPlayed:          champion.GamesPlayed,
+				Wins:                 champion.Wins,
+				Losses:               champion.Losses,
+				Kills:                champion.Kills,
+				Deaths:               champion.Deaths,
+				Assists:              champion.Assists,
 				KillParticipation:    champion.KillParticipation,
 				CS:                   champion.CreepScore,
 				CSPerMinute:          champion.CreepScorePerMinute,
@@ -308,4 +354,12 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 	}
 
 	return templ.Join(v...), nil
+}
+
+// GetCurrentWeek returns the start of the day, 7 days ago.
+func GetCurrentWeek() time.Time {
+	now := time.Now().In(time.UTC)
+	y, m, d := now.Date()
+	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
+	return startOfDay.Add(-24 * 6 * time.Hour)
 }

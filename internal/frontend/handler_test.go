@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
@@ -16,21 +17,61 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var DefaultPGInstance *postgres.PGInstance
+func TestGetCurrentWeek(t *testing.T) {
+	week := frontend.GetCurrentWeek()
 
-func TestMain(m *testing.M) {
-	ctx := context.Background()
+	require.Equal(t, time.UTC, week.Location(), "expects server time")
 
-	flag.Parse()
+	t.Run(
+		"expects week starts on start of day",
+		func(t *testing.T) {
+			assert.Equal(t, 0, week.Hour())
+			assert.Equal(t, 0, week.Minute())
+			assert.Equal(t, 0, week.Second())
+		},
+	)
 
+	t.Run(
+		"expects at most 7 days prior",
+		func(t *testing.T) {
+			assert.Less(t, time.Since(week), 7 * 24 * time.Hour)
+		},
+	)
+}
+
+func TestZGetSummonerChampions(t *testing.T) {
 	if testing.Short() {
-		fmt.Println("Skipping integration tests in short mode")
-	} else {
-		DefaultPGInstance = postgres.NewPGInstance(ctx)
+		t.Skip()
 	}
 
-	code := m.Run()
-	os.Exit(code)
+	ctx := context.Background()
+
+	store := DefaultPGInstance.SetupStore(ctx, t)
+
+	handler := frontend.Handler{internal.NewDatasource(riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY")), store)}
+
+	req := frontend.ZGetSummonerChampionsRequest{
+		Region: riot.RegionNA1,
+		PUUID:  internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"),
+		Week:   frontend.GetCurrentWeek(),
+	}
+
+	actual, err := handler.ZGetSummonerChampions(ctx, req)
+	require.NoError(t, err)
+
+	list, ok := actual.(frontend.SummonerChampionList)
+	require.True(t, ok)
+
+	t.Run(
+		"expects 2 champions returned",
+		func(t *testing.T) {
+			if assert.Equal(t, 2, len(list.Champions)) {
+				assert.Equal(t, ddragon.ChampionIllaoiID, list.Champions[0].Champion)
+				assert.Equal(t, ddragon.ChampionBrandID, list.Champions[1].Champion)
+				assert.EqualValues(t, float32(15)/4, list.Champions[0].Kills)
+			}
+		},
+	)
 }
 
 func TestGetSummonerPage(t *testing.T) {
@@ -50,6 +91,8 @@ func TestGetSummonerPage(t *testing.T) {
 			component, err := handler.GetSummonerPage(ctx, riot.RegionNA1, "orrange", "NA1")
 			require.NoError(t, err)
 
+			expectedPUUID := internal.NewPUUIDFromString("0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q")
+
 			if assert.IsType(t, frontend.SummonerPage{}, component) {
 				page, ok := component.(frontend.SummonerPage)
 				require.True(t, ok)
@@ -57,7 +100,7 @@ func TestGetSummonerPage(t *testing.T) {
 				assert.Equal(t, page.Region, riot.RegionNA1)
 				assert.Equal(t, page.Name, "orrange")
 				assert.Equal(t, page.Tag, "NA1")
-				assert.Equal(t, page.PUUID, "0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q")
+				assert.Equal(t, page.PUUID, expectedPUUID)
 			}
 		},
 	)
@@ -128,4 +171,26 @@ func TestGetSummonerMatchHistory(t *testing.T) {
 			}
 		},
 	)
+}
+
+var DefaultPGInstance *postgres.PGInstance
+
+func TestMain(m *testing.M) {
+	ctx := context.Background()
+
+	flag.Parse()
+
+	if testing.Short() {
+		fmt.Println("Skipping integration tests in short mode")
+	} else {
+		DefaultPGInstance = postgres.NewPGInstance(ctx)
+	}
+
+	code := m.Run()
+
+	if DefaultPGInstance != nil {
+		DefaultPGInstance.Terminate(ctx)
+	}
+
+	os.Exit(code)
 }
