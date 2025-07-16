@@ -8,28 +8,6 @@ import (
 	"time"
 )
 
-// ModalWindow is a floating window.
-type ModalWindow struct {
-	HeaderContent templ.Component
-
-	Content templ.Component
-}
-
-templ (m ModalWindow) build() {
-	<div class="bg-white rounded-2xl shadow-lg border border-gray-900/25 h-1/2 w-xl">
-		<div class="h-13 sticky bg-white rounded-t-2xl">
-			@m.HeaderContent
-		</div>
-		<div class="flex-1">
-			@m.Content
-		</div>
-	</div>
-}
-
-func (m ModalWindow) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
 type LiveMatchModalWindow struct {
 	AverageRank *internal.RankDetail
 
@@ -85,40 +63,9 @@ templ (m NoLiveMatchModalWindow) makeContent() {
 
 func (m NoLiveMatchModalWindow) Render(ctx context.Context, w io.Writer) error {
 	modal := ModalWindow{
-		HeaderContent: m.makeHeaderContent(),
-		Content:       m.makeContent(),
+		HeaderChildren: m.makeHeaderContent(),
+		Children:       m.makeContent(),
 	}
 
-	return modal.Render(ctx, w)
-}
-
-type ChampionsModal struct {
-	Cards []SummonerChampionCard
-}
-
-templ (m ChampionsModal) makeHeaderContent() {
-	<div>
-		Some filter by season maybe
-	</div>
-	<div>
-		Champions
-	</div>
-}
-
-templ (m ChampionsModal) makeContent() {
-	<div class="flex justify-center">
-		<div>
-			for _, card := range m.Cards {
-				@card
-			}
-		</div>
-	</div>
-}
-
-func (m ChampionsModal) Render(ctx context.Context, w io.Writer) error {
-	modal := ModalWindow{
-		HeaderContent: m.makeHeaderContent(),
-		Content:       m.makeContent(),
-	}
 	return modal.Render(ctx, w)
 }

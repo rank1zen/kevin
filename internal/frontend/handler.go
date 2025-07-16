@@ -32,6 +32,21 @@ func (r ZGetSummonerChampionsRequest) Validate() (problems map[string]string) {
 	return problems
 }
 
+type GetLiveMatchRequest struct {
+	Region riot.Region `json:"region"`
+	PUUID  riot.PUUID  `json:"puuid"`
+}
+
+func (r GetLiveMatchRequest) Validate() (problems map[string]string) {
+	problems = make(map[string]string)
+
+	if r.PUUID == "" {
+		problems["puuid"] = "no puuid"
+	}
+
+	return problems
+}
+
 // Handler provides the API for server operations.
 type Handler struct {
 	Datasource *internal.Datasource
@@ -60,16 +75,15 @@ func (h *Handler) UpdateSummoner(ctx context.Context, region riot.Region, name, 
 	return nil
 }
 
-// GetLiveMatch the live match view if summoner is in a game in the region. If
-// no such game is found, return a view indicating such.
-func (h *Handler) GetLiveMatch(ctx context.Context, region riot.Region, puuid riot.PUUID) (view templ.Component, err error) {
-	match, err := h.Datasource.GetLiveMatch(ctx, region, puuid)
+// GetLiveMatch returns ... if the summoner is in game, otherwise, ...
+func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (templ.Component, error) {
+	match, err := h.Datasource.GetLiveMatch(ctx, req.Region, req.PUUID)
 	if err != nil {
 		if errors.Is(err, internal.ErrNoLiveMatch) {
 			return NoLiveMatchModalWindow{}, err
 		}
 
-		return LiveMatchModalWindow{}, err
+		return nil, err
 	}
 
 	redSide := []LiveMatchSummonerCard{}
@@ -220,43 +234,6 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 	}
 
 	return list, nil
-}
-
-// GetSummonerChampions returns a [ChampionsModal].
-//
-// Deprecated: Not using this.
-func (h *Handler) GetSummonerChampions(ctx context.Context, region riot.Region, puuid riot.PUUID) (templ.Component, error) {
-	champions, err := h.Datasource.GetStore().GetChampions(ctx, puuid, time.Now(), time.Now())
-	if err != nil {
-		return nil, err
-	}
-
-	modal := ChampionsModal{
-		Cards: []SummonerChampionCard{},
-	}
-
-	for _, champion := range champions {
-		modal.Cards = append(modal.Cards, SummonerChampionCard{
-			Champion:             int(champion.Champion),
-			Kills:                champion.Kills,
-			Deaths:               champion.Deaths,
-			Assists:              champion.Assists,
-			KillParticipation:    champion.KillParticipation,
-			CS:                   champion.CreepScore,
-			CSPerMinute:          champion.CreepScorePerMinute,
-			DamageDealt:          champion.DamageDealt,
-			DamageTaken:          champion.DamageTaken,
-			DamageDeltaEnemy:     champion.DamageDeltaEnemy,
-			DamagePercentageTeam: champion.DamagePercentageTeam,
-			GoldEarned:           champion.GoldEarned,
-			GoldDeltaEnemy:       champion.GoldDeltaEnemy,
-			GoldPercentageTeam:   champion.GoldPercentageTeam,
-			VisionScore:          champion.VisionScore,
-			PinkWardsBought:      champion.PinkWardsBought,
-		})
-	}
-
-	return modal, nil
 }
 
 // GetSummonerMatchHistory returns a [MatchHistoryList], being the matches

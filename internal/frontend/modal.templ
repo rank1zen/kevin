@@ -3,42 +3,82 @@ package frontend
 import (
 	"context"
 	"io"
-	"fmt"
 )
 
+// Modal is a button that triggers a modal panel.
 type Modal struct {
-	Trigger templ.Component
+	// ButtonChildren are placed inside the button that triggers the modal.
+	// A nil value will default to [Button].
+	ButtonChildren templ.Component
 
-	Panel templ.Component
+	// PanelChildren are placed centrally, in a floating layer. A nil value
+	// will default to [ModalWindow].
+	PanelChildren templ.Component
 }
 
 templ (m Modal) build() {
 	<div
-		x-id="
-			['modal-wrapper']
-		"
+		x-id="['modal-wrapper']"
 		class="relative"
 	>
 		<button
 			type="button"
 			x-ref="button"
 			@click="isModalOpen = true"
-			class="relative"
+			class="relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20"
+			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
-			@m.Trigger
+			if m.ButtonChildren != nil {
+				@m.ButtonChildren
+			} else {
+				@Button{}
+			}
 		</button>
 		<div
-			class="fixed inset-0 flex items-center justify-center z-30 bg-gray-900/20"
-			x-show="isModalOpen"
 			x-cloak
+			x-ref="panel"
+			x-show="isModalOpen"
 			x-transition.opacity
-			>
-			@m.Panel
+			class="fixed inset-0 flex items-center justify-center z-30 bg-gray-900/20"
+		>
+			if m.PanelChildren != nil {
+				@m.PanelChildren
+			} else {
+				@ModalWindow{}
+			}
 		</div>
 	</div>
 }
 
 func (m Modal) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// ModalWindow is a floating window with fixed height.
+type ModalWindow struct {
+	// if nil, no header.
+	HeaderChildren templ.Component
+
+	// if nil, empty page.
+	Children templ.Component
+}
+
+templ (m ModalWindow) build() {
+	<div class="bg-white dark:bg-black rounded-2xl shadow-lg border border-gray-900/25 h-1/2 w-xl">
+		<div class="sticky bg-white dark:bg-black rounded-t-2xl">
+			if m.HeaderChildren != nil {
+				@m.HeaderChildren
+			}
+		</div>
+		<div>
+			if m.Children != nil {
+				@m.Children
+			}
+		</div>
+	</div>
+}
+
+func (m ModalWindow) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
@@ -50,41 +90,4 @@ templ exitModal() {
 	>
 		@staticIcon(StaticWindowCloseSymbol)
 	</button>
-}
-
-type LiveGameModal struct {
-	PUUID string
-}
-
-func (m LiveGameModal) Render(ctx context.Context, w io.Writer) error {
-	modal := Modal{
-		Trigger: Button{
-			IconPath: StaticViewGridSymbol,
-			Label:    "Live Game",
-		},
-		Panel: ModalWindow{
-			HeaderContent: m.makeHeaderChildren(),
-			Content:       m.makeFetcherWindow(),
-		},
-	}
-
-	return modal.Render(ctx, w)
-}
-
-templ (m LiveGameModal) makeHeaderChildren() {
-	<div class="flex items-center justify-end gap-2 p-2">
-		@exitModal()
-	</div>
-}
-
-templ (m LiveGameModal) makeFetcherWindow() {
-	<div class="">
-		<div
-			hx-post={ fmt.Sprintf("/summoner/%s/live", m.PUUID) }
-			hx-trigger="revealed"
-			class="pt-5"
-		>
-			<span>Loading...</span>
-		</div>
-	</div>
 }

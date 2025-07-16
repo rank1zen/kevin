@@ -2,12 +2,12 @@ package frontend
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/riot"
 	"io"
 	"time"
-	"github.com/rank1zen/kevin/internal/riot"
-	"encoding/json"
 )
 
 // Page is the main html component returned the to browser.
@@ -96,8 +96,7 @@ templ (m SummonerPage) buildChampionsLoader() {
 		hx-ext="json-enc"
 		hx-vals={ string(bytes) }
 		class="w-54"
-	>
-	</div>
+	></div>
 }
 
 templ (m SummonerPage) buildMatchListDay(offset int) {
@@ -106,12 +105,12 @@ templ (m SummonerPage) buildMatchListDay(offset int) {
 		y, mo, d := now.Date()
 		today := time.Date(y, mo, d, 0, 0, 0, 0, now.Location())
 
-		offset := today.Add(time.Duration(offset) * (-24*time.Hour))
+		offset := today.Add(time.Duration(offset) * (-24 * time.Hour))
 
-		vals := struct{
+		vals := struct {
 			Region riot.Region `json:"region"`
-			PUUID riot.PUUID `json:"puuid"`
-			Date  int64 `json:"date"`
+			PUUID  riot.PUUID  `json:"puuid"`
+			Date   int64       `json:"date"`
 		}{
 			m.Region,
 			m.PUUID,
@@ -134,34 +133,39 @@ templ (m SummonerPage) buildMatchListDay(offset int) {
 	</div>
 }
 
+templ (m SummonerPage) buildLiveMatchModal() {
+	{{
+		modal := Modal{ButtonChildren: Button{IconPath: StaticViewGridSymbol}}
+	}}
+	@modal
+}
+
+templ (m SummonerPage) buildChampionsModal() {
+	{{
+		modal := Modal{ButtonChildren: Button{IconPath: StaticViewGridSymbol}}
+	}}
+	@modal
+}
+
 templ (m SummonerPage) buildContent() {
-	<div>
-		<div class="px-4 max-w-7xl mx-auto mt-10">
-			<div class="flex items-center gap-x-4">
-				<h1 class="font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
-					{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
-				</h1>
-				@RankWidget{Rank: m.Rank, UsePill: true, ShowTierName: true}
+	<div class="flex justify-center">
+		<div class="px-4">
+			<div class="flex items-center gap-x-2 justify-between w-full">
+				<div class="flex items-center gap-x-2">
+					<h1 class="font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
+						{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
+					</h1>
+					@RankWidget{Rank: m.Rank, UsePill: true, ShowTierName: true}
+				</div>
+				<div class="flex items-center gap-x-2">
+					@m.buildLiveMatchModal()
+					@m.buildChampionsModal()
+				</div>
 			</div>
 			<div>
-				// placeholder
-			</div>
-		</div>
-		<div class="px-4 max-w-7xl mx-auto mt-10">
-			<div class="flex justify-center w-full gap-x-9 mt-9">
-				<div>
-					for i := range 7 {
-						@m.buildMatchListDay(i)
-					}
-				</div>
-				<div class="hidden lg:block">
-					<div>
-						<h2 class="font-bold whitespace-nowrap text-gray-900/90 dark:text-gray-100/90 pb-4">
-							Last 7 Days
-						</h2>
-						@m.buildChampionsLoader()
-					</div>
-				</div>
+				for i := range 7 {
+					@m.buildMatchListDay(i)
+				}
 			</div>
 		</div>
 	</div>
@@ -169,9 +173,9 @@ templ (m SummonerPage) buildContent() {
 
 func (m SummonerPage) Render(ctx context.Context, w io.Writer) error {
 	page := Page{
-		Title:   fmt.Sprintf("%s#%s - Kevin", m.Name, m.Tag),
+		Title:          fmt.Sprintf("%s#%s - Kevin", m.Name, m.Tag),
 		HeaderChildren: PageHeaderLayout{Region: m.Region},
-		Content: m.buildContent(),
+		Content:        m.buildContent(),
 	}
 
 	return page.Render(ctx, w)
@@ -205,13 +209,13 @@ func (m NoSummonerPage) Render(ctx context.Context, w io.Writer) error {
 	return page.Render(ctx, w)
 }
 
-type HomePage struct{
+type HomePage struct {
 	Region riot.Region
 }
 
 func (m HomePage) Render(ctx context.Context, w io.Writer) error {
 	page := Page{
-		Title:   fmt.Sprintf("Kevin"),
+		Title:          fmt.Sprintf("Kevin"),
 		HeaderChildren: PageHeaderLayout{Region: m.Region},
 	}
 

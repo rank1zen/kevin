@@ -249,16 +249,11 @@ func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
 func (f *Frontend) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var (
-		region = r.FormValue("puuid")
-		puuid  = r.FormValue("puuid")
-	)
+	req, err := decode[GetLiveMatchRequest](r)
 
-	payload := slog.Group("payload", "region", region, "puuid", puuid)
+	payload := slog.Group("payload", "region", req.Region, "puuid", req.PUUID)
 
-	riotRegion := convertStringToRiotRegion(region)
-
-	component, err := f.handler.GetLiveMatch(ctx, riotRegion, riot.PUUID(puuid))
+	component, err := f.handler.GetLiveMatch(ctx, req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		slog.Debug("failed service", "err", err, payload)
