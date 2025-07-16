@@ -58,48 +58,56 @@ type MatchHistoryRow struct {
 	CSPerMinute            float32
 	RunePage               internal.RunePage
 	Items                  [7]int
-	Rank                   *internal.RankDetail
+
+	// No rank means we didn't record the rank
+	RankChange             *internal.RankDetail
+
 	LPChange               *int
+
+	Win bool
 }
 
 templ (m MatchHistoryRow) buildRankDeltaWidget() {
 	<div class="h-9">
-		<div class="text-sm">
-			C 100 LP
-		</div>
-		<div class="text-xs">
-			WIN +17 LP
-		</div>
-	</div>
-}
-
-templ (m MatchHistoryRow) buildKDAWidget() {
-	<div class="h-9">
-		<div class="text-sm">
-			{ fmt.Sprintf("%d / %d / %d", m.Kills, m.Assists, m.Deaths)}
-		</div>
-		<div class="text-xs">
-			4.5
-		</div>
+		if m.RankChange != nil {
+			@RankWidget{Rank: m.RankChange, Size: TextSizeXS}
+		} else {
+			<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
+				Unknown
+			</div>
+		}
+		if m.Win {
+			<div class="text-xs text-green-500/90">
+				if m.LPChange != nil {
+					{ fmt.Sprintf("WIN %+d", m.LPChange) }
+				} else {
+					{ fmt.Sprintf("WIN +??") }
+				}
+			</div>
+		} else {
+			<div class="text-xs text-red-500/90">
+				if m.LPChange != nil {
+					{ fmt.Sprintf("LOSS %+d", m.LPChange) }
+				} else {
+					{ fmt.Sprintf("LOSS +??") }
+				}
+			</div>
+		}
 	</div>
 }
 
 templ (m MatchHistoryRow) build() {
-	<div class="flex h-15 gap-x-4 px-4 items-center">
+	<div class="flex flex-none h-15 gap-x-4 px-4 items-center">
 		@ChampionWidget{
 			Champion:  m.Champion,
 			Summoners: &m.Summoners,
 		}
-		<div class="h-9">
-			@KDAWidget{
-				Kills:   m.Kills,
-				Deaths:  m.Deaths,
-				Assists: m.Assists,
-			}
-			<div class="text-xs">
-				3.4
-			</div>
-		</div>
+		@KDAWidget{
+			Kills:   m.Kills,
+			Deaths:  m.Deaths,
+			Assists: m.Assists,
+			KillParticipation: 3.4,
+		}
 		@CSWidget{
 			CS:          m.CS,
 			CSPerMinute: m.CSPerMinute,

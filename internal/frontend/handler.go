@@ -178,18 +178,24 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 		return nil, fmt.Errorf("updating matchlist failed: %w", err)
 	}
 
-	champions, err := h.Datasource.GetStore().GetChampions(ctx, req.PUUID, start, end)
+	storeChampions, err := h.Datasource.GetStore().GetChampions(ctx, req.PUUID, start, end)
 	if err != nil {
 		return nil, err
 	}
 
+	totalGamesPlayed := 0
+	for _, c := range storeChampions {
+		totalGamesPlayed += c.GamesPlayed
+	}
+
 	list := SummonerChampionList{Champions: []ChampionPopover{}}
 
-	for _, champion := range champions {
+	for _, champion := range storeChampions {
 		list.Champions = append(
 			list.Champions,
 			ChampionPopover{
 				Champion:             int(champion.Champion),
+				TotalGamesPlayed:     totalGamesPlayed,
 				GamesPlayed:          champion.GamesPlayed,
 				Wins:                 champion.Wins,
 				Losses:               champion.Losses,
@@ -208,6 +214,7 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 				GoldPercentageTeam:   champion.GoldPercentageTeam,
 				VisionScore:          champion.VisionScore,
 				PinkWardsBought:      champion.PinkWardsBought,
+				LPGain:               0,
 			},
 		)
 	}
@@ -283,8 +290,8 @@ func (h *Handler) GetSummonerMatchHistory(ctx context.Context, region riot.Regio
 				CSPerMinute: m.CreepScorePerMinute,
 				RunePage:    m.Runes,
 				Items:       m.Items,
-				Rank:        &internal.RankDetail{},
-				LPChange:    new(int),
+				RankChange:  nil,
+				LPChange:    nil,
 			},
 		)
 	}
