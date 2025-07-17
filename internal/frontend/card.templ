@@ -2,69 +2,8 @@ package frontend
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal"
 	"io"
 )
-
-type LiveMatchSummonerCard struct {
-	Champion  int
-	Summoners [2]int
-	RunePage  internal.RunePage
-	Name      string
-	Tag       string
-	Rank      *internal.RankDetail
-	TeamID    int
-}
-
-templ (m LiveMatchSummonerCard) build() {
-	<div class="flex items-center p-2 rounded-lg hover:bg-gray-900/5">
-		@ChampionWidget{
-			Champion:  m.Champion,
-			Summoners: &m.Summoners,
-		}
-		@RuneWidget{
-			RunePage: m.RunePage,
-		}
-		<div class="w-24">
-			<span class="text-sm">{ m.Name }</span>
-		</div>
-		@RankWidget{
-			Rank:        m.Rank,
-			ShowWinLoss: true,
-		}
-	</div>
-}
-
-func (m LiveMatchSummonerCard) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
-type SummonerChampionCard struct {
-	Champion               int
-	Kills, Deaths, Assists float32
-	KillParticipation      float32
-	CS                     int
-	CSPerMinute            float32
-	DamageDealt            int
-	DamageTaken            int
-	DamageDeltaEnemy       int
-	DamagePercentageTeam   float32
-	GoldEarned             int
-	GoldDeltaEnemy         int
-	GoldPercentageTeam     float32
-	VisionScore            int
-	PinkWardsBought        int
-}
-
-templ (m SummonerChampionCard) build() {
-	<div class="flex items-center p-2 rounded-lg hover:bg-gray-900/5">
-		@ChampionWidget{Champion: m.Champion}
-	</div>
-}
-
-func (m SummonerChampionCard) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
 
 type SearchCard struct {
 	Children templ.Component

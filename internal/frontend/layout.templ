@@ -2,45 +2,11 @@ package frontend
 
 import (
 	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
 	"io"
-	"github.com/rank1zen/kevin/internal"
 )
-
-type LiveMatchRowLayout struct {
-	MatchID string
-
-	TeamID int
-
-	PUUID riot.PUUID
-
-	Champion int
-
-	Summoners [2]int
-
-	RunePage internal.RunePage
-
-	Name, Tag string
-
-	Rank *internal.RankDetail
-}
-
-templ (m LiveMatchRowLayout) build() {
-	<div class="flex flex-none h-15 gap-x-4 px-4 items-center">
-		@ChampionWidget{Champion: m.Champion, Summoners: &m.Summoners}
-		<div class="h-9">
-			<div class="text-sm">
-				{ m.Name + "#" + m.Tag }
-			</div>
-			@RankWidget{Rank: m.Rank, Size: TextSizeXS}
-		</div>
-		@RuneWidget{RunePage: m.RunePage}
-	</div>
-}
-
-func (m LiveMatchRowLayout) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
 
 type HeaderLayout struct {
 	StartChildren templ.Component
@@ -123,5 +89,103 @@ templ (m MenuItemLayout) build() {
 }
 
 func (m MenuItemLayout) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// MatchHistoryRowLayout displays a match in a summoner's match history.
+type MatchHistoryRowLayout struct {
+	MatchID string
+
+	ChampionWidget ChampionWidget
+
+	KDAWidget KDAWidget
+
+	CSWidget CSWidget
+
+	RuneWidget RuneWidget
+
+	ItemWidget ItemWidget
+
+	// RankChange is the rank after the match. A nil value means the store
+	// did not record a rank after the match.
+	RankChange *internal.RankDetail
+
+	// LPChange is the lp change after the match. TODO: A nil value means ...
+	LPChange *int
+
+	Win bool
+}
+templ (m MatchHistoryRowLayout) build() {
+	<div class="flex flex-none h-15 gap-x-4 px-4 items-center">
+		@m.ChampionWidget
+		@m.KDAWidget
+		@m.CSWidget
+		@m.RuneWidget
+		@m.ItemWidget
+		<div class="h-9">
+			if m.RankChange != nil {
+				@RankWidget{Rank: m.RankChange, Size: TextSizeXS}
+			} else {
+				<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
+					Unknown
+				</div>
+			}
+			if m.Win {
+				<div class="text-xs text-green-500/90">
+					if m.LPChange != nil {
+						{ fmt.Sprintf("WIN %+d", m.LPChange) }
+					} else {
+						{ fmt.Sprintf("WIN +??") }
+					}
+				</div>
+			} else {
+				<div class="text-xs text-red-500/90">
+					if m.LPChange != nil {
+						{ fmt.Sprintf("LOSS %+d", m.LPChange) }
+					} else {
+						{ fmt.Sprintf("LOSS +??") }
+					}
+				</div>
+			}
+		</div>
+		@Popover{}
+	</div>
+}
+
+func (m MatchHistoryRowLayout) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// LiveMatchRowLayout displays a participant in an on-going match.
+type LiveMatchRowLayout struct {
+	MatchID string
+
+	ChampionWidget ChampionWidget
+
+	RuneWidget RuneWidget
+
+	TeamID int
+
+	PUUID riot.PUUID
+
+	Name, Tag string
+
+	Rank *internal.RankDetail
+}
+
+templ (m LiveMatchRowLayout) build() {
+	<div class="flex flex-none h-15 gap-x-4 px-4 items-center">
+		@m.ChampionWidget
+		<div class="h-9">
+			<div class="text-sm">
+				{ m.Name + "#" + m.Tag }
+			</div>
+			@RankWidget{Rank: m.Rank, Size: TextSizeXS}
+		</div>
+		@m.RuneWidget
+	</div>
+}
+
+func (m LiveMatchRowLayout) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }

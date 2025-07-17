@@ -11,60 +11,28 @@ import (
 
 // ChampionWidget displays a champion icon and summoner spells.
 type ChampionWidget struct {
-	Champion int
+	ChampionSprite ChampionSprite
 
+	// ChampionLevel is the level of the champion at the end of a match.
+	// A zero value indicates to not show champion level.
 	ChampionLevel int
 
-	// .. if nil, summoner spells are not included.
-	Summoners *[2]int
-}
-
-func (m ChampionWidget) generateSpriteBGPosition(id int) string {
-	summ := ddragon.SummonerMap[id]
-	x := summ.X / 48
-	y := summ.Y / 48
-	return fmt.Sprintf("bg-position-[-%dpx_-%dpx]", x*24, y*24)
-}
-
-func (m ChampionWidget) generateSpriteBG(id int) string {
-	summ := ddragon.SummonerMap[id]
-	p := path.Join("/static/sprite", "tiny_"+summ.Sprite)
-	return fmt.Sprintf("bg-[url(%s)]", p)
-}
-
-templ (m ChampionWidget) makeSummonerAtIndex(i int) {
-	{{ id := m.Summoners[i] }}
-	<div>
-		@SummonerSprite{SummonerID: id}
-	</div>
-}
-
-templ (m ChampionWidget) buildChampionIcon() {
-	{{ champion := ddragon.ChampionMap[m.Champion] }}
-	{{ x := 3 * champion.X / 4 }}
-	{{ y := 3 * champion.Y / 4 }}
-	<img
-		src={ path.Join("/static/sprite", "small_"+champion.Sprite) }
-		class={ fmt.Sprintf("w-[%dpx] h-[%dpx] object-none object-[-%dpx_-%dpx] rounded", 36, 36, x, y) }
-	/>
+	// TODO: SummonerD and SummonerF are ... Values of nil indicates
+	// summoner spells are not shown
+	SummonerD, SummonerF *SummonerSprite
 }
 
 templ (m ChampionWidget) build() {
-	{{
-		champion := ddragon.ChampionMap[m.Champion]
-
-		championTooltip := Tooltip{Tip: champion.Name, ButtonChildren: m.buildChampionIcon()}
-	}}
-	if m.Summoners != nil {
+	if m.SummonerD != nil && m.SummonerF != nil {
 		<div class="flex flex-none items-start gap-0.5">
-			@championTooltip
-			<div class="flex flex-col">
-				@Tooltip{ButtonChildren: SummonerSprite{SummonerID: m.Summoners[0]}}
-				@Tooltip{ButtonChildren: SummonerSprite{SummonerID: m.Summoners[1]}}
+			@m.ChampionSprite
+			<div>
+				@m.SummonerD
+				@m.SummonerF
 			</div>
 		</div>
 	} else {
-		@championTooltip
+		@m.ChampionSprite
 	}
 }
 
@@ -72,7 +40,7 @@ func (m ChampionWidget) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
-// RuneWidget is displays match runes.
+// RuneWidget displays match runes.
 type RuneWidget struct {
 	RunePage internal.RunePage
 }

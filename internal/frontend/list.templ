@@ -2,9 +2,6 @@ package frontend
 
 import "context"
 import "io"
-import "github.com/rank1zen/kevin/internal"
-import "fmt"
-import "github.com/rank1zen/kevin/internal/riot"
 
 type List struct {
 	Style int
@@ -49,88 +46,9 @@ func (m List) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
-// MatchHistoryRow displays a match in a summoner's match history.
-type MatchHistoryRow struct {
-	MatchID                string
-	Champion               int
-	Summoners              [2]int
-	Kills, Deaths, Assists int
-	CS                     int
-	CSPerMinute            float32
-	RunePage               internal.RunePage
-	Items                  [7]int
-
-	// No rank means we didn't record the rank
-	RankChange             *internal.RankDetail
-
-	LPChange               *int
-
-	Win bool
-}
-
-templ (m MatchHistoryRow) buildRankDeltaWidget() {
-	<div class="h-9">
-		if m.RankChange != nil {
-			@RankWidget{Rank: m.RankChange, Size: TextSizeXS}
-		} else {
-			<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
-				Unknown
-			</div>
-		}
-		if m.Win {
-			<div class="text-xs text-green-500/90">
-				if m.LPChange != nil {
-					{ fmt.Sprintf("WIN %+d", m.LPChange) }
-				} else {
-					{ fmt.Sprintf("WIN +??") }
-				}
-			</div>
-		} else {
-			<div class="text-xs text-red-500/90">
-				if m.LPChange != nil {
-					{ fmt.Sprintf("LOSS %+d", m.LPChange) }
-				} else {
-					{ fmt.Sprintf("LOSS +??") }
-				}
-			</div>
-		}
-	</div>
-}
-
-templ (m MatchHistoryRow) build() {
-	<div class="flex flex-none h-15 gap-x-4 px-4 items-center">
-		@ChampionWidget{
-			Champion:  m.Champion,
-			Summoners: &m.Summoners,
-		}
-		@KDAWidget{
-			Kills:   m.Kills,
-			Deaths:  m.Deaths,
-			Assists: m.Assists,
-			KillParticipation: 3.4,
-		}
-		@CSWidget{
-			CS:          m.CS,
-			CSPerMinute: m.CSPerMinute,
-		}
-		@RuneWidget{
-			RunePage: m.RunePage,
-		}
-		@ItemWidget{
-			Items: m.Items,
-		}
-		@m.buildRankDeltaWidget()
-		@Popover{}
-	</div>
-}
-
-func (m MatchHistoryRow) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
 // MatchHistoryList displays a full day of matches.
 type MatchHistoryList struct {
-	Matches []MatchHistoryRow
+	Matches []MatchHistoryRowLayout
 }
 
 templ (m MatchHistoryList) buildNoMatchesCard() {

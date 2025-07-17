@@ -14,6 +14,29 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+const (
+	TextSizeXS TextSize = iota
+	TextSizeSM
+	TextSizeBase
+	TextSizeLG
+	TextSizeXL
+	TextSize2XL
+)
+
+type TextSize int
+
+func (m TextSize) Class() string {
+	switch m {
+	case TextSizeXS:
+		return "text-xs"
+	case TextSizeSM:
+		return "text-small"
+	default:
+		return "text-small"
+	}
+}
+
+
 var (
 	ErrInvalidRegion = errors.New("invalid region")
 	ErrInvalidRiotID = errors.New("invalid riot id")

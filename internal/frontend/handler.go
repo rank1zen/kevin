@@ -112,21 +112,31 @@ func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (te
 		}
 
 		card := LiveMatchRowLayout{
-			MatchID:   p.MatchID,
-			TeamID:    p.TeamID,
-			PUUID:     riot.PUUID(p.PUUID),
-			Champion:  p.ChampionID,
-			Summoners: p.SummonersIDs,
-			RunePage:  p.Runes,
-			Name:      name,
-			Tag:       tag,
-			Rank:      nil, // TODO: fetch the rank.
+			MatchID:        p.MatchID,
+			ChampionWidget: ChampionWidget{
+				ChampionSprite: ChampionSprite{
+					ChampionID: p.ChampionID,
+					Size:       TextSize2XL,
+				},
+				SummonerD:      &SummonerSprite{
+					SummonerID: p.SummonersIDs[0],
+				},
+				SummonerF:      &SummonerSprite{
+					SummonerID: p.SummonersIDs[1],
+				},
+			},
+			RuneWidget:     RuneWidget{RunePage: p.Runes},
+			TeamID:         p.TeamID,
+			PUUID:          riot.PUUID(p.PUUID),
+			Name:           name,
+			Tag:            tag,
+			Rank:           nil,
 		}
 
 		if p.TeamID == 100 {
-			blueSide[i % 5] = card
+			blueSide[i%5] = card
 		} else {
-			redSide[i % 5] = card
+			redSide[i%5] = card
 		}
 	}
 
@@ -265,7 +275,7 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 // played on date are in store.
 func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) (templ.Component, error) {
 	// TODO: consider daylight savings
-	end := req.Date.Add(24*time.Hour)
+	end := req.Date.Add(24 * time.Hour)
 
 	if err := h.Datasource.ZUpdateMatchHistory(ctx, req.Region, req.PUUID, req.Date, end); err != nil {
 		return nil, err
@@ -276,24 +286,45 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
 
-	list := MatchHistoryList{Matches: []MatchHistoryRow{}}
+	list := MatchHistoryList{Matches: []MatchHistoryRowLayout{}}
 
 	for _, m := range storeMatches {
 		list.Matches = append(
 			list.Matches,
-			MatchHistoryRow{
-				MatchID:     m.MatchID,
-				Champion:    m.ChampionID,
-				Summoners:   m.SummonerIDs,
-				Kills:       m.Kills,
-				Deaths:      m.Deaths,
-				Assists:     m.Assists,
-				CS:          m.CreepScore,
-				CSPerMinute: m.CreepScorePerMinute,
-				RunePage:    m.Runes,
-				Items:       m.Items,
-				RankChange:  nil, // TODO: cannot fill these fields yet
-				LPChange:    nil,
+			MatchHistoryRowLayout{
+				MatchID: m.MatchID,
+				ChampionWidget: ChampionWidget{
+					ChampionSprite: ChampionSprite{
+						ChampionID: m.ChampionID,
+						Size:       TextSize2XL,
+					},
+					ChampionLevel: m.ChampionLevel,
+					SummonerD: &SummonerSprite{
+						SummonerID: m.SummonerIDs[0],
+					},
+					SummonerF: &SummonerSprite{
+						SummonerID: m.SummonerIDs[1],
+					},
+				},
+				KDAWidget: KDAWidget{
+					Kills:             m.Kills,
+					Deaths:            m.Deaths,
+					Assists:           m.Assists,
+					KillParticipation: m.KillParticipation,
+				},
+				CSWidget: CSWidget{
+					CS:          m.CreepScore,
+					CSPerMinute: m.CreepScorePerMinute,
+				},
+				RuneWidget: RuneWidget{
+					RunePage: m.Runes,
+				},
+				ItemWidget: ItemWidget{
+					Items: m.Items,
+				},
+				RankChange: nil,
+				LPChange:   nil,
+				Win:        m.Win,
 			},
 		)
 	}

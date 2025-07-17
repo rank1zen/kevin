@@ -66,13 +66,13 @@ func (m ItemSprite) Render(ctx context.Context, w io.Writer) error {
 type ChampionSprite struct {
 	ChampionID int
 
-	Size int
+	Size TextSize
 }
 
 func (m ChampionSprite) Render(ctx context.Context, w io.Writer) error {
 	champion := ddragon.ChampionMap[m.ChampionID]
 	x, y := champion.X/48, champion.Y/48
-	if m.Size == 0 {
+	if m.Size == TextSizeLG {
 		bgHeight := 84
 		if champion.Sprite == "champion_5" {
 			bgHeight = 56 // the last sprite map is not the usual height. this is bec.

@@ -9,24 +9,6 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-type TextSize int
-
-func (m TextSize) Class() string {
-	switch m {
-	case TextSizeXS:
-		return "text-xs"
-	case TextSizeSmall:
-		return "text-small"
-	default:
-		return "text-small"
-	}
-}
-
-const (
-	TextSizeSmall TextSize = iota
-	TextSizeXS
-)
-
 var (
 	StaticUnrankedSymbol    = "unranked.svg"
 	StaticIronSymbol        = "iron.svg"
