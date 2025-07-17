@@ -21,12 +21,10 @@ type ZGetSummonerChampionsRequest struct {
 func (r ZGetSummonerChampionsRequest) Validate() (problems map[string]string) {
 	problems = make(map[string]string)
 
-	if r.PUUID == "" {
-		problems["puuid"] = "no puuid"
-	}
+	validatePUUID(problems, r.PUUID)
 
-	if r.Week.Minute() != 0 {
-		problems["week"] = "not start of day"
+	if r.Week.Hour() != 0 || r.Week.Minute() != 0 || r.Week.Second() != 0 {
+		problems["date"] = "date needs to be start of day"
 	}
 
 	return problems
@@ -39,9 +37,27 @@ type GetLiveMatchRequest struct {
 
 func (r GetLiveMatchRequest) Validate() (problems map[string]string) {
 	problems = make(map[string]string)
+	validatePUUID(problems, r.PUUID)
+	return problems
+}
 
-	if r.PUUID == "" {
-		problems["puuid"] = "no puuid"
+type MatchHistoryRequest struct {
+	Region riot.Region `json:"region"`
+
+	PUUID riot.PUUID `json:"puuid"`
+
+	// Date should be the start of the day. The request will fetch all
+	// matches played on the day.
+	Date time.Time `json:"date"`
+}
+
+func (r MatchHistoryRequest) Validate() (problems map[string]string) {
+	problems = make(map[string]string)
+
+	validatePUUID(problems, r.PUUID)
+
+	if r.Date.Hour() != 0 || r.Date.Minute() != 0 || r.Date.Second() != 0 {
+		problems["date"] = "date needs to be start of day"
 	}
 
 	return problems
@@ -75,7 +91,8 @@ func (h *Handler) UpdateSummoner(ctx context.Context, region riot.Region, name, 
 	return nil
 }
 
-// GetLiveMatch returns ... if the summoner is in game, otherwise, ...
+// GetLiveMatch returns [LiveMatchModalWindow] if the summoner is in game,
+// otherwise [NoLiveMatchModalWindow].
 func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (templ.Component, error) {
 	match, err := h.Datasource.GetLiveMatch(ctx, req.Region, req.PUUID)
 	if err != nil {
@@ -86,23 +103,30 @@ func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (te
 		return nil, err
 	}
 
-	redSide := []LiveMatchSummonerCard{}
-	blueSide := []LiveMatchSummonerCard{}
+	blueSide, redSide := [5]LiveMatchRowLayout{}, [5]LiveMatchRowLayout{}
 
-	for _, p := range match.Participants {
-		card := LiveMatchSummonerCard{
+	for i, p := range match.Participants {
+		name, tag, err := h.Datasource.GetRiotName(ctx, riot.PUUID(p.PUUID))
+		if err != nil {
+			return nil, fmt.Errorf("fetching participant %s: %w", p.PUUID, err)
+		}
+
+		card := LiveMatchRowLayout{
+			MatchID:   p.MatchID,
+			TeamID:    p.TeamID,
+			PUUID:     riot.PUUID(p.PUUID),
 			Champion:  p.ChampionID,
 			Summoners: p.SummonersIDs,
 			RunePage:  p.Runes,
-			Name:      "Doublelift",
-			Tag:       "",
-			Rank:      &internal.RankDetail{},
-			TeamID:    p.TeamID,
+			Name:      name,
+			Tag:       tag,
+			Rank:      nil, // TODO: fetch the rank.
 		}
+
 		if p.TeamID == 100 {
-			redSide = append(redSide, card)
+			blueSide[i % 5] = card
 		} else {
-			blueSide = append(blueSide, card)
+			redSide[i % 5] = card
 		}
 	}
 
@@ -163,12 +187,12 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	}
 
 	page := SummonerPage{
-		Region:              region,
-		PUUID:               puuid,
-		Name:                summoner.Name,
-		Tag:                 summoner.Tagline,
-		Rank:                rank.Detail,
-		LastUpdated:         rank.EffectiveDate,
+		Region:      region,
+		PUUID:       puuid,
+		Name:        summoner.Name,
+		Tag:         summoner.Tagline,
+		Rank:        rank.Detail,
+		LastUpdated: rank.EffectiveDate,
 
 		GetChampionsRequest: ZGetSummonerChampionsRequest{
 			Region: region,
@@ -236,17 +260,18 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 	return list, nil
 }
 
-// GetSummonerMatchHistory returns a [MatchHistoryList], being the matches
-// played on date to date + 24 hours. The method will fetch riot first to
-// ensure all matches played on date are in store.
-func (h *Handler) GetSummonerMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, date int64) (templ.Component, error) {
-	ts := time.Unix(date, 0)
+// GetMatchHistory returns [MatchHistoryList], being the matches played on date
+// to date + 24 hours. The method will fetch riot first to ensure all matches
+// played on date are in store.
+func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) (templ.Component, error) {
+	// TODO: consider daylight savings
+	end := req.Date.Add(24*time.Hour)
 
-	if err := h.Datasource.ZUpdateMatchHistory(ctx, region, puuid, ts, ts.Add(24*time.Hour)); err != nil {
+	if err := h.Datasource.ZUpdateMatchHistory(ctx, req.Region, req.PUUID, req.Date, end); err != nil {
 		return nil, err
 	}
 
-	storeMatches, err := h.Datasource.GetStore().GetZMatches(ctx, puuid, ts, ts.Add(24*time.Hour))
+	storeMatches, err := h.Datasource.GetStore().GetZMatches(ctx, req.PUUID, req.Date, end)
 	if err != nil {
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
@@ -267,7 +292,7 @@ func (h *Handler) GetSummonerMatchHistory(ctx context.Context, region riot.Regio
 				CSPerMinute: m.CreepScorePerMinute,
 				RunePage:    m.Runes,
 				Items:       m.Items,
-				RankChange:  nil,
+				RankChange:  nil, // TODO: cannot fill these fields yet
 				LPChange:    nil,
 			},
 		)
@@ -346,4 +371,10 @@ func GetCurrentWeek() time.Time {
 	y, m, d := now.Date()
 	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	return startOfDay.Add(-24 * 6 * time.Hour)
+}
+
+func validatePUUID(problems map[string]string, puuid riot.PUUID) {
+	if len(puuid) != 78 {
+		problems["puuid"] = "puuid is invalid"
+	}
 }

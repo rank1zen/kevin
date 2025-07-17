@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -173,23 +172,16 @@ func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := fromCtx(ctx)
 
-	var (
-		region           = r.FormValue("region")
-		puuid            = r.FormValue("puuid")
-		date   time.Time = time.Now()
-	)
-
-	payload := slog.Group("payload", "region", region, "puuid", puuid, "date", r.FormValue("date"))
-
-	if dateQuery := r.FormValue("date"); dateQuery != "" {
-		if dateVal, err := strconv.ParseInt(dateQuery, 10, 64); err == nil {
-			date = time.Unix(dateVal, 0)
-		}
+	req, err := decode[MatchHistoryRequest](r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		logger.Debug("bad request", "err", err)
+		return
 	}
 
-	riotRegion := convertStringToRiotRegion(region)
+	payload := slog.Any("request", req)
 
-	component, err := f.handler.GetSummonerMatchHistory(ctx, riotRegion, riot.PUUID(puuid), date.Unix())
+	component, err := f.handler.GetMatchHistory(ctx, req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)
@@ -250,6 +242,11 @@ func (f *Frontend) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	req, err := decode[GetLiveMatchRequest](r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		slog.Debug("bad request", "err", err)
+		return
+	}
 
 	payload := slog.Group("payload", "region", req.Region, "puuid", req.PUUID)
 

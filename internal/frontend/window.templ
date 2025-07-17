@@ -8,14 +8,85 @@ import (
 	"time"
 )
 
+// LiveMatchModal is a button that triggers a modal panel.
+type LiveMatchModal struct {
+	BlueSide, RedSide [5]LiveMatchRowLayout
+}
+
+templ (m LiveMatchModal) buildChildren() {
+	{{
+		blueSide, redSide := []templ.Component{}, []templ.Component{}
+		for i := range 5 {
+			blueSide = append(blueSide, m.BlueSide[i])
+			redSide = append(redSide, m.RedSide[i])
+		}
+	}}
+	<div>
+		<h2 class="font-bold text-base text-gray-900/90 dark:text-gray-100/90">
+			Blue Side
+		</h2>
+		<div class="mt-3">
+			@List{Items: blueSide}
+		</div>
+		<h2 class="font-bold text-base text-gray-900/90 dark:text-gray-100/90">
+			Red Side
+		</h2>
+		<div class="mt-3">
+			@List{Items: redSide}
+		</div>
+	</div>
+}
+
+func (m LiveMatchModal) Render(ctx context.Context, w io.Writer) error {
+	modal := Modal{
+		ButtonChildren: Button{
+			IconPath: StaticViewListSymbol,
+		},
+		PanelChildren: ModalWindow{
+			HeaderChildren: nil,
+			Children: m.buildChildren(),
+		},
+	}
+
+	return modal.Render(ctx, w)
+}
+
+
+// ModalWindow is a floating window with fixed height.
+type ModalWindow struct {
+	// if nil, no header.
+	HeaderChildren templ.Component
+
+	// if nil, empty page.
+	Children templ.Component
+}
+
+templ (m ModalWindow) build() {
+	<div class="bg-white dark:bg-black rounded-2xl shadow-lg border border-gray-900/25 h-1/2 w-xl">
+		<div class="sticky bg-white dark:bg-black rounded-t-2xl">
+			if m.HeaderChildren != nil {
+				@m.HeaderChildren
+			}
+		</div>
+		<div>
+			if m.Children != nil {
+				@m.Children
+			}
+		</div>
+	</div>
+}
+
+func (m ModalWindow) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// LiveMatchModalWindow is a modal window for a live match.
 type LiveMatchModalWindow struct {
 	AverageRank *internal.RankDetail
 
 	StartTime time.Time
 
-	RedSide []LiveMatchSummonerCard
-
-	BlueSide []LiveMatchSummonerCard
+	BlueSide, RedSide [5]LiveMatchRowLayout
 }
 
 templ (m LiveMatchModalWindow) makeHeaderContent() {
@@ -29,23 +100,42 @@ templ (m LiveMatchModalWindow) makeHeaderContent() {
 	</div>
 }
 
-templ (m LiveMatchModalWindow) makeContent() {
-	<div class="flex justify-center">
-		<div>
-			for _, s := range m.BlueSide {
-				@s
-			}
+templ (m LiveMatchModalWindow) buildChildren() {
+	{{
+		blueSide, redSide := []templ.Component{}, []templ.Component{}
+		for i := range 5 {
+			blueSide = append(blueSide, m.BlueSide[i])
+			redSide = append(redSide, m.RedSide[i])
+		}
+	}}
+	<div>
+		<h2 class="font-bold text-base text-gray-900/90 dark:text-gray-100/90">
+			Blue Side
+		</h2>
+		<div class="mt-3">
+			@List{Items: blueSide}
 		</div>
-		<div class="mt-2">
-			for _, s := range m.RedSide {
-				@s
-			}
+		<h2 class="font-bold text-base text-gray-900/90 dark:text-gray-100/90">
+			Red Side
+		</h2>
+		<div class="mt-3">
+			@List{Items: redSide}
 		</div>
 	</div>
 }
 
 func (m LiveMatchModalWindow) Render(ctx context.Context, w io.Writer) error {
-	return m.makeContent().Render(ctx, w)
+	modal := Modal{
+		ButtonChildren: Button{
+			IconPath: StaticViewListSymbol,
+		},
+		PanelChildren: ModalWindow{
+			HeaderChildren: nil,
+			Children: m.buildChildren(),
+		},
+	}
+
+	return modal.Render(ctx, w)
 }
 
 type NoLiveMatchModalWindow struct {}
@@ -68,4 +158,14 @@ func (m NoLiveMatchModalWindow) Render(ctx context.Context, w io.Writer) error {
 	}
 
 	return modal.Render(ctx, w)
+}
+
+templ exitModal() {
+	<button
+		type="button"
+		@click="isModalOpen = false"
+		class="size-7 p-1.5 bg-gray-900/5 rounded-full"
+	>
+		@staticIcon(StaticWindowCloseSymbol)
+	</button>
 }

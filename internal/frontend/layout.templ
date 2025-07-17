@@ -4,7 +4,43 @@ import (
 	"context"
 	"github.com/rank1zen/kevin/internal/riot"
 	"io"
+	"github.com/rank1zen/kevin/internal"
 )
+
+type LiveMatchRowLayout struct {
+	MatchID string
+
+	TeamID int
+
+	PUUID riot.PUUID
+
+	Champion int
+
+	Summoners [2]int
+
+	RunePage internal.RunePage
+
+	Name, Tag string
+
+	Rank *internal.RankDetail
+}
+
+templ (m LiveMatchRowLayout) build() {
+	<div class="flex flex-none h-15 gap-x-4 px-4 items-center">
+		@ChampionWidget{Champion: m.Champion, Summoners: &m.Summoners}
+		<div class="h-9">
+			<div class="text-sm">
+				{ m.Name + "#" + m.Tag }
+			</div>
+			@RankWidget{Rank: m.Rank, Size: TextSizeXS}
+		</div>
+		@RuneWidget{RunePage: m.RunePage}
+	</div>
+}
+
+func (m LiveMatchRowLayout) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
 
 type HeaderLayout struct {
 	StartChildren templ.Component

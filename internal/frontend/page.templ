@@ -86,6 +86,9 @@ type SummonerPage struct {
 
 	// GetChampionsRequest is sent to the server upon load.
 	GetChampionsRequest ZGetSummonerChampionsRequest
+
+	// MatchHistoryRequests are sent to the server upon load.
+	MatchHistoryRequests [7]MatchHistoryRequest
 }
 
 templ (m SummonerPage) buildChampionsLoader() {
