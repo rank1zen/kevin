@@ -112,25 +112,25 @@ func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (te
 		}
 
 		card := LiveMatchRowLayout{
-			MatchID:        p.MatchID,
+			MatchID: p.MatchID,
 			ChampionWidget: ChampionWidget{
 				ChampionSprite: ChampionSprite{
 					ChampionID: p.ChampionID,
 					Size:       TextSize2XL,
 				},
-				SummonerD:      &SummonerSprite{
+				SummonerD: &SummonerSprite{
 					SummonerID: p.SummonersIDs[0],
 				},
-				SummonerF:      &SummonerSprite{
+				SummonerF: &SummonerSprite{
 					SummonerID: p.SummonersIDs[1],
 				},
 			},
-			RuneWidget:     RuneWidget{RunePage: p.Runes},
-			TeamID:         p.TeamID,
-			PUUID:          riot.PUUID(p.PUUID),
-			Name:           name,
-			Tag:            tag,
-			Rank:           nil,
+			RuneWidget: RuneWidget{RunePage: p.Runes},
+			TeamID:     p.TeamID,
+			PUUID:      riot.PUUID(p.PUUID),
+			Name:       name,
+			Tag:        tag,
+			Rank:       nil,
 		}
 
 		if p.TeamID == 100 {
@@ -197,18 +197,46 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	}
 
 	page := SummonerPage{
-		Region:      region,
-		PUUID:       puuid,
-		Name:        summoner.Name,
-		Tag:         summoner.Tagline,
-		Rank:        rank.Detail,
+		Region: region,
+
+		PUUID: puuid,
+
+		Name: summoner.Name,
+
+		Tag: summoner.Tagline,
+
+		Rank: rank.Detail,
+
 		LastUpdated: rank.EffectiveDate,
+
+		LiveMatchButton: Modal{
+			ButtonChildren: Button{},
+			PanelChildren:  nil,
+		},
+
+		ChampionsButton: Modal{
+			ButtonChildren: Button{},
+			PanelChildren:  nil,
+		},
 
 		GetChampionsRequest: ZGetSummonerChampionsRequest{
 			Region: region,
-			PUUID:  puuid,
-			Week:   GetCurrentWeek(),
+			PUUID: puuid,
+			Week: GetDay(7),
 		},
+
+		MatchHistoryRequests: []MatchHistoryRequest{},
+	}
+
+	for i := range 7 {
+		page.MatchHistoryRequests = append(
+			page.MatchHistoryRequests,
+			MatchHistoryRequest{
+				Region: region,
+				PUUID:  puuid,
+				Date:   GetDay(i),
+			},
+		)
 	}
 
 	return page, nil
@@ -396,12 +424,22 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 	return templ.Join(v...), nil
 }
 
-// GetCurrentWeek returns the start of the day, 7 days ago.
+// GetCurrentWeek returns the start of the day, 7 days ago. Currently returns
+// UTC time.
 func GetCurrentWeek() time.Time {
 	now := time.Now().In(time.UTC)
 	y, m, d := now.Date()
 	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	return startOfDay.Add(-24 * 6 * time.Hour)
+}
+
+// GetDay returns the start of the day, offset days ago. Currently returns UTC
+// time.
+func GetDay(offset int) time.Time {
+	now := time.Now().In(time.UTC)
+	y, m, d := now.Date()
+	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
+	return startOfDay.Add(time.Duration(-24 * offset) * time.Hour)
 }
 
 func validatePUUID(problems map[string]string, puuid riot.PUUID) {

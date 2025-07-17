@@ -80,74 +80,19 @@ type SummonerPage struct {
 
 	Name, Tag string
 
-	Rank *internal.RankDetail
+	RankWidget RankWidget
 
 	LastUpdated time.Time
+
+	LiveMatchButton Modal
+
+	ChampionsButton Modal
 
 	// GetChampionsRequest is sent to the server upon load.
 	GetChampionsRequest ZGetSummonerChampionsRequest
 
 	// MatchHistoryRequests are sent to the server upon load.
-	MatchHistoryRequests [7]MatchHistoryRequest
-}
-
-templ (m SummonerPage) buildChampionsLoader() {
-	{{ bytes, _ := json.Marshal(m.GetChampionsRequest) }}
-	<div
-		hx-post="/summoner/champions"
-		hx-trigger="load once"
-		hx-ext="json-enc"
-		hx-vals={ string(bytes) }
-		class="w-54"
-	></div>
-}
-
-templ (m SummonerPage) buildMatchListDay(offset int) {
-	{{
-		now := time.Now() // FIXME: this should be the location of the browser client
-		y, mo, d := now.Date()
-		today := time.Date(y, mo, d, 0, 0, 0, 0, now.Location())
-
-		offset := today.Add(time.Duration(offset) * (-24 * time.Hour))
-
-		vals := struct {
-			Region riot.Region `json:"region"`
-			PUUID  riot.PUUID  `json:"puuid"`
-			Date   int64       `json:"date"`
-		}{
-			m.Region,
-			m.PUUID,
-			offset.Unix(),
-		}
-
-		bytes, _ := json.Marshal(vals)
-	}}
-	<div>
-		<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90 pb-3">
-			{ offset.Format("Monday, Jan 2") }
-		</h2>
-		<div
-			hx-post="/summoner/matchlist"
-			hx-trigger="load once"
-			hx-vals={ string(bytes) }
-		>
-			Spinning...
-		</div>
-	</div>
-}
-
-templ (m SummonerPage) buildLiveMatchModal() {
-	{{
-		modal := Modal{ButtonChildren: Button{IconPath: StaticViewGridSymbol}}
-	}}
-	@modal
-}
-
-templ (m SummonerPage) buildChampionsModal() {
-	{{
-		modal := Modal{ButtonChildren: Button{IconPath: StaticViewGridSymbol}}
-	}}
-	@modal
+	MatchHistoryRequests []MatchHistoryRequest
 }
 
 templ (m SummonerPage) buildContent() {
@@ -158,16 +103,33 @@ templ (m SummonerPage) buildContent() {
 					<h1 class="font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
 						{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
 					</h1>
-					@RankWidget{Rank: m.Rank, UsePill: true, ShowTierName: true}
+					@m.RankWidget
 				</div>
 				<div class="flex items-center gap-x-2">
-					@m.buildLiveMatchModal()
-					@m.buildChampionsModal()
+					@m.LiveMatchButton
+					@m.ChampionsButton
 				</div>
 			</div>
-			<div>
+			<div class="w-full">
 				for i := range 7 {
-					@m.buildMatchListDay(i)
+					{{
+						req := m.MatchHistoryRequests[i]
+						bytes, _ := json.Marshal(req)
+					}}
+					<div class="mt-4">
+						<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90">
+							{ req.Date.Format("Monday, Jan 2") }
+						</h2>
+						<div
+							hx-post="/summoner/matchlist"
+							hx-trigger="load once"
+							hx-vals={ string(bytes) }
+							class="mt-3"
+						>
+
+							Spinning...
+						</div>
+					</div>
 				}
 			</div>
 		</div>

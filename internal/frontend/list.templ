@@ -2,6 +2,7 @@ package frontend
 
 import "context"
 import "io"
+import "encoding/json"
 
 type List struct {
 	Style int
@@ -52,8 +53,8 @@ type MatchHistoryList struct {
 }
 
 templ (m MatchHistoryList) buildNoMatchesCard() {
-	<div class="flex items-center justify-center h-15 bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 shadow shadow-gray-900/10 dark:shadow-gray-100/10 rounded-2xl">
-		<div class="text-sm">
+	<div class="flex items-center justify-center h-15">
+		<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
 			No matches played
 		</div>
 	</div>
@@ -63,7 +64,8 @@ func (m MatchHistoryList) Render(ctx context.Context, w io.Writer) error {
 	list := List{Items: []templ.Component{}}
 
 	if len(m.Matches) == 0 {
-		return m.buildNoMatchesCard().Render(ctx, w)
+		list.Items = append(list.Items, m.buildNoMatchesCard())
+		return list.Render(ctx, w)
 	}
 
 	for _, row := range m.Matches {
@@ -71,6 +73,39 @@ func (m MatchHistoryList) Render(ctx context.Context, w io.Writer) error {
 	}
 
 	return list.Render(ctx, w)
+}
+
+// MatchHistoryListLoader requets the server for [MatchHistoryList].
+type MatchHistoryListLoader struct {
+	Request MatchHistoryRequest
+}
+
+templ (m MatchHistoryListLoader) buildSpinner() {
+	<div class="flex items-center justify-center h-15 w-full">
+		Spinning
+	</div>
+}
+
+templ (m MatchHistoryListLoader) build() {
+	{{
+		bytes, _ := json.Marshal(m.Request)
+
+		list := List{Items: []templ.Component{}}
+
+		list.Items = append(list.Items, m.buildSpinner())
+	}}
+	<div
+		hx-post="/summoner/matchlist"
+		hx-trigger="load once"
+		hx-target="outerHTML"
+		hx-vals={ string(bytes) }
+	>
+		@list
+	</div>
+}
+
+func (m MatchHistoryListLoader) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
 }
 
 type SummonerChampionList struct {
