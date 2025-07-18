@@ -2,7 +2,6 @@ package frontend
 
 import "context"
 import "io"
-import "encoding/json"
 
 type List struct {
 	Style int
@@ -75,39 +74,6 @@ func (m MatchHistoryList) Render(ctx context.Context, w io.Writer) error {
 	return list.Render(ctx, w)
 }
 
-// MatchHistoryListLoader requets the server for [MatchHistoryList].
-type MatchHistoryListLoader struct {
-	Request MatchHistoryRequest
-}
-
-templ (m MatchHistoryListLoader) buildSpinner() {
-	<div class="flex items-center justify-center h-15 w-full">
-		Spinning
-	</div>
-}
-
-templ (m MatchHistoryListLoader) build() {
-	{{
-		bytes, _ := json.Marshal(m.Request)
-
-		list := List{Items: []templ.Component{}}
-
-		list.Items = append(list.Items, m.buildSpinner())
-	}}
-	<div
-		hx-post="/summoner/matchlist"
-		hx-trigger="load once"
-		hx-target="outerHTML"
-		hx-vals={ string(bytes) }
-	>
-		@list
-	</div>
-}
-
-func (m MatchHistoryListLoader) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
 type SummonerChampionList struct {
 	Champions []ChampionPopover
 }
@@ -117,6 +83,28 @@ func (m SummonerChampionList) Render(ctx context.Context, w io.Writer) error {
 
 	if len(m.Champions) == 0 {
 		return list.Render(ctx, w)
+	}
+
+	for _, row := range m.Champions {
+		list.Items = append(list.Items, row)
+	}
+
+	return list.Render(ctx, w)
+}
+
+// ChampionModalList is a list of champions played in the past week, in
+// most-played order.
+//
+// TODO: find a better name.
+type ChampionModalList struct {
+	Champions []ChampionModalRowLayout
+}
+
+func (m ChampionModalList) Render(ctx context.Context, w io.Writer) error {
+	list := List{Items: []templ.Component{}}
+
+	if len(m.Champions) == 0 {
+		return nil
 	}
 
 	for _, row := range m.Champions {

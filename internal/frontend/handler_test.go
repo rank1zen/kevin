@@ -45,7 +45,7 @@ func TestHandlerGetLiveMatch(t *testing.T) {
 	handler := frontend.Handler{internal.NewDatasource(riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY")), store)}
 
 	req := frontend.GetLiveMatchRequest{
-		Region: "",
+		Region: riot.RegionNA1,
 		PUUID:  internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"),
 	}
 
@@ -132,36 +132,43 @@ func TestHandlerGetSummonerPage(t *testing.T) {
 	t.Run(
 		"expects matching fields",
 		func(t *testing.T) {
-			component, err := handler.GetSummonerPage(ctx, riot.RegionNA1, "orrange", "NA1")
+			actual, err := handler.GetSummonerPage(ctx, riot.RegionNA1, "orrange", "NA1")
 			require.NoError(t, err)
 
 			expectedPUUID := internal.NewPUUIDFromString("0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q")
 
+			// these are all the fields that we _can_ test.
 			expected := frontend.SummonerPage{
-				Region:               riot.RegionNA1,
-				PUUID:                expectedPUUID,
-				Name:                 "orrange",
-				Tag:                  "NA1",
-				LiveMatchButton:      frontend.Modal{
-					ButtonChildren: nil,
-					PanelChildren:  nil,
-				},
-				ChampionsButton:      frontend.Modal{},
-				GetChampionsRequest:  frontend.ZGetSummonerChampionsRequest{
-					Region: riot.RegionNA1,
-					PUUID:  expectedPUUID,
-					Week:   frontend.GetCurrentWeek(),
-				},
-				MatchHistoryRequests: []frontend.MatchHistoryRequest{},
+				Region:              riot.RegionNA1,
+				PUUID:               expectedPUUID,
+				Name:                "orrange",
+				Tag:                 "NA1",
+				LiveMatchLoader:     frontend.LiveMatchModalWindowLoader{Request: frontend.GetLiveMatchRequest{PUUID: expectedPUUID, Region: riot.RegionNA1}, },
+				MatchHistoryLoaders: []frontend.MatchHistoryListLoader{},
 			}
 
-			if assert.IsType(t, expected, component) {
-				page, _ := component.(frontend.SummonerPage)
+			for i := range 7 {
+				expected.MatchHistoryLoaders = append(
+					expected.MatchHistoryLoaders,
+					frontend.MatchHistoryListLoader{
+						Request: frontend.MatchHistoryRequest{
+							Region: riot.RegionNA1,
+							PUUID:  expectedPUUID,
+							Date:   frontend.GetDay(i),
+						},
+					},
+				)
+			}
+
+			if assert.IsType(t, expected, actual) {
+				page, _ := actual.(frontend.SummonerPage)
 
 				assert.Equal(t, page.Region, riot.RegionNA1)
 				assert.Equal(t, page.Name, "orrange")
 				assert.Equal(t, page.Tag, "NA1")
 				assert.Equal(t, page.PUUID, expectedPUUID)
+				assert.Equal(t, expected.LiveMatchLoader, page.LiveMatchLoader)
+				assert.Equal(t, expected.MatchHistoryLoaders, page.MatchHistoryLoaders)
 			}
 		},
 	)

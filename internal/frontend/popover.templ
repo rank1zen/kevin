@@ -10,9 +10,15 @@ import (
 
 // Popover shows a popup on click.
 type Popover struct {
+	// ButtonChildren are placed inside the button that triggers the
+	// popover. A nil value will default to [ButtonLayout].
 	ButtonChildren templ.Component
 
+	// PanelChildren are placed, in a floating panel. A nil value will
+	// default to ... (not defined)
 	PanelChildren templ.Component
+
+	// TODO: add alignment settings for floating panel
 }
 
 templ (m Popover) build() {
@@ -72,6 +78,7 @@ func (m Popover) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
+// MenuPopover shows a menu on click.
 type MenuPopover struct {
 	MenuEntries []struct {
 		Label string
@@ -99,7 +106,7 @@ templ (m MenuPopover) buildMenu() {
 
 func (m MenuPopover) Render(ctx context.Context, w io.Writer) error {
 	popover := Popover{
-		ButtonChildren: Button{IconPath: StaticOpenMenuSymbol},
+		ButtonChildren: ButtonLayout{Icon: OpenMenuIcon},
 		PanelChildren:  m.buildMenu(),
 	}
 

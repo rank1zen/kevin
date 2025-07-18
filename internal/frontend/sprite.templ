@@ -97,8 +97,8 @@ func (m ChampionSprite) Render(ctx context.Context, w io.Writer) error {
 
 		sprite := Sprite{
 			SpriteMap: "/static/sprite/" + "small_" + champion.Sprite,
-			BGHeight:  108,
-			BGWidth:   bgHeight,
+			BGHeight:  bgHeight,
+			BGWidth:   360,
 			Height:    36,
 			Width:     36,
 			X:         x * 36,

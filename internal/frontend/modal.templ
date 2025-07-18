@@ -5,10 +5,10 @@ import (
 	"io"
 )
 
-// Modal is a button that triggers a modal panel.
+// Modal triggers a modal panel on click.
 type Modal struct {
 	// ButtonChildren are placed inside the button that triggers the modal.
-	// A nil value will default to [Button].
+	// A nil value will default to [ButtonLayout].
 	ButtonChildren templ.Component
 
 	// PanelChildren are placed centrally, in a floating layer. A nil value
@@ -26,12 +26,12 @@ templ (m Modal) build() {
 			x-ref="button"
 			@click="isModalOpen = true"
 			class="relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20"
-			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
+			:class="isModalOpen && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
 			if m.ButtonChildren != nil {
 				@m.ButtonChildren
 			} else {
-				@Button{}
+				@ButtonLayout{}
 			}
 		</button>
 		<div
@@ -39,13 +39,15 @@ templ (m Modal) build() {
 			x-ref="panel"
 			x-show="isModalOpen"
 			x-transition.opacity
-			class="fixed inset-0 flex items-center justify-center z-30 bg-gray-900/20"
+			class="fixed inset-0 flex items-end z-30 bg-gray-900/20"
 		>
-			if m.PanelChildren != nil {
-				@m.PanelChildren
-			} else {
-				@ModalWindow{}
-			}
+			<div class="bg-white dark:bg-black shadow w-full rounded-t-2xl h-1/2 overflow-auto">
+				if m.PanelChildren != nil {
+					@m.PanelChildren
+				} else {
+					@ModalWindow{}
+				}
+			</div>
 		</div>
 	</div>
 }

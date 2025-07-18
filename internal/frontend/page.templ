@@ -2,7 +2,6 @@ package frontend
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
@@ -46,6 +45,7 @@ templ (m Page) build() {
 				isModalOpen: false
 			}"
 			@keydown.escape="isModalOpen = false"
+			:class="isModalOpen && 'overflow-hidden'"
 		>
 			if m.HeaderChildren != nil {
 				<div class="sticky top-0 z-10 bg-white dark:bg-gray-950">
@@ -80,58 +80,42 @@ type SummonerPage struct {
 
 	Name, Tag string
 
-	RankWidget RankWidget
-
 	LastUpdated time.Time
 
-	LiveMatchButton Modal
+	Rank *internal.RankDetail
 
-	ChampionsButton Modal
+	LiveMatchLoader LiveMatchModalWindowLoader
 
-	// GetChampionsRequest is sent to the server upon load.
-	GetChampionsRequest ZGetSummonerChampionsRequest
+	ChampionsLoader ChampionsLoader
 
-	// MatchHistoryRequests are sent to the server upon load.
-	MatchHistoryRequests []MatchHistoryRequest
+	MatchHistoryLoaders []MatchHistoryListLoader
 }
 
 templ (m SummonerPage) buildContent() {
-	<div class="flex justify-center">
-		<div class="px-4">
-			<div class="flex items-center gap-x-2 justify-between w-full">
-				<div class="flex items-center gap-x-2">
-					<h1 class="font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
-						{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
-					</h1>
-					@m.RankWidget
-				</div>
-				<div class="flex items-center gap-x-2">
-					@m.LiveMatchButton
-					@m.ChampionsButton
-				</div>
+	<div class="px-2">
+		<div class="flex items-center gap-x-2 justify-between">
+			<div class="flex items-center gap-x-2">
+				<h1 class="font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
+					{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
+				</h1>
+				@RankWidget{Rank: m.Rank, ShowTierName: true, Size: TextSizeSM}
 			</div>
-			<div class="w-full">
-				for i := range 7 {
-					{{
-						req := m.MatchHistoryRequests[i]
-						bytes, _ := json.Marshal(req)
-					}}
-					<div class="mt-4">
-						<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90">
-							{ req.Date.Format("Monday, Jan 2") }
-						</h2>
-						<div
-							hx-post="/summoner/matchlist"
-							hx-trigger="load once"
-							hx-vals={ string(bytes) }
-							class="mt-3"
-						>
-
-							Spinning...
-						</div>
+			<div class="flex items-center gap-x-2">
+				@Modal{ButtonChildren: ButtonLayout{Icon: ViewListIcon}, PanelChildren: m.LiveMatchLoader}
+				@Modal{ButtonChildren: ButtonLayout{Icon: OpenMenuIcon}, PanelChildren: m.LiveMatchLoader}
+			</div>
+		</div>
+		<div>
+			for i := range 7 {
+				<div class="mt-4">
+					<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90">
+						{ m.MatchHistoryLoaders[i].Request.Date.Format("Monday, Jan 2") }
+					</h2>
+					<div class="mt-3">
+						@m.MatchHistoryLoaders[i]
 					</div>
-				}
-			</div>
+				</div>
+			}
 		</div>
 	</div>
 }

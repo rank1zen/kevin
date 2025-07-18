@@ -7,6 +7,7 @@ import (
 	"github.com/rank1zen/kevin/internal/ddragon"
 	"io"
 	"path"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 // ChampionWidget displays a champion icon and summoner spells.
@@ -212,4 +213,148 @@ templ (m CSWidget) build() {
 
 func (m CSWidget) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
+}
+
+// RankWidget displays summoner rank.
+type RankWidget struct {
+	// Rank is the summoner's rank at an instance. A nil value indicates
+	// summoner is unranked.
+	Rank *internal.RankDetail
+
+	ShowTierName bool
+
+	// Size is the height of the widget, following [TextSize]. [TextSizeXS]
+	// and [TextSizeSM] are supported.
+	Size TextSize
+
+	// currently not used.
+	UsePill bool
+}
+
+// generateLabel generates "Gold IV 71 LP" if ShowTierName is true, else
+// "71 LP".
+func (m RankWidget) generateLabel() string {
+	if !m.ShowTierName {
+		if m.Rank == nil {
+			return ""
+		}
+
+		return fmt.Sprintf("%d LP", m.Rank.LP)
+	}
+
+	if m.Rank == nil {
+		return "Unranked"
+	}
+
+	label := fmt.Sprintf("%s %s %d LP", m.Rank.Tier.String(), m.Rank.Division.String(), m.Rank.LP)
+	if m.Rank.Tier == riot.TierChallenger || m.Rank.Tier == riot.TierGrandmaster || m.Rank.Tier == riot.TierMaster {
+		label = fmt.Sprintf("%s %d LP", m.Rank.Tier.String(), m.Rank.LP)
+	}
+
+	return label
+}
+
+func (m RankWidget) generateIcon() templ.Component {
+	if m.Rank == nil {
+		return TierUnrankedIcon
+	}
+
+	c, ok := tierSymbol[m.Rank.Tier]
+	if !ok {
+		panic("rank widget symbol is not valid")
+	}
+
+	return c
+}
+
+templ (m RankWidget) build() {
+	if m.Size == TextSizeXS {
+		<div class="flex flex-none h-4 items-center gap-x-1 cursor-default">
+			@m.generateIcon()
+			<span class="text-xs">
+				{ m .generateLabel() }
+			</span>
+		</div>
+	} else {
+		<div class="flex flex-none h-5 items-center gap-x-1 cursor-default">
+			@m.generateIcon()
+			<span class="text-sm">
+				{ m .generateLabel() }
+			</span>
+		</div>
+	}
+}
+
+// generateTierTextColorClass generates a TW text color class.
+func (m RankWidget) generateTierTextColorClass() string {
+	if m.Rank == nil {
+		return "text-gray-600/90"
+	}
+
+	return tierTextColor[m.Rank.Tier]
+}
+
+// generateTierTextColorClass generates a TW bg color class.
+func (m RankWidget) generateTierBGColorClass() string {
+	if m.Rank == nil {
+		return "text-gray-600/50"
+	}
+
+	return tierBGColor[m.Rank.Tier]
+}
+
+func (m RankWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+var tierTextColor = map[riot.Tier]string{
+	riot.TierIron:        "text-stone-500",
+	riot.TierBronze:      "text-yellow-700",
+	riot.TierSilver:      "text-slate-400",
+	riot.TierGold:        "text-yellow-500",
+	riot.TierPlatinum:    "text-cyan-400",
+	riot.TierEmerald:     "text-green-600",
+	riot.TierDiamond:     "text-violet-500",
+	riot.TierMaster:      "text-violet-500",
+	riot.TierGrandmaster: "text-red-600",
+	riot.TierChallenger:  "text-amber-200",
+}
+
+var tierBGColor = map[riot.Tier]string{
+	riot.TierIron:        "bg-stone-500/25",
+	riot.TierBronze:      "bg-yellow-700/25",
+	riot.TierSilver:      "bg-slate-400/25",
+	riot.TierGold:        "bg-yellow-500/25",
+	riot.TierPlatinum:    "bg-cyan-400/25",
+	riot.TierEmerald:     "bg-green-600/25",
+	riot.TierDiamond:     "bg-violet-500/25",
+	riot.TierMaster:      "bg-violet-500/25",
+	riot.TierGrandmaster: "bg-red-600/25",
+	riot.TierChallenger:  "bg-amber-200/25",
+}
+
+var tierSymbol = map[riot.Tier]templ.Component{
+	riot.TierIron:        TierIronIcon,
+	riot.TierBronze:      TierBronzeIcon,
+	riot.TierSilver:      TierSilverIcon,
+	riot.TierGold:        TierGoldIcon,
+	riot.TierPlatinum:    TierPlatinumIcon,
+	riot.TierEmerald:     TierEmeraldIcon,
+	riot.TierDiamond:     TierDiamondIcon,
+	riot.TierMaster:      TierMasterIcon,
+	riot.TierGrandmaster: TierGrandmasterIcon,
+	riot.TierChallenger:  TierChallengerIcon,
+}
+
+var tierSize = map[riot.Tier]string{
+	riot.TierIron:        "size-4",
+	riot.TierBronze:      "size-4",
+	riot.TierSilver:      "size-4",
+	riot.TierGold:        "size-4",
+	riot.TierPlatinum:    "size-5",
+	riot.TierEmerald:     "size-5",
+	riot.TierDiamond:     "size-5",
+	riot.TierMaster:      "size-4",
+	riot.TierGrandmaster: "size-4",
+	riot.TierChallenger:  "size-4",
 }

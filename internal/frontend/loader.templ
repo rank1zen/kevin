@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-
-	"github.com/rank1zen/kevin/internal/riot"
-	"time"
 )
 
 type LoaderType int
@@ -16,30 +13,56 @@ const (
 	LoaderTypeOnReveal
 )
 
-// Loader is a component that fetches the server for data.
+// Loader is a component that requets the server for data.
 type Loader struct {
 	Path string
 
-	// Type is the trigger event to fetch the path.
+	// Type is the trigger event. Default is [LoaderTypeOnLoad].
 	Type LoaderType
+
+	// Data will be sent to the server in JSON. A nil value indicates no
+	// data will be sent.
+	Data any
+
+	// Children are displayed in the loader. TODO: A nil value indicates
+	// [...] will be used.
+	Children templ.Component
 }
 
 func (m Loader) generateHXTrigger() string {
 	switch m.Type {
 	case LoaderTypeOnReveal:
-		return "reveal"
+		return "revealed"
 	default:
 		return "load once"
 	}
 }
 
 templ (m Loader) build() {
+	{{
+		var bytes []byte
+		if m.Data != nil {
+			var err error
+			bytes, err = json.Marshal(m.Data)
+			if err != nil {
+				panic("Loader.build: failed to encode data to json")
+			}
+		}
+	}}
 	<div
 		hx-post={ m.Path }
 		hx-trigger={ m.generateHXTrigger() }
 		hx-swap="outerHTML"
+		hx-ext="json-enc"
+		if m.Data != nil {
+			hx-vals={ string(bytes) }
+		}
 	>
-		Some loading symbol...
+		if m.Children != nil {
+			@m.Children
+		} else {
+			Some loading symbol...
+		}
 	</div>
 }
 
@@ -47,40 +70,61 @@ func (m Loader) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
-type MatchHistoryLoader struct {
-	Region riot.Region
-
-	PUUID string
-
-	Date time.Time
+// MatchHistoryListLoader requests the server for [MatchHistoryList].
+//
+// Uses [LoaderTypeOnLoad].
+type MatchHistoryListLoader struct {
+	Request MatchHistoryRequest
 }
 
-func (m MatchHistoryLoader) generateJSONVals() string {
-	bytes, _ := json.Marshal(struct {
-		Region riot.Region `json:"region"`
-		PUUID string `json:"puuid"`
-		Date  int64 `json:"date"`
-	}{
-		m.Region,
-		m.PUUID,
-		m.Date.Truncate(24*time.Hour).Unix(),
-	})
-
-	return string(bytes)
-}
-
-templ (m MatchHistoryLoader) build() {
-	<div
-		hx-post="/summoner/matchlist"
-		hx-trigger="load once"
-		hx-swap="outerHTML"
-		hx-vals={ m.generateJSONVals() }
-		class="w-full h-32 flex items-center justify-center"
-	>
-		<span>Loading next page...</span>
+// TODO: spinners can be factored into seperate components.
+templ (m MatchHistoryListLoader) buildSpinner() {
+	<div class="flex items-center justify-center h-15 w-100">
+		Spinning...
 	</div>
 }
 
-func (m MatchHistoryLoader) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
+func (m MatchHistoryListLoader) Render(ctx context.Context, w io.Writer) error {
+	list := List{Items: []templ.Component{}}
+	list.Items = append(list.Items, m.buildSpinner())
+
+	loader := Loader{
+		Path:     "/summoner/matchlist",
+		Data:     m.Request,
+		Children: list,
+	}
+
+	return loader.Render(ctx, w)
+}
+
+// LiveMatchModalWindowLoader requests the server for [LiveMatchModalWindow].
+//
+// Uses [LoaderTypeOnReveal].
+type LiveMatchModalWindowLoader struct {
+	Request GetLiveMatchRequest
+}
+
+// TODO: spinners can be factored into seperate components.
+templ (m LiveMatchModalWindowLoader) buildSpinner() {
+	<div>
+		Spinning...
+	</div>
+}
+
+func (m LiveMatchModalWindowLoader) Render(ctx context.Context, w io.Writer) error {
+	loader := Loader{
+		Path:     "/summoner/live",
+		Type:     LoaderTypeOnReveal,
+		Data:     m.Request,
+		Children: ModalWindow{Children: m.buildSpinner()},
+	}
+
+	return loader.Render(ctx, w)
+}
+
+// ChampionsLoader requests the server for [LiveMatchModalWindow].
+//
+// Uses [LoaderTypeOnReveal].
+type ChampionsLoader struct {
+	Request ZGetSummonerChampionsRequest
 }

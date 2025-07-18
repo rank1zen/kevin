@@ -36,7 +36,6 @@ func (m TextSize) Class() string {
 	}
 }
 
-
 var (
 	ErrInvalidRegion = errors.New("invalid region")
 	ErrInvalidRiotID = errors.New("invalid riot id")

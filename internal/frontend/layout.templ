@@ -115,8 +115,9 @@ type MatchHistoryRowLayout struct {
 
 	Win bool
 }
+
 templ (m MatchHistoryRowLayout) build() {
-	<div class="flex flex-none h-15 gap-x-4 px-4 items-center">
+	<div class="flex flex-none h-15 justify-evenly items-center">
 		@m.ChampionWidget
 		@m.KDAWidget
 		@m.CSWidget
@@ -148,7 +149,6 @@ templ (m MatchHistoryRowLayout) build() {
 				</div>
 			}
 		</div>
-		@Popover{}
 	</div>
 }
 
@@ -174,18 +174,109 @@ type LiveMatchRowLayout struct {
 }
 
 templ (m LiveMatchRowLayout) build() {
-	<div class="flex flex-none h-15 gap-x-4 px-4 items-center">
-		@m.ChampionWidget
-		<div class="h-9">
-			<div class="text-sm">
-				{ m.Name + "#" + m.Tag }
+	<div class="flex h-15 gap-x-4 px-4 justify-between items-center">
+		<div class="flex gap-x-4">
+			@m.ChampionWidget
+			<div class="flex-1 min-w-0 h-9">
+				<div class="text-sm text-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+					{ m.Name + "#" + m.Tag }
+				</div>
+				@RankWidget{Rank: m.Rank, Size: TextSizeXS}
 			</div>
-			@RankWidget{Rank: m.Rank, Size: TextSizeXS}
 		</div>
-		@m.RuneWidget
+		<div class="flex gap-x-4">
+			@m.RuneWidget
+		</div>
 	</div>
 }
 
 func (m LiveMatchRowLayout) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
+}
+
+// ButtonLayout is a simple button layout.
+type ButtonLayout struct {
+	// IconPath is the icon on the button. If empty, no icon is used.
+	Icon Icon
+
+	// Label is the text on the button. If empty, no label is used.
+	Label string
+}
+
+templ (m ButtonLayout) build() {
+	if m.Label != "" {
+		<div class="flex flex-none h-9 w-32 gap-2 items-center justify-center">
+			if m.Icon != nil {
+				@m.Icon
+			}
+			<span class="whitespace-nowrap font-bold text-sm text-gray-900/90 dark:text-gray-100/90">
+				{ m.Label }
+			</span>
+		</div>
+	} else {
+		<div class="flex flex-none size-9 items-center justify-center">
+			if m.Icon != nil {
+				@m.Icon
+			}
+		</div>
+	}
+}
+
+func (m ButtonLayout) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type ThinButton struct {
+	// IconPath is the icon on the button. If empty, no icon is used.
+	IconPath string
+}
+
+templ (m ThinButton) build() {
+	<div class="flex flex-none w-6 h-9 items-center justify-center">
+		@staticIcon(m.IconPath)
+	</div>
+}
+
+func (m ThinButton) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+type ChampionModalRowLayout struct {
+	Champion int
+
+	TotalGamesPlayed int
+
+	GamesPlayed int
+
+	Wins, Losses int
+
+	Kills, Deaths, Assists float32
+
+	KillParticipation float32
+
+	// Cs is average cs per minute
+	CS int
+
+	CSPerMinute float32
+
+	DamageDealt int
+
+	DamagePercentageTeam float32
+
+	DamageTaken int
+
+	DamageDeltaEnemy int
+
+	GoldEarned int
+
+	GoldDeltaEnemy int
+
+	GoldPercentageTeam float32
+
+	// lp gain for matches that actually have lp deltas?
+	LPGain int
+}
+
+type ChampionModalLayout struct {
+	Champions []ChampionModalRowLayout
 }

@@ -197,44 +197,25 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	}
 
 	page := SummonerPage{
-		Region: region,
-
-		PUUID: puuid,
-
-		Name: summoner.Name,
-
-		Tag: summoner.Tagline,
-
-		Rank: rank.Detail,
-
-		LastUpdated: rank.EffectiveDate,
-
-		LiveMatchButton: Modal{
-			ButtonChildren: Button{},
-			PanelChildren:  nil,
-		},
-
-		ChampionsButton: Modal{
-			ButtonChildren: Button{},
-			PanelChildren:  nil,
-		},
-
-		GetChampionsRequest: ZGetSummonerChampionsRequest{
-			Region: region,
-			PUUID: puuid,
-			Week: GetDay(7),
-		},
-
-		MatchHistoryRequests: []MatchHistoryRequest{},
+		Region:              region,
+		PUUID:               puuid,
+		Name:                summoner.Name,
+		Tag:                 summoner.Tagline,
+		LastUpdated:         rank.EffectiveDate,
+		Rank:                rank.Detail,
+		LiveMatchLoader:     LiveMatchModalWindowLoader{Request: GetLiveMatchRequest{Region: region, PUUID: puuid}},
+		MatchHistoryLoaders: []MatchHistoryListLoader{},
 	}
 
 	for i := range 7 {
-		page.MatchHistoryRequests = append(
-			page.MatchHistoryRequests,
-			MatchHistoryRequest{
-				Region: region,
-				PUUID:  puuid,
-				Date:   GetDay(i),
+		page.MatchHistoryLoaders = append(
+			page.MatchHistoryLoaders,
+			MatchHistoryListLoader{
+				Request: MatchHistoryRequest{
+					Region: region,
+					PUUID:  puuid,
+					Date:   GetDay(i),
+				},
 			},
 		)
 	}
@@ -439,7 +420,7 @@ func GetDay(offset int) time.Time {
 	now := time.Now().In(time.UTC)
 	y, m, d := now.Date()
 	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
-	return startOfDay.Add(time.Duration(-24 * offset) * time.Hour)
+	return startOfDay.Add(time.Duration(-24*offset) * time.Hour)
 }
 
 func validatePUUID(problems map[string]string, puuid riot.PUUID) {
