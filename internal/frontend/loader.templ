@@ -122,9 +122,26 @@ func (m LiveMatchModalWindowLoader) Render(ctx context.Context, w io.Writer) err
 	return loader.Render(ctx, w)
 }
 
-// ChampionsLoader requests the server for [LiveMatchModalWindow].
+// ChampionsLoader requests the server for [ChampionModalLayout].
 //
 // Uses [LoaderTypeOnReveal].
 type ChampionsLoader struct {
 	Request ZGetSummonerChampionsRequest
+}
+
+templ (m ChampionsLoader) buildSpinner() {
+	<div>
+		Spinning...
+	</div>
+}
+
+func (m ChampionsLoader) Render(ctx context.Context, w io.Writer) error {
+	loader := Loader{
+		Path:     "/summoner/champions",
+		Type:     LoaderTypeOnReveal,
+		Data:     m.Request,
+		Children: ModalWindow{Children: m.buildSpinner()},
+	}
+
+	return loader.Render(ctx, w)
 }

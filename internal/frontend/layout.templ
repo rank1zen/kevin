@@ -242,41 +242,74 @@ func (m ThinButton) Render(ctx context.Context, w io.Writer) error {
 }
 
 type ChampionModalRowLayout struct {
-	Champion int
-
-	TotalGamesPlayed int
+	ChampionWidget ChampionWidget
 
 	GamesPlayed int
 
 	Wins, Losses int
 
-	Kills, Deaths, Assists float32
+	WinRate float32
 
-	KillParticipation float32
+	AverageKillsPerGame int
 
-	// Cs is average cs per minute
-	CS int
+	AverageDeathsPerGame int
 
-	CSPerMinute float32
+	AverageAssistsPerGame int
 
-	DamageDealt int
+	AverageKillParticipationPerGame float32
 
-	DamagePercentageTeam float32
+	AverageCSPerGame int
 
-	DamageTaken int
+	AverageCSPerMinutePerGame float32
 
-	DamageDeltaEnemy int
+	AverageDamageDealtPerGame int
 
-	GoldEarned int
-
-	GoldDeltaEnemy int
-
-	GoldPercentageTeam float32
+	AverageDamageDealtPer10MinutesPerGame int
 
 	// lp gain for matches that actually have lp deltas?
 	LPGain int
 }
 
+templ (m ChampionModalRowLayout) build() {
+	<div class="flex h-15 px-4 justify-evenly items-center">
+		@m.ChampionWidget
+		<div class="h-9">
+			<div class="text-sm">
+				{ fmt.Sprintf("%d-%d / %d", m.Wins, m.Losses, m.GamesPlayed) }
+			</div>
+			<div class="text-xs">
+				{ fmt.Sprintf("%.0f%%", m.WinRate*100) }
+			</div>
+		</div>
+		@KDAWidget{}
+		@CSWidget{}
+		@GoldWidget{}
+	</div>
+}
+
+func (m ChampionModalRowLayout) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
 type ChampionModalLayout struct {
-	Champions []ChampionModalRowLayout
+	List ChampionModalList
+}
+
+templ (m ChampionModalLayout) build() {
+	<div>
+		<h2>
+			Champion stats in past week
+		</h2>
+		<div class="mt-3">
+			@m.List
+		</div>
+	</div>
+}
+
+func (m ChampionModalLayout) Render(ctx context.Context, w io.Writer) error {
+	window := ModalWindow{
+		Children: m.build(),
+	}
+
+	return window.Render(ctx, w)
 }

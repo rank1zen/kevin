@@ -204,6 +204,7 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		LastUpdated:         rank.EffectiveDate,
 		Rank:                rank.Detail,
 		LiveMatchLoader:     LiveMatchModalWindowLoader{Request: GetLiveMatchRequest{Region: region, PUUID: puuid}},
+		ChampionsLoader:     ChampionsLoader{Request: ZGetSummonerChampionsRequest{Region: region, PUUID: puuid, Week: GetDay(7)}},
 		MatchHistoryLoaders: []MatchHistoryListLoader{},
 	}
 
@@ -223,9 +224,8 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	return page, nil
 }
 
-// GetSummonerChampions returns [SummonerChampionList] consisting of stats for
-// the 7 days starting at week. The method will fetch all games played in the
-// specified interval.
+// GetSummonerChampions returns [ChampionModalLayout]. The method will fetch all
+// games played in the specified interval.
 func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerChampionsRequest) (templ.Component, error) {
 	start := req.Week
 	end := start.Add(7 * 24 * time.Hour)
@@ -245,38 +245,34 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 		totalGamesPlayed += c.GamesPlayed
 	}
 
-	list := SummonerChampionList{Champions: []ChampionPopover{}}
+	layout := ChampionModalLayout{
+		List: ChampionModalList{
+			Champions: []ChampionModalRowLayout{},
+		},
+	}
 
 	for _, champion := range storeChampions {
-		list.Champions = append(
-			list.Champions,
-			ChampionPopover{
-				Champion:             int(champion.Champion),
-				TotalGamesPlayed:     totalGamesPlayed,
-				GamesPlayed:          champion.GamesPlayed,
-				Wins:                 champion.Wins,
-				Losses:               champion.Losses,
-				Kills:                champion.Kills,
-				Deaths:               champion.Deaths,
-				Assists:              champion.Assists,
-				KillParticipation:    champion.KillParticipation,
-				CS:                   champion.CreepScore,
-				CSPerMinute:          champion.CreepScorePerMinute,
-				DamageDealt:          champion.DamageDealt,
-				DamageTaken:          champion.DamageTaken,
-				DamageDeltaEnemy:     champion.DamageDeltaEnemy,
-				DamagePercentageTeam: champion.DamagePercentageTeam,
-				GoldEarned:           champion.GoldEarned,
-				GoldDeltaEnemy:       champion.GoldDeltaEnemy,
-				GoldPercentageTeam:   champion.GoldPercentageTeam,
-				VisionScore:          champion.VisionScore,
-				PinkWardsBought:      champion.PinkWardsBought,
-				LPGain:               0,
+		layout.List.Champions = append(
+			layout.List.Champions,
+			ChampionModalRowLayout{
+				ChampionWidget:                        ChampionWidget{},
+				GamesPlayed:                           champion.GamesPlayed,
+				Wins:                                  champion.Wins,
+				Losses:                                champion.Losses,
+				WinRate:                               ComputeFraction(champion.Wins, champion.Losses),
+				AverageKillsPerGame:                   RoundToNearestInt(champion.Kills),
+				AverageDeathsPerGame:                  RoundToNearestInt(champion.Deaths),
+				AverageAssistsPerGame:                 RoundToNearestInt(champion.Assists),
+				AverageKillParticipationPerGame:       champion.KillParticipation,
+				AverageCSPerGame:                      champion.CreepScore,
+				AverageCSPerMinutePerGame:             champion.CreepScorePerMinute,
+				AverageDamageDealtPerGame:             champion.DamageDealt,
+				LPGain:                                0,
 			},
 		)
 	}
 
-	return list, nil
+	return layout, nil
 }
 
 // GetMatchHistory returns [MatchHistoryList], being the matches played on date
@@ -421,6 +417,14 @@ func GetDay(offset int) time.Time {
 	y, m, d := now.Date()
 	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	return startOfDay.Add(time.Duration(-24*offset) * time.Hour)
+}
+
+func ComputeFraction(wins, losses int) float32 {
+	return float32(wins) / float32(losses)
+}
+
+func RoundToNearestInt(x float32) int {
+	return int(x)
 }
 
 func validatePUUID(problems map[string]string, puuid riot.PUUID) {

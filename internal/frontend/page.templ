@@ -101,8 +101,8 @@ templ (m SummonerPage) buildContent() {
 				@RankWidget{Rank: m.Rank, ShowTierName: true, Size: TextSizeSM}
 			</div>
 			<div class="flex items-center gap-x-2">
-				@Modal{ButtonChildren: ButtonLayout{Icon: ViewListIcon}, PanelChildren: m.LiveMatchLoader}
-				@Modal{ButtonChildren: ButtonLayout{Icon: OpenMenuIcon}, PanelChildren: m.LiveMatchLoader}
+				@Modal{ButtonChildren: ButtonLayout{Icon: ViewListIcon}, PanelChildren: m.ChampionsLoader}
+				// @Modal{ButtonChildren: ButtonLayout{Icon: OpenMenuIcon}, PanelChildren: m.LiveMatchLoader}
 			</div>
 		</div>
 		<div>
