@@ -140,18 +140,14 @@ type NoSummonerPage struct {
 
 templ (m NoSummonerPage) build() {
 	<div>
-		@buildHeaderBar() {
-			@PageHeaderLayout{Region: m.Region}
-		}
-		<div>
-			Summoner not found
-		</div>
+		Summoner not found
 	</div>
 }
 
 func (m NoSummonerPage) Render(ctx context.Context, w io.Writer) error {
 	page := Page{
 		Title:   fmt.Sprintf("Summoner not found - Kevin"),
+		HeaderChildren: PageHeaderLayout{Region: m.Region},
 		Content: m.build(),
 	}
 

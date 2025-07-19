@@ -76,7 +76,7 @@ templ (m RuneWidget) build() {
 	<div class="flex flex-none items-center h-9 bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
 		@Tooltip{Tip: keystone.Name, ButtonChildren: m.buildKeystone(), ButtonStyle: 1}
 		@Tooltip{Tip: secondaryTree.Name, ButtonChildren: m.buildSecondary(), ButtonStyle: 1}
-		@Popover{ButtonChildren: ThinButton{IconPath: "down-small-symbolic.svg"}}
+		@Popover{ButtonChildren: ThinButtonLayout{Icon: DownSmallIcon}}
 	</div>
 }
 
@@ -115,7 +115,7 @@ templ (m ItemWidget) build() {
 				@m.makeItemAtIndex(i)
 			}
 		</div>
-		@Popover{ButtonChildren: ThinButton{IconPath: "down-small-symbolic.svg"}}
+		@Popover{ButtonChildren: ThinButtonLayout{Icon: DownSmallIcon}}
 	</div>
 }
 

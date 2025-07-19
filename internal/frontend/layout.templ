@@ -226,18 +226,18 @@ func (m ButtonLayout) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
-type ThinButton struct {
+type ThinButtonLayout struct {
 	// IconPath is the icon on the button. If empty, no icon is used.
-	IconPath string
+	Icon Icon
 }
 
-templ (m ThinButton) build() {
+templ (m ThinButtonLayout) build() {
 	<div class="flex flex-none w-6 h-9 items-center justify-center">
-		@staticIcon(m.IconPath)
+		@m.Icon
 	</div>
 }
 
-func (m ThinButton) Render(ctx context.Context, w io.Writer) error {
+func (m ThinButtonLayout) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
