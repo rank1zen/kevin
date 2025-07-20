@@ -12,7 +12,7 @@ type Modal struct {
 	ButtonChildren templ.Component
 
 	// PanelChildren are placed centrally, in a floating layer. A nil value
-	// will default to [ModalWindow].
+	// indicates no children.
 	PanelChildren templ.Component
 }
 
@@ -41,11 +41,9 @@ templ (m Modal) build() {
 			x-transition.opacity
 			class="fixed inset-0 flex items-end z-30 bg-gray-900/20"
 		>
-			<div class="bg-white dark:bg-black shadow w-full rounded-t-2xl h-1/2 overflow-auto">
+			<div class="bg-white dark:bg-black shadow w-full rounded-t-2xl h-3/5 overflow-auto">
 				if m.PanelChildren != nil {
 					@m.PanelChildren
-				} else {
-					@ModalWindow{}
 				}
 			</div>
 		</div>
@@ -53,5 +51,22 @@ templ (m Modal) build() {
 }
 
 func (m Modal) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// ExitModalButton can be used in a [Modal] component to close the window.
+type ExitModalButton struct {}
+
+templ (m ExitModalButton) build() {
+	<button
+		type="button"
+		class="cursor-pointer size-7 rounded-full flex items-center justify-center bg-gray-900/5 dark:bg-gray-100/5"
+		@click="isModalOpen = false"
+	>
+		@WindowCloseIcon
+	</button>
+}
+
+func (m ExitModalButton) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }

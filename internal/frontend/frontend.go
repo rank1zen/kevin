@@ -21,6 +21,9 @@ const (
 	TextSizeLG
 	TextSizeXL
 	TextSize2XL
+	TextSize3XL
+	TextSize4XL
+	TextSize5XL
 )
 
 type TextSize int

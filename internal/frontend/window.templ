@@ -3,123 +3,28 @@ package frontend
 
 import (
 	"context"
-	"fmt"
-	"github.com/rank1zen/kevin/internal"
 	"io"
-	"time"
 )
 
-// ModalWindow is a floating window with fixed height.
-type ModalWindow struct { // TODO: rename to layout
-	// HeaderChildren are placed in the header. A nil value indicates no
-	// header.
-	HeaderChildren templ.Component
-
-	// Children are placed in the main body. A nil value indicates an empty
-	// page.
+// PanelWindow is a simple panel for floating layers.
+type PanelWindow struct {
+	// Children are placed in the panel. A nil value indicates a blank
+	// panel with a fixed size.
 	Children templ.Component
 }
 
-templ (m ModalWindow) build() {
-	if m.HeaderChildren != nil {
-		<div>
-			<div class="sticky">
-				@m.HeaderChildren
-			</div>
-			<div>
-				if m.Children != nil {
-					@m.Children
-				}
-			</div>
+templ (m PanelWindow) build() {
+	if m.Children != nil {
+		<div class="bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10">
+			@m.Children
 		</div>
 	} else {
-		<div>
-			if m.Children != nil {
-				@m.Children
-			}
-		</div>
+		<div class="w-36 h-48 bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10"></div>
 	}
 }
 
-func (m ModalWindow) Render(ctx context.Context, w io.Writer) error {
+func (m PanelWindow) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
-}
-
-// LiveMatchModalWindow is a modal window for a live match.
-type LiveMatchModalWindow struct {
-	AverageRank *internal.RankDetail
-
-	StartTime time.Time
-
-	BlueSide, RedSide [5]LiveMatchRowLayout
-}
-
-templ (m LiveMatchModalWindow) makeHeaderContent() {
-	<div class="flex items-center justify-between gap-2">
-		<div class="flex">
-			{ fmt.Sprintf("%v", m.StartTime) }
-		</div>
-		<div class="flex">
-			Avg Rank Grandmaster // Avg Rank Grandmaster
-		</div>
-	</div>
-}
-
-templ (m LiveMatchModalWindow) buildChildren() {
-	{{
-		blueSide, redSide := []templ.Component{}, []templ.Component{}
-		for i := range 5 {
-			blueSide = append(blueSide, m.BlueSide[i])
-			redSide = append(redSide, m.RedSide[i])
-		}
-	}}
-	<div class="px-2">
-		<div class="">
-			<h2 class="font-bold text-base text-gray-900/90 dark:text-gray-100/90 mt-9">
-				Blue Side
-			</h2>
-			<div class="mt-3">
-				@List{Items: blueSide}
-			</div>
-			<h2 class="font-bold text-base text-gray-900/90 dark:text-gray-100/90 mt-9">
-				Red Side
-			</h2>
-			<div class="mt-3">
-				@List{Items: redSide}
-			</div>
-		</div>
-	</div>
-}
-
-func (m LiveMatchModalWindow) Render(ctx context.Context, w io.Writer) error {
-	window := ModalWindow{
-		HeaderChildren: nil,
-		Children:       m.buildChildren(),
-	}
-
-	return window.Render(ctx, w)
-}
-
-type NoLiveMatchModalWindow struct{}
-
-templ (m NoLiveMatchModalWindow) makeHeaderContent() {
-}
-
-templ (m NoLiveMatchModalWindow) makeContent() {
-	<div class="flex flex-col items-center justify-center">
-		<span class="text-base">
-			Currently not in live game
-		</span>
-	</div>
-}
-
-func (m NoLiveMatchModalWindow) Render(ctx context.Context, w io.Writer) error {
-	modal := ModalWindow{
-		HeaderChildren: m.makeHeaderContent(),
-		Children:       m.makeContent(),
-	}
-
-	return modal.Render(ctx, w)
 }
 
 templ exitModal() {

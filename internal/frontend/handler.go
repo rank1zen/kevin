@@ -140,7 +140,7 @@ func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (te
 		}
 	}
 
-	window := LiveMatchModalWindow{
+	window := LiveMatchModalLayout{
 		AverageRank: &internal.RankDetail{},
 		StartTime:   match.Date,
 		RedSide:     redSide,
@@ -251,23 +251,22 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 		},
 	}
 
-	for _, champion := range storeChampions {
+	for _, c := range storeChampions {
 		layout.List.Champions = append(
 			layout.List.Champions,
 			ChampionModalRowLayout{
-				ChampionWidget:                  ChampionWidget{},
-				GamesPlayed:                     champion.GamesPlayed,
-				Wins:                            champion.Wins,
-				Losses:                          champion.Losses,
-				WinRate:                         ComputeFraction(champion.Wins, champion.Losses),
-				AverageKillsPerGame:             RoundToNearestInt(champion.Kills),
-				AverageDeathsPerGame:            RoundToNearestInt(champion.Deaths),
-				AverageAssistsPerGame:           RoundToNearestInt(champion.Assists),
-				AverageKillParticipationPerGame: champion.KillParticipation,
-				AverageCSPerGame:                champion.CreepScore,
-				AverageCSPerMinutePerGame:       champion.CreepScorePerMinute,
-				AverageDamageDealtPerGame:       champion.DamageDealt,
-				LPGain:                          0,
+				ChampionWidget: ChampionWidget{ChampionSprite: ChampionSprite{ChampionID: int(c.Champion), Size: TextSize2XL}},
+				GamesPlayed:    c.GamesPlayed,
+				Wins:           c.Wins,
+				Losses:         c.Losses,
+				WinRate:        ComputeFraction(c.Wins, c.GamesPlayed),
+				KDAWidget: KDAWidget{
+					Kills:          int(c.Kills),
+					Deaths:         int(c.Deaths),
+					Assists:        int(c.Assists),
+					KilLDeathRatio: 0,
+				},
+				CSWidget: CSWidget{CS: c.CreepScore, CSPerMinute: c.CreepScorePerMinute},
 			},
 		)
 	}
@@ -312,10 +311,10 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 					},
 				},
 				KDAWidget: KDAWidget{
-					Kills:             m.Kills,
-					Deaths:            m.Deaths,
-					Assists:           m.Assists,
-					KillParticipation: m.KillParticipation,
+					Kills:          m.Kills,
+					Deaths:         m.Deaths,
+					Assists:        m.Assists,
+					KilLDeathRatio: (float32(m.Kills) + float32(m.Assists)) / float32(m.Deaths),
 				},
 				CSWidget: CSWidget{
 					CS:          m.CreepScore,

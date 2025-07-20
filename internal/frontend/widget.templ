@@ -26,14 +26,22 @@ type ChampionWidget struct {
 templ (m ChampionWidget) build() {
 	if m.SummonerD != nil && m.SummonerF != nil {
 		<div class="flex flex-none items-start gap-0.5">
-			@m.ChampionSprite
+			<div class="rounded overflow-hidden">
+				@m.ChampionSprite
+			</div>
 			<div>
-				@m.SummonerD
-				@m.SummonerF
+				<div class="rounded-xs overflow-hidden">
+					@m.SummonerD
+				</div>
+				<div class="rounded-xs overflow-hidden">
+					@m.SummonerF
+				</div>
 			</div>
 		</div>
 	} else {
-		@m.ChampionSprite
+		<div class="rounded overflow-hidden">
+			@m.ChampionSprite
+		</div>
 	}
 }
 
@@ -127,6 +135,8 @@ type KDAWidget struct {
 	Kills, Deaths, Assists int
 
 	KillParticipation float32
+
+	KilLDeathRatio float32
 }
 
 func (m KDAWidget) generateKillTextColor() string {
@@ -174,18 +184,18 @@ templ (m KDAWidget) build() {
 			<div class="text-gray-900/5 dark:text-gray-100/5">
 				/
 			</div>
-			<div class="w-5 text-red-500/90 ml-1">
+			<div class="w-5 text-red-500/90 ml-2">
 				{ fmt.Sprintf("%d", m.Deaths) }
 			</div>
 			<div class="text-gray-900/5 dark:text-gray-100/5">
 				/
 			</div>
-			<div class="w-5 text-gray-900/90 dark:text-gray-100/90 ml-1">
+			<div class="w-5 text-gray-900/90 dark:text-gray-100/90 ml-2">
 				{ fmt.Sprintf("%d", m.Assists) }
 			</div>
 		</div>
 		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
-			{ fmt.Sprintf("%.1f", m.KillParticipation) }
+			{ fmt.Sprintf("%.2f", m.KilLDeathRatio) }
 		</div>
 	</div>
 }
@@ -201,9 +211,9 @@ type CSWidget struct {
 }
 
 templ (m CSWidget) build() {
-	<div class="size-9">
+	<div class="h-9">
 		<div class="font-semibold text-sm text-gray-900/90 dark:text-gray-100/90">
-			{ fmt.Sprintf("%d", m.CS) }
+			{ fmt.Sprintf("%d CS", m.CS) }
 		</div>
 		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
 			{ fmt.Sprintf("%.1f", m.CSPerMinute) }

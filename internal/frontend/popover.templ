@@ -2,23 +2,20 @@ package frontend
 
 import (
 	"context"
-	"io"
-
-	"github.com/rank1zen/kevin/internal/riot"
 	"fmt"
+	"github.com/rank1zen/kevin/internal/riot"
+	"io"
 )
 
 // Popover shows a popup on click.
+//
+// TODO: add alignment settings for floating panel
 type Popover struct {
 	// ButtonChildren are placed inside the button that triggers the
 	// popover. A nil value will default to [ButtonLayout].
 	ButtonChildren templ.Component
 
-	// PanelChildren are placed, in a floating panel. A nil value will
-	// default to ... (not defined)
-	PanelChildren templ.Component
-
-	// TODO: add alignment settings for floating panel
+	Panel PanelWindow
 }
 
 templ (m Popover) build() {
@@ -48,13 +45,13 @@ templ (m Popover) build() {
 			type="button"
 			x-ref="button"
 			@click="toggle()"
-			class="relative cursor-pointer rounded-lg transition bg-transparent hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20"
+			class="relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/10 dark:active:bg-gray-100/10"
 			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
 			if m.ButtonChildren != nil {
 				@m.ButtonChildren
 			} else {
-				<div class="size-9"></div>
+				@ButtonLayout{}
 			}
 		</button>
 		<div
@@ -63,13 +60,9 @@ templ (m Popover) build() {
 			x-show="open"
 			@click.outside="close($refs.button)"
 			x-anchor="$refs.button"
-			class="bg-white mt-2 dark:bg-gray-950 border border-gray-900/10 shadow shadow-gray-900/50 dark:shadow-gray-100/50 overflow-hidden rounded-2xl"
+			class="mt-4 z-10"
 		>
-			if m.PanelChildren != nil {
-				@m.PanelChildren
-			} else {
-				<div class="size-9"></div>
-			}
+			@m.Panel
 		</div>
 	</div>
 }
@@ -80,6 +73,8 @@ func (m Popover) Render(ctx context.Context, w io.Writer) error {
 
 // MenuPopover shows a menu on click.
 type MenuPopover struct {
+	// MenuEntries are displayed in the popover. If the slice is empty,
+	// [MenuPopover] is same as [Popover]{}.
 	MenuEntries []struct {
 		Label string
 
@@ -107,7 +102,12 @@ templ (m MenuPopover) buildMenu() {
 func (m MenuPopover) Render(ctx context.Context, w io.Writer) error {
 	popover := Popover{
 		ButtonChildren: ButtonLayout{Icon: OpenMenuIcon},
-		PanelChildren:  m.buildMenu(),
+	}
+
+	if len(m.MenuEntries) != 0 {
+		popover.Panel = PanelWindow{
+			Children: m.buildMenu(),
+		}
 	}
 
 	return popover.Render(ctx, w)
@@ -148,7 +148,7 @@ templ (m RegionPopover) buildMenu() {
 func (m RegionPopover) Render(ctx context.Context, w io.Writer) error {
 	popover := Popover{
 		ButtonChildren: m.buildButton(),
-		PanelChildren:  m.buildMenu(),
+		Panel:          PanelWindow{Children: m.buildMenu()},
 	}
 
 	return popover.Render(ctx, w)
@@ -182,11 +182,10 @@ templ (m ChampionPopover) buildRelativeBar() {
 			panic("0 games played can't be real")
 		}
 		ratio := float32(m.GamesPlayed) / float32(m.TotalGamesPlayed)
-		class := fmt.Sprintf("w-[%.0f%%]", ratio * 100)
+		class := fmt.Sprintf("w-[%.0f%%]", ratio*100)
 	}}
 	<div class="flex-none h-3 bg-gray-900/5 w-24">
-		<div class={ "h-full", "bg-blue-500/50", class }>
-		</div>
+		<div class={ "h-full", "bg-blue-500/50", class }></div>
 	</div>
 }
 

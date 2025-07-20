@@ -97,7 +97,7 @@ func (m MatchHistoryListLoader) Render(ctx context.Context, w io.Writer) error {
 	return loader.Render(ctx, w)
 }
 
-// LiveMatchModalWindowLoader requests the server for [LiveMatchModalWindow].
+// LiveMatchModalWindowLoader requests the server for [LiveMatchModalLayout].
 //
 // Uses [LoaderTypeOnReveal].
 type LiveMatchModalWindowLoader struct {
@@ -116,7 +116,7 @@ func (m LiveMatchModalWindowLoader) Render(ctx context.Context, w io.Writer) err
 		Path:     "/summoner/live",
 		Type:     LoaderTypeOnReveal,
 		Data:     m.Request,
-		Children: ModalWindow{Children: m.buildSpinner()},
+		Children: ModalLayout{Children: m.buildSpinner()},
 	}
 
 	return loader.Render(ctx, w)
@@ -140,7 +140,7 @@ func (m ChampionsLoader) Render(ctx context.Context, w io.Writer) error {
 		Path:     "/summoner/champions",
 		Type:     LoaderTypeOnReveal,
 		Data:     m.Request,
-		Children: ModalWindow{Children: m.buildSpinner()},
+		Children: ModalLayout{Children: m.buildSpinner()},
 	}
 
 	return loader.Render(ctx, w)
