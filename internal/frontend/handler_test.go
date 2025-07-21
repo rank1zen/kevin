@@ -1,3 +1,4 @@
+// NOTE: all tests fetch live API, probably need to start mocking
 package frontend_test
 
 import (
@@ -41,7 +42,6 @@ func TestHandlerGetLiveMatch(t *testing.T) {
 
 	store := DefaultPGInstance.SetupStore(ctx, t)
 
-
 	handler := frontend.Handler{internal.NewDatasource(riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY")), store)}
 
 	req := frontend.GetLiveMatchRequest{
@@ -63,6 +63,7 @@ func TestHandlerGetLiveMatch(t *testing.T) {
 	// NOTE: how to write tests for checking live games? Mock?
 }
 
+// NOTE: should probably mock so that it is clear what result is expected.
 func TestHandlerZGetSummonerChampions(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
@@ -74,28 +75,54 @@ func TestHandlerZGetSummonerChampions(t *testing.T) {
 
 	handler := frontend.Handler{internal.NewDatasource(riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY")), store)}
 
+	location, err := time.LoadLocation("America/Toronto")
+	require.NoError(t, err)
+
 	req := frontend.ZGetSummonerChampionsRequest{
 		Region: riot.RegionNA1,
 		PUUID:  internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"),
-		Week:   frontend.GetCurrentWeek(),
+		Week:   time.Date(2025, 7, 5, 0, 0, 0, 0, location),
 	}
 
-	actual, err := handler.ZGetSummonerChampions(ctx, req)
+	component, err := handler.ZGetSummonerChampions(ctx, req)
 	require.NoError(t, err)
 
-	list, ok := actual.(frontend.SummonerChampionList)
+	actual, ok := component.(frontend.ChampionModalLayout)
 	require.True(t, ok)
 
 	t.Run(
-		"expects 2 champions returned",
+		"expects 4 champions played",
 		func(t *testing.T) {
-			if assert.Equal(t, 2, len(list.Champions)) {
-				assert.Equal(t, ddragon.ChampionIllaoiID, list.Champions[0].Champion)
-				assert.Equal(t, ddragon.ChampionBrandID, list.Champions[1].Champion)
-				assert.EqualValues(t, float32(15)/4, list.Champions[0].Kills)
-			}
+			assert.Equal(t, 4, len(actual.List.Champions))
 		},
 	)
+
+	require.Greater(t, len(actual.List.Champions), 0)
+	require.Equal(t, ddragon.ChampionIllaoiID, actual.List.Champions[0].ChampionWidget.ChampionSprite.ChampionID)
+	illaoi := actual.List.Champions[0]
+
+	for _, tc := range []struct {
+		Name             string
+		Expected, Actual any
+	}{
+		{
+			Name:     "expects correct win rate for Illaoi",
+			Expected: float32(1) / float32(2),
+			Actual:   illaoi.WinRate,
+		},
+		{
+			Name:     "expects correct number of games for Illaoi",
+			Expected: 6,
+			Actual:   illaoi.GamesPlayed,
+		},
+		{
+			Name:     "expects correct KDA for Illaoi",
+			Expected: frontend.KDAWidget{Kills: 17 / 6, Deaths: 22 / 6, Assists: 15 / 6},
+			Actual:   illaoi.KDAWidget,
+		},
+	} {
+		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
+	}
 }
 
 func TestHandlerGetSummonerPage(t *testing.T) {
@@ -143,7 +170,7 @@ func TestHandlerGetSummonerPage(t *testing.T) {
 				PUUID:               expectedPUUID,
 				Name:                "orrange",
 				Tag:                 "NA1",
-				LiveMatchLoader:     frontend.LiveMatchModalWindowLoader{Request: frontend.GetLiveMatchRequest{PUUID: expectedPUUID, Region: riot.RegionNA1}, },
+				LiveMatchLoader:     frontend.LiveMatchModalWindowLoader{Request: frontend.GetLiveMatchRequest{PUUID: expectedPUUID, Region: riot.RegionNA1}},
 				MatchHistoryLoaders: []frontend.MatchHistoryListLoader{},
 			}
 
@@ -263,7 +290,7 @@ func TestGetCurrentWeek(t *testing.T) {
 	t.Run(
 		"expects at most 7 days prior",
 		func(t *testing.T) {
-			assert.Less(t, time.Since(week), 7 * 24 * time.Hour)
+			assert.Less(t, time.Since(week), 7*24*time.Hour)
 		},
 	)
 }

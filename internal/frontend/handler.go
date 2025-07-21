@@ -240,11 +240,6 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 		return nil, err
 	}
 
-	totalGamesPlayed := 0
-	for _, c := range storeChampions {
-		totalGamesPlayed += c.GamesPlayed
-	}
-
 	layout := ChampionModalLayout{
 		List: ChampionModalList{
 			Champions: []ChampionModalRowLayout{},
@@ -264,7 +259,6 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 					Kills:          int(c.Kills),
 					Deaths:         int(c.Deaths),
 					Assists:        int(c.Assists),
-					KilLDeathRatio: 0,
 				},
 				CSWidget: CSWidget{CS: c.CreepScore, CSPerMinute: c.CreepScorePerMinute},
 			},
