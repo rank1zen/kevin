@@ -2,8 +2,7 @@
 
 A lightweight League of Legends stats client.
 
-<img width="1353" height="1080" alt="Screenshot 2025-07-15 23:18:16" src="https://github.com/user-attachments/assets/16b85fdf-9cfd-487a-9dc4-17ac742edecc" />
-
+<img width="1330" height="1080" alt="combined" src="https://github.com/user-attachments/assets/a45ba9f4-72cc-4446-a1ab-895fd733891c" />
 
 ## Quick Start
 
