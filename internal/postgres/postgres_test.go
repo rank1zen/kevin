@@ -20,7 +20,7 @@ func TestGetChampions(t *testing.T) {
 
 	store := DefaultPGInstance.SetupStore(ctx, t)
 
-	p1PUUID := internal.NewPUUIDFromString("111111111111111111111111111111111111111111111111111111111111111111111111111111")
+	p1PUUID := internal.NewPUUIDFromString("0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q")
 
 	match := internal.NewMatch(sample.WithSampleMatch())
 
@@ -33,6 +33,7 @@ func TestGetChampions(t *testing.T) {
 	match.Participants[1].PUUID = p1PUUID
 	match.Participants[1].ChampionID = 13
 	match.Participants[1].Kills = 2
+	match.WinnerID = match.Participants[1].TeamID
 
 	err := store.RecordMatch(ctx, match)
 	require.NoError(t, err)
@@ -48,6 +49,11 @@ func TestGetChampions(t *testing.T) {
 	match.Participants[1].PUUID = p1PUUID
 	match.Participants[1].ChampionID = 13
 	match.Participants[1].Kills = 3
+	if match.Participants[1].TeamID == 100 {
+		match.WinnerID = 200
+	} else {
+		match.WinnerID = 100
+	}
 
 	err = store.RecordMatch(ctx, match)
 	require.NoError(t, err)
@@ -81,20 +87,6 @@ func TestGetChampions(t *testing.T) {
 	)
 
 	t.Run(
-		"expects kills averaged correctly",
-		func(t *testing.T) {
-			champions, err := store.GetChampions(ctx, p1PUUID, time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 10, 0, 0, 0, 0, time.UTC))
-			require.NoError(t, err)
-
-			require.Equal(t, 2, len(champions))
-			require.EqualValues(t, 13, champions[0].Champion)
-			require.Equal(t, p1PUUID, champions[0].PUUID)
-
-			assert.EqualValues(t, 2.5, champions[0].Kills)
-		},
-	)
-
-	t.Run(
 		"expects order by games played",
 		func(t *testing.T) {
 			champions, err := store.GetChampions(ctx, p1PUUID, time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 10, 0, 0, 0, 0, time.UTC))
@@ -106,6 +98,35 @@ func TestGetChampions(t *testing.T) {
 			assert.EqualValues(t, 12, champions[1].Champion)
 		},
 	)
+
+	champions, err := store.GetChampions(ctx, p1PUUID, time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 7, 10, 0, 0, 0, 0, time.UTC))
+	require.NoError(t, err)
+	require.Equal(t, 2, len(champions))
+	require.EqualValues(t, 13, champions[0].Champion)
+	ryze := champions[0]
+
+	for _, tc := range []struct {
+		Name             string
+		Expected, Actual any
+	}{
+		{
+			Name:     "expects correct number of games for Ryze",
+			Expected: 2,
+			Actual:   ryze.GamesPlayed,
+		},
+		{
+			Name:     "expects correct number of wins for Ryze",
+			Expected: 1,
+			Actual:   ryze.Wins,
+		},
+		{
+			Name:     "expects correct kill average for Ryze",
+			Expected: 2.5,
+			Actual:   ryze.Kills,
+		},
+	} {
+		t.Run(tc.Name, func(t *testing.T) { assert.EqualValues(t, tc.Expected, tc.Actual) })
+	}
 }
 
 func TestGetRank(t *testing.T) {

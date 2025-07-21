@@ -592,12 +592,12 @@ func (s *Store) GetMatch(ctx context.Context, id riot.PUUID) (internal.Match, er
 	return match, nil
 }
 
-// currently cannot get number of wins and losses
 func (s *Store) GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerChampion, error) {
 	rows, _ := s.conn.Query(ctx, `
 		SELECT
 			puuid,
-			count(*)          AS games_played,
+			count(*) AS games_played,
+			sum(CASE WHEN p.team = m.winner THEN 1 ELSE 0 END) AS num_matches,
 			champion,
 			avg(kills) AS avg_kills,
 			avg(deaths) AS avg_deaths,
@@ -615,7 +615,7 @@ func (s *Store) GetChampions(ctx context.Context, puuid riot.PUUID, start, end t
 			round(avg(vision_score)),
 			round(avg(pink_wards_bought))
 		FROM
-			Participant
+			Participant p
 		JOIN
 			Match m USING (match_id)
 		WHERE
@@ -640,6 +640,7 @@ func (s *Store) GetChampions(ctx context.Context, puuid riot.PUUID, start, end t
 		err = row.Scan(
 			&m.PUUID,
 			&m.GamesPlayed,
+			&m.Wins,
 			&m.Champion,
 			&m.Kills,
 			&m.Deaths,
