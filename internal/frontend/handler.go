@@ -256,11 +256,11 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 				Losses:         c.Losses,
 				WinRate:        ComputeFraction(c.Wins, c.GamesPlayed),
 				KDAWidget: KDAWidget{
-					Kills:          int(c.Kills),
-					Deaths:         int(c.Deaths),
-					Assists:        int(c.Assists),
+					Kills:          int(c.AverageKillsPerGame),
+					Deaths:         int(c.AverageDeathsPerGame),
+					Assists:        int(c.AverageAssistsPerGame),
 				},
-				CSWidget: CSWidget{CS: c.CreepScore, CSPerMinute: c.CreepScorePerMinute},
+				CSWidget: CSWidget{CS: int(c.AverageCreepScorePerGame), CSPerMinute: c.AverageCreepScorePerMinutePerGame},
 			},
 		)
 	}

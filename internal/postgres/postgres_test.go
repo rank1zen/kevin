@@ -122,7 +122,7 @@ func TestGetChampions(t *testing.T) {
 		{
 			Name:     "expects correct kill average for Ryze",
 			Expected: 2.5,
-			Actual:   ryze.Kills,
+			Actual:   ryze.AverageKillsPerGame,
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) { assert.EqualValues(t, tc.Expected, tc.Actual) })

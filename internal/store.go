@@ -360,25 +360,46 @@ type SummonerMatch struct {
 	Participant
 }
 
-// SummonerChampion is a summoner's champion stats average over GamesPlayed.
+// SummonerChampion is a summoner's champion stats averaged over GamesPlayed.
 type SummonerChampion struct {
-	PUUID                  riot.PUUID
-	GamesPlayed            int
-	Wins, Losses           int
-	Champion               Champion
-	Kills, Deaths, Assists float32
-	KillParticipation      float32
-	CreepScore             int
-	CreepScorePerMinute    float32
-	DamageDealt            int
-	DamageTaken            int
-	DamageDeltaEnemy       int
-	DamagePercentageTeam   float32
-	GoldEarned             int
-	GoldDeltaEnemy         int
-	GoldPercentageTeam     float32
-	VisionScore            int
-	PinkWardsBought        int
+	PUUID riot.PUUID
+
+	// NOTE: Champion type should be specified by ddragon package.
+	Champion Champion
+
+	GamesPlayed int
+
+	Wins, Losses int
+
+	AverageKillsPerGame float32
+
+	AverageDeathsPerGame float32
+
+	AverageAssistsPerGame float32
+
+	AverageKillParticipationPerGame float32
+
+	AverageCreepScorePerGame float32
+
+	AverageCreepScorePerMinutePerGame float32
+
+	AverageDamageDealtPerGame float32
+
+	AverageDamageTakenPerGame float32
+
+	AverageDamageDeltaEnemyPerGame float32
+
+	AverageDamagePercentagePerGame float32
+
+	AverageGoldEarnedPerGame float32
+
+	AverageGoldDeltaEnemyPerGame float32
+
+	AverageGoldPercentagePerGame float32
+
+	AverageVisionScorePerGame float32
+
+	AveragePinkWardsBoughtPerGame float32
 }
 
 type SearchResult struct {
@@ -389,9 +410,9 @@ type SearchResult struct {
 }
 
 type Rank struct {
-	Tier   riot.Tier
-	Division   riot.Division
-	LP     int
+	Tier     riot.Tier
+	Division riot.Division
+	LP       int
 }
 
 type RankStatus struct {
@@ -409,11 +430,11 @@ type RankRecord struct {
 }
 
 type RankDetail struct {
-	Wins   int
-	Losses int
-	Tier   riot.Tier
-	Division   riot.Division
-	LP     int
+	Wins     int
+	Losses   int
+	Tier     riot.Tier
+	Division riot.Division
+	LP       int
 }
 
 func NewRankDetail(opts ...RankDetailOption) RankDetail {
