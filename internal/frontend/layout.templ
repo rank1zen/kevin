@@ -47,16 +47,20 @@ type PageHeaderLayout struct {
 
 templ (m PageHeaderLayout) buildHeaderStart() {
 	<div class="flex gap-2">
-		<div class="size-9 transition flex items-center justify-center rounded-lg hover:bg-gray-900/5 dark:hover:bg-gray-100/5">
-			<span>K</span>
-		</div>
+		@HomeLink{
+			Region: m.Region,
+		}
 	</div>
 }
 
 templ (m PageHeaderLayout) buildHeaderCenter() {
 	<div class="flex gap-2 justify-center">
-		@RegionPopover{Region: m.Region}
-		@SummonerSearchBar{}
+		@RegionPopover{
+			Region: m.Region,
+		}
+		@SummonerSearchBar{
+			Region: m.Region,
+		}
 	</div>
 }
 
@@ -74,21 +78,6 @@ func (m PageHeaderLayout) Render(ctx context.Context, w io.Writer) error {
 	}
 
 	return c.Render(ctx, w)
-}
-
-type ModalHeaderLayout struct {
-}
-
-templ (m ModalHeaderLayout) buildHeaderEnd() {
-	<div class="flex h-13 px-2 gap-x-2 items-center"></div>
-}
-
-func (m ModalHeaderLayout) Render(ctx context.Context, w io.Writer) error {
-	header := HeaderLayout{
-		EndChildren: nil,
-	}
-
-	return header.Render(ctx, w)
 }
 
 type MenuItemLayout struct {

@@ -12,7 +12,7 @@ type SummonerSearchBar struct {
 }
 
 templ (m SummonerSearchBar) buildHoldingPanel() {
-	<div id="search-results">
+	<div id="search-results" class="p-2">
 	</div>
 }
 
@@ -53,5 +53,45 @@ templ (m SummonerSearchBar) build() {
 }
 
 func (m SummonerSearchBar) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// SearchNotFoundCard is a button that will issue a post to fetch summoner.
+type SearchNotFoundCard struct {
+	Name string
+
+	// Tag is the tagline. If empty, Platform is used.
+	Tag string
+
+	Platform string
+}
+
+templ (m SearchNotFoundCard) build() {
+	<button
+		type="button"
+		hx-post="/summoner/fetch"
+		hx-trigger="click"
+		hx-include="[name='region'], [name='name'], [name='tag']"
+		class="flex w-full rounded-lg items-center hover:bg-gray-900/5 dark:hover:bg-gray-200/5 cursor-pointer justify-between px-3 py-2 gap-x-3"
+	>
+		<div class="flex-1 min-w-0">
+			<div class="text-sm text-gray-900/90 dark:text-gray-200/90 text-left truncate">
+				{ m.Name + "#" + m.Tag } is not found
+			</div>
+			<div class="text-xs text-gray-500/90 text-left truncate">
+				Click to fetch
+			</div>
+		</div>
+		<input type="hidden" name="region" value={ m.Platform }/>
+		<input type="hidden" name="name" value={ m.Name }/>
+		if m.Tag != "" {
+			<input type="hidden" name="tag" value={ m.Tag }/>
+		} else {
+			<input type="hidden" name="tag" value={ m.Platform }/>
+		}
+	</button>
+}
+
+func (m SearchNotFoundCard) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }

@@ -265,12 +265,9 @@ type RankWidget struct {
 	// Size is the height of the widget, following [TextSize]. [TextSizeXS]
 	// and [TextSizeSM] are supported.
 	Size TextSize
-
-	// currently not used.
-	UsePill bool
 }
 
-// generateLabel generates "Gold IV 71 LP" if ShowTierName is true, else
+// generateLabel generates e.g. "Gold IV 71 LP" if ShowTierName is true, else
 // "71 LP".
 func (m RankWidget) generateLabel() string {
 	if !m.ShowTierName {
@@ -293,6 +290,7 @@ func (m RankWidget) generateLabel() string {
 	return label
 }
 
+// Deprecated
 func (m RankWidget) generateIcon() templ.Component {
 	if m.Rank == nil {
 		return TierUnrankedIcon
@@ -308,16 +306,14 @@ func (m RankWidget) generateIcon() templ.Component {
 
 templ (m RankWidget) build() {
 	if m.Size == TextSizeXS {
-		<div class="flex flex-none h-4 items-center gap-x-1 cursor-default">
-			@m.generateIcon()
-			<span class="text-xs">
+		<div class={ m.generateTierBGColorClass(), "flex flex-none px-1 rounded h-4 items-center gap-x-1" }>
+			<span class="text-xs text-white">
 				{ m .generateLabel() }
 			</span>
 		</div>
 	} else {
-		<div class="flex flex-none h-5 items-center gap-x-1 cursor-default">
-			@m.generateIcon()
-			<span class="text-sm">
+		<div class={ m.generateTierBGColorClass(), "flex flex-none px-1 rounded h-5 items-center gap-x-1" }>
+			<span class="text-sm text-white">
 				{ m .generateLabel() }
 			</span>
 		</div>
@@ -325,6 +321,8 @@ templ (m RankWidget) build() {
 }
 
 // generateTierTextColorClass generates a TW text color class.
+//
+// Deprecated
 func (m RankWidget) generateTierTextColorClass() string {
 	if m.Rank == nil {
 		return "text-gray-600/90"
@@ -346,6 +344,7 @@ func (m RankWidget) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
+// Deprecated
 var tierTextColor = map[riot.Tier]string{
 	riot.TierIron:        "text-stone-500",
 	riot.TierBronze:      "text-yellow-700",
@@ -360,18 +359,19 @@ var tierTextColor = map[riot.Tier]string{
 }
 
 var tierBGColor = map[riot.Tier]string{
-	riot.TierIron:        "bg-stone-500/25",
-	riot.TierBronze:      "bg-yellow-700/25",
-	riot.TierSilver:      "bg-slate-400/25",
-	riot.TierGold:        "bg-yellow-500/25",
-	riot.TierPlatinum:    "bg-cyan-400/25",
-	riot.TierEmerald:     "bg-green-600/25",
-	riot.TierDiamond:     "bg-violet-500/25",
-	riot.TierMaster:      "bg-violet-500/25",
-	riot.TierGrandmaster: "bg-red-600/25",
-	riot.TierChallenger:  "bg-amber-200/25",
+	riot.TierIron:        "bg-stone-500/50",
+	riot.TierBronze:      "bg-yellow-700/50",
+	riot.TierSilver:      "bg-slate-400/50",
+	riot.TierGold:        "bg-yellow-500/50",
+	riot.TierPlatinum:    "bg-cyan-400/50",
+	riot.TierEmerald:     "bg-green-600/50",
+	riot.TierDiamond:     "bg-violet-500/50",
+	riot.TierMaster:      "bg-violet-500/50",
+	riot.TierGrandmaster: "bg-red-600/50",
+	riot.TierChallenger:  "bg-amber-500/50",
 }
 
+// Deprecated
 var tierSymbol = map[riot.Tier]templ.Component{
 	riot.TierIron:        TierIronIcon,
 	riot.TierBronze:      TierBronzeIcon,
@@ -385,6 +385,7 @@ var tierSymbol = map[riot.Tier]templ.Component{
 	riot.TierChallenger:  TierChallengerIcon,
 }
 
+// Deprecated
 var tierSize = map[riot.Tier]string{
 	riot.TierIron:        "size-4",
 	riot.TierBronze:      "size-4",

@@ -18,7 +18,7 @@ type Link struct {
 templ (m Link) build() {
 	<a
 		href={ templ.URL(m.Href) }
-		class="block rounded-lg transition overflow-hidden bg-transparent hover:bg-gray-900/5 dark:hover:bg-gray-100/5"
+		class="block rounded-lg cursor-pointer transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5"
 	>
 		if m.Children != nil {
 			@m.Children
@@ -59,16 +59,40 @@ type SearchResultLink struct {
 
 templ (m SearchResultLink) build() {
 	<div class="px-3 py-2">
-		<div class="text-sm text-gray-900/90 dark:text-gray-200/90 truncate">
+		<div class="text-sm font-medium text-gray-900/90 dark:text-gray-200/90 truncate">
 			{ m.Name +"#"+ m.Tag }
 		</div>
-		@RankWidget{Rank: m.Rank, ShowTierName: true, Size: TextSizeXS}
+		<div class="flex gap-x-1">
+			@RankWidget{Rank: m.Rank, ShowTierName: true, Size: TextSizeXS}
+		</div>
 	</div>
 }
 
 func (m SearchResultLink) Render(ctx context.Context, w io.Writer) error {
 	link := Link{
 		Href:     fmt.Sprintf("/%s-%s", m.Name, m.Tag),
+		Children: m.build(),
+	}
+
+	return link.Render(ctx, w)
+}
+
+// HomeLink goes to the landing page. TODO: LOGO.
+type HomeLink struct {
+	Region riot.Region
+}
+
+templ (m HomeLink) build() {
+	<div class="size-9 flex items-center justify-center">
+		<div class="text-base text-gray-900/90 text-gray-100/90 font-bold">
+			K
+		</div>
+	</div>
+}
+
+func (m HomeLink) Render(ctx context.Context, w io.Writer) error {
+	link := Link{
+		Href:     "/",
 		Children: m.build(),
 	}
 
