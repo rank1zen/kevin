@@ -368,33 +368,26 @@ func (s *Store) RecordSummoner(ctx context.Context, summoner internal.Summoner, 
 	_, err = tx.Exec(ctx, `
 		INSERT INTO Summoner (
 			puuid,
-			platform,
 			name,
 			tagline,
-			summoner_id
 		)
 		VALUES (
 			@puuid,
-			@platform,
 			@name,
 			@tagline,
-			@summoner_id
 		)
 		ON CONFLICT (puuid)
 		DO UPDATE SET
-			name = @name,
+			name    = @name,
 			tagline = @tagline,
-			platform = @platform,
-			summoner_id = @summoner_id;
 	`,
 		pgx.NamedArgs{
 			"puuid":       summoner.PUUID,
-			"platform":    "NA1",
 			"name":        summoner.Name,
 			"tagline":     summoner.Tagline,
-			"summoner_id": summoner.SummonerID,
 		},
 	)
+
 	if err != nil {
 		return fmt.Errorf("summoner: %w", err)
 	}
@@ -474,9 +467,9 @@ func (s *Store) RecordSummoner(ctx context.Context, summoner internal.Summoner, 
 				"rank_status_id": recordID,
 				"wins":           rank.Detail.Wins,
 				"losses":         rank.Detail.Losses,
-				"tier":           convertRiotTierToString(rank.Detail.Tier),
-				"division":       rank.Detail.Division,
-				"lp":             rank.Detail.LP,
+				"tier":           convertRiotTierToString(rank.Detail.Rank.Tier),
+				"division":       rank.Detail.Rank.Division,
+				"lp":             rank.Detail.Rank.LP,
 			},
 		)
 		if err != nil {
@@ -493,9 +486,7 @@ func (s *Store) GetSummoner(ctx context.Context, puuid riot.PUUID) (internal.Sum
 		SELECT
 			puuid,
 			name,
-			tagline,
-			platform,
-			summoner_id
+			tagline
 		FROM
 			Summoner
 		WHERE
@@ -504,8 +495,6 @@ func (s *Store) GetSummoner(ctx context.Context, puuid riot.PUUID) (internal.Sum
 		&summoner.PUUID,
 		&summoner.Name,
 		&summoner.Tagline,
-		&summoner.Platform,
-		&summoner.SummonerID,
 	); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return internal.Summoner{}, internal.ErrSummonerNotFound
@@ -580,7 +569,7 @@ func (s *Store) GetMatch(ctx context.Context, id riot.PUUID) (internal.Match, er
 		return internal.Match{}, err
 	}
 
-	var p [10]internal.Participant
+	p := [10]internal.Participant{}
 	if len(participants) != 10 {
 		return internal.Match{}, err
 	} else {
@@ -588,6 +577,8 @@ func (s *Store) GetMatch(ctx context.Context, id riot.PUUID) (internal.Match, er
 			p[i] = participants[i]
 		}
 	}
+
+	match.Participants = p
 
 	return match, nil
 }
@@ -854,7 +845,7 @@ func (s *Store) SearchSummoner(ctx context.Context, q string) (_ []internal.Sear
 	`, q)
 
 	collect := func(row pgx.CollectableRow) (m internal.SearchResult, err error) {
-		err = row.Scan(&m.Puuid, &m.Name, &m.Tagline)
+		err = row.Scan(&m.PUUID, &m.Name, &m.Tagline)
 		return m, err
 	}
 
@@ -994,13 +985,13 @@ func (s *Store) getRankDetail(ctx context.Context, statusID int) (m internal.Ran
 	).Scan(
 		&tier,
 		&rank,
-		&m.LP,
+		&m.Rank.LP,
 		&m.Wins,
 		&m.Losses,
 	)
 
-	m.Tier = convertStringToRiotTier(tier)
-	m.Division = convertStringToRiotRank(rank)
+	m.Rank.Tier = convertStringToRiotTier(tier)
+	m.Rank.Division = convertStringToRiotRank(rank)
 
 	return m, err
 }

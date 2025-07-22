@@ -258,7 +258,7 @@ func (m GoldWidget) Render(ctx context.Context, w io.Writer) error {
 type RankWidget struct {
 	// Rank is the summoner's rank at an instance. A nil value indicates
 	// summoner is unranked.
-	Rank *internal.RankDetail
+	Rank *internal.Rank
 
 	ShowTierName bool
 

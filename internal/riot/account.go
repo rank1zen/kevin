@@ -9,6 +9,10 @@ type AccountService service
 
 type PUUID string
 
+func (id PUUID) String() string {
+	return string(id)
+}
+
 type Account struct {
 	PUUID    string `json:"puuid"`
 	GameName string `json:"gameName"`

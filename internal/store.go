@@ -23,7 +23,7 @@ var (
 
 	// ErrMatchNotFound is returned by Store.GetMatch when a match is not
 	// found in store.
-	ErrMatchNotFound = errors.New("rank unavailable")
+	ErrMatchNotFound = errors.New("match not found")
 )
 
 // Store manages persistent data.
@@ -60,7 +60,7 @@ type Store interface {
 	// GetMatches returns a summoners match history in chronological order.
 	// Each page is 10 matches.
 	//
-	// Might be deprecated
+	// Deprecated: not using this.
 	GetMatches(ctx context.Context, puuid string, page int) ([]SummonerMatch, error)
 
 	// RecordMatch creates the match record.
@@ -79,7 +79,8 @@ type Store interface {
 
 // Match represents a record of a ranked match.
 type Match struct {
-	// ID is a region+number, which forms an identifier.
+	// ID is a region+number, which forms an identifier. NOTE: should
+	// switch to new match ID type.
 	ID string
 
 	// Date is the end timestamp of the match.
@@ -91,9 +92,12 @@ type Match struct {
 	// Version is the game version.
 	Version string
 
-	// WinnerID is the ID of the winning team.
+	// WinnerID is the ID of the winning team. NOTE: should switch to new
+	// TeamID type.
 	WinnerID int
 
+	// Participants are the players in this match. There is no chosen
+	// order.
 	Participants [10]Participant
 }
 
@@ -113,8 +117,8 @@ type MatchOption func(*Match) error
 func WithRiotMatch(match *riot.Match) MatchOption {
 	return func(m *Match) error {
 		m.ID = match.Metadata.MatchID
-		m.Date = makeRiotUnixTimeStamp(match.Info.GameEndTimestamp)
-		m.Duration = makeRiotTimeDuration(match.Info.GameDuration)
+		m.Date = convertRiotUnixToTimestamp(match.Info.GameEndTimestamp)
+		m.Duration = convertRiotTimeToDuration(match.Info.GameDuration)
 		m.Version = match.Info.GameVersion
 
 		var winner int
@@ -127,48 +131,64 @@ func WithRiotMatch(match *riot.Match) MatchOption {
 		m.WinnerID = winner
 
 		for i, p := range match.Info.Participants {
-			m.Participants[i] = NewParticipant(RiotMatchToParticipant(*match, riot.PUUID(p.PUUID)))
+			m.Participants[i] = NewParticipant(WithRiotMatchParticipant(*match, riot.PUUID(p.PUUID)))
 		}
 
 		return nil
 	}
 }
 
-func NewPUUIDFromString(s string) riot.PUUID {
-	if len(s) != 78 {
-		panic("puuid string not of len 78")
-	}
-
-	return riot.PUUID(s)
-}
-
 // Participant represents a record of a summoner in a ranked match.
 type Participant struct {
-	PUUID                  riot.PUUID
-	MatchID                string
-	TeamID                 int
-	ChampionID             int
-	ChampionLevel          int
-	SummonerIDs            [2]int
-	Runes                  RunePage
-	Items                  [7]int
+	PUUID riot.PUUID
+
+	MatchID string
+
+	TeamID int
+
+	ChampionID int
+
+	ChampionLevel int
+
+	TeamPosition TeamPosition
+
+	SummonerIDs [2]int
+
+	Runes RunePage
+
+	// Items are in standard inventory order.
+	Items [7]int
+
 	Kills, Deaths, Assists int
-	KillParticipation      float32
-	CreepScore             int
-	CreepScorePerMinute    float32
-	DamageDealt            int
-	DamageTaken            int
-	DamageDeltaEnemy       int
-	DamagePercentageTeam   float32
-	GoldEarned             int
-	GoldDeltaEnemy         int
-	GoldPercentageTeam     float32
-	VisionScore            int
-	PinkWardsBought        int
+
+	KillParticipation float32
+
+	CreepScore int
+
+	CreepScorePerMinute float32
+
+	DamageDealt int
+
+	DamageTaken int
+
+	DamageDeltaEnemy int
+
+	DamagePercentageTeam float32
+
+	GoldEarned int
+
+	GoldDeltaEnemy int
+
+	GoldPercentageTeam float32
+
+	VisionScore int
+
+	PinkWardsBought int
 }
 
 type ParticipantOption func(*Participant) error
 
+// NOTE: should be unexported.
 func NewParticipant(opts ...ParticipantOption) Participant {
 	var p Participant
 	for _, f := range opts {
@@ -178,7 +198,7 @@ func NewParticipant(opts ...ParticipantOption) Participant {
 	return p
 }
 
-func RiotMatchToParticipant(match riot.Match, puuid riot.PUUID) ParticipantOption {
+func WithRiotMatchParticipant(match riot.Match, puuid riot.PUUID) ParticipantOption {
 	var s *riot.MatchParticipant
 	for _, p := range match.Info.Participants {
 		if p.PUUID == string(puuid) {
@@ -245,6 +265,7 @@ func RiotMatchToParticipant(match riot.Match, puuid riot.PUUID) ParticipantOptio
 		p.GoldPercentageTeam = goldShare
 		p.VisionScore = s.VisionScore
 		p.PinkWardsBought = s.DetectorWardsPlaced
+		p.TeamPosition = convertRiotTeamPosition(s.TeamPosition)
 		return nil
 	}
 }
@@ -255,7 +276,27 @@ type LiveMatch struct {
 	// Date is game start timestamp
 	Date time.Time
 
+	// Participants are the players in this current match. There is no
+	// chosen order.
 	Participants [10]LiveParticipant
+}
+
+// GetTeamParticipants returns a team in the order returned by the riot API,
+// which is pick order, and is not necessarily standard order: TOP, JNG, MID,
+// BOT, SUP.
+func (m LiveMatch) GetTeamParticipants(teamID int) [5]LiveParticipant {
+	result := [5]LiveParticipant{}
+	if teamID == 100 {
+		for i := 0; i < 5; i++ {
+			result[i] = m.Participants[i]
+		}
+	} else {
+		for i := 5; i < 10; i++ {
+			result[i-5] = m.Participants[i]
+		}
+	}
+
+	return result
 }
 
 func NewLiveMatch(opts ...LiveMatchOption) LiveMatch {
@@ -270,71 +311,70 @@ func NewLiveMatch(opts ...LiveMatchOption) LiveMatch {
 
 type LiveMatchOption func(*LiveMatch) error
 
-func WithRiotLiveMatch(match *riot.LiveMatch) LiveMatchOption {
-	matchID := fmt.Sprintf("%s_%d", match.PlatformID, match.GameID)
-
-	participants := []LiveParticipant{}
-	for _, p := range match.Participants {
-		participants = append(participants, LiveParticipant{
-			PUUID:        p.PUUID,
-			MatchID:      matchID,
-			ChampionID:   p.ChampionID,
-			Runes:        NewRunePage(WithRiotSpectatorPerks(&p.Perks)),
-			TeamID:       p.TeamID,
-			SummonersIDs: [2]int{p.Spell1ID, p.Spell2ID},
-		})
-	}
-
+func WithRiotLiveMatch(match riot.LiveMatch) LiveMatchOption {
 	return func(m *LiveMatch) error {
+		matchID := fmt.Sprintf("%s_%d", match.PlatformID, match.GameID)
+
+		participants := [10]LiveParticipant{}
+		for i, p := range match.Participants {
+			participants[i] = NewLiveParticipant(WithRiotLiveMatchParticipant(match, NewPUUIDFromString(p.PUUID)))
+		}
+
 		m.ID = matchID
-		m.Date = makeRiotUnixTimeStamp(match.GameStartTime)
+		m.Date = convertRiotUnixToTimestamp(match.GameStartTime)
 		m.Participants = [10]LiveParticipant(participants)
 		return nil
 	}
 }
 
-func makeRiotUnixTimeStamp(ts int64) time.Time {
-	return time.UnixMilli(ts)
-}
-
-func makeRiotTimeDuration(t int64) time.Duration {
-	return time.Second * time.Duration(t)
-}
-
+// LiveParticipant are currently in a match. NOTE: there are not a lot of
+// fields are not available in an on-going game, including the summoners
+// position.
 type LiveParticipant struct {
-	PUUID        string
-	MatchID      string
-	ChampionID   int
-	Runes        RunePage
-	TeamID       int
+	PUUID riot.PUUID
+
+	MatchID string
+
+	ChampionID int
+
+	Runes RunePage
+
 	SummonersIDs [2]int
+
+	TeamID int
 }
 
+// NOTE: should be unexported.
 func NewLiveParticipant(opts ...LiveParticipantOption) LiveParticipant {
 	var m LiveParticipant
+
 	for _, f := range opts {
 		f(&m)
 	}
+
 	return m
 }
 
 type LiveParticipantOption func(*LiveParticipant) error
 
-func WithRiotCurrentGame(r riot.LiveMatch, puuid string) LiveParticipantOption {
+// WithRiotLiveMatchParticipant uses creates participant with puuid using
+// [riot.LiveMatch].
+func WithRiotLiveMatchParticipant(match riot.LiveMatch, puuid riot.PUUID) LiveParticipantOption {
 	var selected *riot.LiveMatchParticipant
-	for _, p := range r.Participants {
-		if p.PUUID == puuid {
+	for _, p := range match.Participants {
+		if p.PUUID == puuid.String() {
 			selected = &p
 		}
 	}
-	if selected == nil {
-		panic("bro.")
-	}
-
-	matchID := fmt.Sprintf("%s_%d", r.PlatformID, r.GameID)
 
 	return func(m *LiveParticipant) error {
-		m.PUUID = selected.PUUID
+		matchID := fmt.Sprintf("%s_%d", match.PlatformID, match.GameID)
+
+		if selected == nil {
+			return errors.New(fmt.Sprintf("puuid %s is not when creating live match", puuid.String()))
+		}
+
+		m.PUUID = NewPUUIDFromString(selected.PUUID)
 		m.MatchID = matchID
 		m.ChampionID = selected.ChampionID
 		m.Runes = NewRunePage(WithRiotSpectatorPerks(&selected.Perks))
@@ -344,20 +384,30 @@ func WithRiotCurrentGame(r riot.LiveMatch, puuid string) LiveParticipantOption {
 	}
 }
 
+// Summoner is a summoner's account.
 type Summoner struct {
-	PUUID         riot.PUUID
+	PUUID riot.PUUID
+
 	Name, Tagline string
-	Platform      string
-	SummonerID    string
 }
 
+// SummonerMatch contains details of a summoner's match.
 type SummonerMatch struct {
-	Date     time.Time
-	Duration time.Duration
-	LpDelta  *int
-	Win      bool
-
 	Participant
+
+	Date time.Time
+
+	Duration time.Duration
+
+	Win bool
+
+	// RankBefore is the summoner's rank just before the match. A nil value
+	// indicates this no record was taken.
+	RankBefore *RankRecord
+
+	// RankBefore is the summoner's rank just after the match. A nil value
+	// indicates this no record was taken.
+	RankAfter *RankRecord
 }
 
 // SummonerChampion is a summoner's champion stats averaged over GamesPlayed.
@@ -402,48 +452,63 @@ type SummonerChampion struct {
 	AveragePinkWardsBoughtPerGame float32
 }
 
+// SearchResult is a summoner whose name matches a search query.
 type SearchResult struct {
-	Page    string
-	Puuid   riot.PUUID
-	Name    string
-	Tagline string
+	PUUID riot.PUUID
+
+	Name, Tagline string
+
+	// Rank is the summoners most recent rank record in store.
+	Rank RankRecord
 }
 
-type Rank struct {
-	Tier     riot.Tier
-	Division riot.Division
-	LP       int
-}
-
+// RankStatus indicates the status of a summoner's rank.
 type RankStatus struct {
-	PUUID         riot.PUUID
+	PUUID riot.PUUID
+
+	// EffectiveDate indicates the time this status was taken.
 	EffectiveDate time.Time
-	Detail        *RankDetail
+
+	// Detail is rank detail. A nil value indicates the summoner is
+	// unranked.
+	Detail *RankDetail
 }
 
 type RankRecord struct {
-	PUUID         riot.PUUID
+	PUUID riot.PUUID
+
+	// EffectiveDate indicates the time this record was taken.
 	EffectiveDate time.Time
-	EndDate       *time.Time
-	IsCurrent     bool
-	Detail        *RankDetail
+
+	// EndDate indicates the time this record is no longer current.
+	EndDate *time.Time
+
+	// IsCurrent indicates whether the record is current.
+	IsCurrent bool
+
+	// Detail is rank detail. A nil value indicates the summoner is
+	// unranked.
+	Detail *RankDetail
 }
 
+// RankDetail contains details relating to a summoner's rank.
 type RankDetail struct {
-	Wins     int
-	Losses   int
-	Tier     riot.Tier
-	Division riot.Division
-	LP       int
+	Wins, Losses int
+
+	Rank Rank
+
+	// TODO: include promotion details
 }
 
 func NewRankDetail(opts ...RankDetailOption) RankDetail {
 	var m RankDetail
+
 	for _, f := range opts {
 		if err := f(&m); err != nil {
 			panic(err)
 		}
 	}
+
 	return m
 }
 
@@ -453,9 +518,46 @@ func WithRiotLeagueEntry(rank riot.LeagueEntry) RankDetailOption {
 	return func(m *RankDetail) error {
 		m.Wins = rank.Wins
 		m.Losses = rank.Losses
-		m.Tier = rank.Tier
-		m.Division = rank.Division
-		m.LP = rank.LeaguePoints
+
+		m.Rank = Rank{
+			Tier:     rank.Tier,
+			Division: rank.Division,
+			LP:       rank.LeaguePoints,
+		}
+
 		return nil
 	}
+}
+
+func NewPUUIDFromString(s string) riot.PUUID {
+	if len(s) != 78 {
+		panic("puuid string not of len 78")
+	}
+
+	return riot.PUUID(s)
+}
+
+func convertRiotUnixToTimestamp(ts int64) time.Time {
+	return time.UnixMilli(ts)
+}
+
+func convertRiotTimeToDuration(t int64) time.Duration {
+	return time.Second * time.Duration(t)
+}
+
+var teamPositions = map[string]TeamPosition{
+	"TOP":     0,
+	"JUNGLE":  1,
+	"MIDDLE":  2,
+	"BOTTOM":  3,
+	"UTILITY": 4,
+}
+
+func convertRiotTeamPosition(s string) TeamPosition {
+	pos, ok := teamPositions[s]
+	if !ok {
+		panic(fmt.Sprintf("team position %s is not valid", s))
+	}
+
+	return pos
 }

@@ -124,7 +124,7 @@ type MatchHistoryRowLayout struct {
 
 	// RankChange is the rank after the match. A nil value means the store
 	// did not record a rank after the match.
-	RankChange *internal.RankDetail
+	RankChange *internal.Rank
 
 	// LPChange is the lp change after the match. TODO: A nil value means ...
 	LPChange *int
@@ -206,7 +206,7 @@ type LiveMatchRowLayout struct {
 
 	Name, Tag string
 
-	Rank *internal.RankDetail
+	Rank *internal.Rank
 }
 
 templ (m LiveMatchRowLayout) build() {

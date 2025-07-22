@@ -9,6 +9,20 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+var (
+	SummonerOrrangeNA1 = internal.Summoner{
+		PUUID:   "0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q",
+		Name:    "orrange",
+		Tagline: "NA1",
+	}
+
+	SummonerT1OKGOODYESNA1 = internal.Summoner{
+		PUUID:   "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
+		Name:    "T1 OK GOOD YES",
+		Tagline: "NA1",
+	}
+)
+
 //go:embed samples
 var content embed.FS
 

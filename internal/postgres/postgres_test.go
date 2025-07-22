@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/sample"
@@ -136,13 +135,7 @@ func TestGetRank(t *testing.T) {
 
 	puuid := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 
-	summoner := internal.Summoner{
-		PUUID:      puuid,
-		Name:       "T1 OK GOOD YES",
-		Tagline:    "NA1",
-		Platform:   "NA1",
-		SummonerID: "wr1_FUy4RQSAEmUwMiUC8-ttmFopEqhrj4pkyuFXx8ZySs4",
-	}
+	summoner := sample.SummonerT1OKGOODYESNA1
 
 	for _, rank := range []internal.RankStatus{
 		{
@@ -254,13 +247,7 @@ func TestGetSummoner(t *testing.T) {
 		},
 	)
 
-	summoner := internal.Summoner{
-		PUUID:      puuid,
-		Name:       "T1 OK GOOD YES",
-		Tagline:    "NA1",
-		Platform:   "NA1",
-		SummonerID: "wr1_FUy4RQSAEmUwMiUC8-ttmFopEqhrj4pkyuFXx8ZySs4",
-	}
+	summoner := sample.SummonerT1OKGOODYESNA1
 
 	rank := internal.RankStatus{
 		PUUID:         puuid,

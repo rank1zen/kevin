@@ -85,7 +85,7 @@ func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puui
 		return LiveMatch{}, err
 	}
 
-	return NewLiveMatch(WithRiotLiveMatch(riotGame)), nil
+	return NewLiveMatch(WithRiotLiveMatch(*riotGame)), nil
 }
 
 // GetRiotName returns the Riot ID (name#tag) associated with puuid.
@@ -215,8 +215,6 @@ func (ds *Datasource) UpdateSummoner(ctx context.Context, region riot.Region, pu
 			PUUID:      puuid,
 			Name:       name,
 			Tagline:    tag,
-			Platform:   "",
-			SummonerID: "",
 		},
 		RankStatus{
 			PUUID:         puuid,

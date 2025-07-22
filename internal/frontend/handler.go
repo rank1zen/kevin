@@ -202,7 +202,7 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		Name:                summoner.Name,
 		Tag:                 summoner.Tagline,
 		LastUpdated:         rank.EffectiveDate,
-		Rank:                rank.Detail,
+		Rank:                &rank.Detail.Rank, // FIXME: this is a security issue (nil pointer)
 		LiveMatchLoader:     LiveMatchModalWindowLoader{Request: GetLiveMatchRequest{Region: region, PUUID: puuid}},
 		ChampionsLoader:     ChampionsLoader{Request: ZGetSummonerChampionsRequest{Region: region, PUUID: puuid, Week: GetDay(7)}},
 		MatchHistoryLoaders: []MatchHistoryListLoader{},
@@ -370,17 +370,17 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 	searchResults := []SearchResultLink{}
 
 	for _, r := range storeSearchResults {
-		rank, err := h.Datasource.GetStore().GetRank(ctx, r.Puuid, time.Now(), true)
+		rank, err := h.Datasource.GetStore().GetRank(ctx, r.PUUID, time.Now(), true)
 		if err != nil {
 			return nil, fmt.Errorf("getting rank for %s#%s: %w", r.Name, r.Tagline, err)
 		}
 
 		row := SearchResultLink{
 			Region: region,
-			PUUID:  r.Puuid,
+			PUUID:  r.PUUID,
 			Name:   r.Name,
 			Tag:    r.Tagline,
-			Rank:   rank.Detail,
+			Rank:   &rank.Detail.Rank,
 		}
 
 		searchResults = append(searchResults, row)
