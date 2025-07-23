@@ -12,7 +12,8 @@ func (r Region) host() string {
 }
 
 func (r Region) continentHost() string {
-	c := RegionToContinent(r)
+	c := getRegionToMatchContinent(r)
+
 	host, ok := continentToHost[c]
 	if !ok {
 		panic("region is not valid")
@@ -57,27 +58,50 @@ var regionToHost = map[Region]string{
 	RegionVN2:  "https://vn2.api.riotgames.com",
 }
 
-type Continent string
+type continent string
 
 const (
-	ContinentAmericas = "AMERICAS"
-	ContinentAsia     = "ASIA"
-	ContinentEurope   = "EUROPE"
-	ContinentSea      = "SEA"
+	continentAmericas = "AMERICAS"
+	continentAsia     = "ASIA"
+	continentEurope   = "EUROPE"
+	continentSEA      = "SEA"
 )
 
-var continentToHost = map[Continent]string{
-	ContinentAmericas: "https://americas.api.riotgames.com",
-	ContinentAsia    : "https://asia.api.riotgames.com",
-	ContinentEurope  : "https://europe.api.riotgames.com",
-	ContinentSea     : "https://sea.api.riotgames.com",
+var continentToHost = map[continent]string{
+	continentAmericas: "https://americas.api.riotgames.com",
+	continentAsia    : "https://asia.api.riotgames.com",
+	continentEurope  : "https://europe.api.riotgames.com",
+	continentSEA     : "https://sea.api.riotgames.com",
 }
 
-func RegionToContinent(region Region) Continent {
-	switch region {
-	case RegionNA1:
-		return ContinentAmericas
-	default:
-		return ContinentAmericas
+var regionToMatchContinent = map[Region]continent{
+	RegionBR1:  continentAmericas,
+	RegionEUN1: continentEurope,
+	RegionEUW1: continentEurope,
+	RegionJP1:  continentAsia,
+	RegionKR:   continentAsia,
+	RegionLA1:  continentAmericas,
+	RegionLA2:  continentAmericas,
+	RegionME1:  continentEurope,
+	RegionNA1:  continentAmericas,
+	RegionOC1:  continentSEA,
+	RegionRU:   continentEurope,
+	RegionSEA:  continentSEA,
+	RegionTR1:  continentEurope,
+	RegionTW2:  continentSEA,
+	RegionVN2:  continentSEA,
+}
+
+// regionToMatchContinent is used for the match-v5 api.
+//
+// The AMERICAS routing value serves NA, BR, LAN and LAS. The ASIA routing
+// value serves KR and JP. The EUROPE routing value serves EUNE, EUW, ME1, TR
+// and RU. The SEA routing value serves OCE, SG2, TW2 and VN2.
+func getRegionToMatchContinent(region Region) continent {
+	c, ok := regionToMatchContinent[region]
+	if !ok {
+		return continentAmericas
 	}
+
+	return c
 }

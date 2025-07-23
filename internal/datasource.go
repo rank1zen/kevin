@@ -89,8 +89,8 @@ func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puui
 // GetRiotName returns the Riot ID (name#tag) associated with puuid.
 func (ds *Datasource) GetRiotName(ctx context.Context, puuid riot.PUUID) (name, tag string, err error) {
 
-	// Using AMER for now since puuid is globally unique ...
-	account, err := ds.riot.Account.GetAccountByPUUID(ctx, riot.ContinentAmericas, string(puuid))
+	// Using NA for now since puuid is globally unique ...
+	account, err := ds.riot.Account.GetAccountByPUUID(ctx, riot.RegionNA1, puuid.String())
 	if err != nil {
 		return "", "", err
 	}
@@ -103,8 +103,8 @@ func (ds *Datasource) GetRiotName(ctx context.Context, puuid riot.PUUID) (name, 
 //
 // Note that internal store might be stale.
 func (ds *Datasource) GetPUUID(ctx context.Context, name, tag string) (riot.PUUID, error) {
-	// Using AMER for now...
-	account, err := ds.riot.Account.GetAccountByRiotID(ctx, riot.ContinentAmericas, name, tag)
+	// Using NA for now...
+	account, err := ds.riot.Account.GetAccountByRiotID(ctx, riot.RegionNA1, name, tag)
 	if err != nil {
 		if errors.Is(err, riot.ErrNotFound) {
 			return "", ErrSummonerDoesNotExist
