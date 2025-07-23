@@ -3,6 +3,9 @@ package riot
 import (
 	"context"
 	"fmt"
+	"net/url"
+
+	"github.com/rank1zen/kevin/internal/riot/internal"
 )
 
 type MatchService service
@@ -26,6 +29,7 @@ type MatchListOptions struct {
 	Count int
 }
 
+// MatchList is a list of match ids.
 type MatchList []string
 
 // GetMatchIDsByPUUID returns a list of match ids by puuid.
@@ -33,27 +37,40 @@ type MatchList []string
 // Riot API docs: https://developer.riotgames.com/apis#match-v5/GET_getMatchIdsByPUUID
 //
 // GET /lol/match/v5/matches/by-puuid/{puuid}/ids
-func (m *MatchService) GetMatchList(ctx context.Context, continent Continent, puuid string, opts MatchListOptions) (MatchList, error) {
+func (m *MatchService) GetMatchList(ctx context.Context, region Region, puuid string, opts MatchListOptions) (MatchList, error) {
 	endpoint := fmt.Sprintf("/lol/match/v5/matches/by-puuid/%s/ids", puuid)
 
-	reqOpts := []requestOption{}
-	reqOpts = append(reqOpts, withParam("start", fmt.Sprintf("%d", opts.Start)))
-	reqOpts = append(reqOpts, withParam("count", fmt.Sprintf("%d", opts.Count)))
+	query := url.Values{}
+
+	query.Add("start", fmt.Sprintf("%d", opts.Start))
+	query.Add("count", fmt.Sprintf("%d", opts.Count))
+
 	if opts.StartTime != nil {
-		reqOpts = append(reqOpts, withParam("startTime", fmt.Sprintf("%d", *opts.StartTime)))
+		query.Add("startTime", fmt.Sprintf("%d", *opts.StartTime))
 	}
 	if opts.EndTime != nil {
-		reqOpts = append(reqOpts, withParam("endTime", fmt.Sprintf("%d", *opts.EndTime)))
+		query.Add("endTime", fmt.Sprintf("%d", *opts.EndTime))
 	}
 	if opts.Queue != nil {
-		reqOpts = append(reqOpts, withParam("queue", fmt.Sprintf("%d", *opts.Queue)))
+		query.Add("queue", fmt.Sprintf("%d", *opts.Queue))
 	}
 	if opts.Type != nil {
-		reqOpts = append(reqOpts, withParam("type", *opts.Type))
+		query.Add("type", *opts.Type)
+	}
+
+	req := &internal.Request{
+		BaseURL:  region.continentHost(),
+		Endpoint: endpoint,
+		APIKey:   m.client.apiKey,
+		Query:    query,
+	}
+
+	if m.client.baseURL != "" {
+		req.BaseURL = m.client.baseURL
 	}
 
 	var ids MatchList
-	if err := m.client.makeAndDispatchRequestOnContinent(ctx, continent, endpoint, &ids, reqOpts...); err != nil {
+	if err := m.client.internals.DispatchRequest(ctx, req, &ids); err != nil {
 		return nil, err
 	}
 
@@ -255,13 +272,26 @@ type MatchObjective struct {
 // Riot API docs: https://developer.riotgames.com/apis#match-v5/GET_getMatch
 //
 // GET /lol/match/v5/matches/{matchId}
-func (m *MatchService) GetMatch(ctx context.Context, continent Continent, matchID string) (*Match, error) {
-	path := fmt.Sprintf("/lol/match/v5/matches/%s", matchID)
+func (m *MatchService) GetMatch(ctx context.Context, region Region, matchID string) (*Match, error) {
+	endpoint := fmt.Sprintf("/lol/match/v5/matches/%s", matchID)
+
+	req := &internal.Request{
+		BaseURL:  region.continentHost(),
+		Endpoint: endpoint,
+		APIKey:   m.client.apiKey,
+	}
+
+	if m.client.baseURL != "" {
+		req.BaseURL = m.client.baseURL
+	}
 
 	var match Match
-	if err := m.client.makeAndDispatchRequestOnContinent(ctx, continent, path, &match); err != nil {
+	if err := m.client.internals.DispatchRequest(ctx, req, &match); err != nil {
 		return nil, err
 	}
+
+	// TODO: filter the matches that are played in region. Currently it
+	// might return everything on the continent.
 
 	return &match, nil
 }
@@ -413,11 +443,17 @@ type TimelinePosition struct {
 // Riot API docs: https://developer.riotgames.com/apis#match-v5/GET_getTimeline
 //
 // GET /lol/match/v5/matches/{matchId}/timeline
-func (m *MatchService) GetTimeline(ctx context.Context, continent Continent, id string) (*Timeline, error) {
-	path := fmt.Sprintf("/lol/match/v5/matches/%s/timeline", id)
+func (m *MatchService) GetTimeline(ctx context.Context, region Region, id string) (*Timeline, error) {
+	endpoint := fmt.Sprintf("/lol/match/v5/matches/%s/timeline", id)
+
+	req := &internal.Request{
+		BaseURL:  region.continentHost(),
+		Endpoint: endpoint,
+		APIKey:   m.client.apiKey,
+	}
 
 	var timeline Timeline
-	if err := m.client.makeAndDispatchRequestOnContinent(ctx, continent, path, &timeline); err != nil {
+	if err := m.client.internals.DispatchRequest(ctx, req, &timeline); err != nil {
 		return nil, err
 	}
 

@@ -1,19 +1,24 @@
+// riot provides access to endpoints.
+//
+// NOTE: everything is routed through a region. So for matches, the internals
+// access the continent but only returns per region.
 package riot
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
-	"net/url"
+
+	"github.com/rank1zen/kevin/internal/riot/internal"
 )
 
 // Client manages communication with the Riot API.
 type Client struct {
+	internals *internal.Client
+
 	apiKey string
 
-	httpClient *http.Client
+	// baseURL will override the platform specific hosts, if provided.
+	baseURL string
 
 	common service
 
@@ -24,15 +29,25 @@ type Client struct {
 	Summoner  *SummonerService
 }
 
+func (c *Client) dispatchRequest(ctx context.Context, req *internal.Request, dst any) error {
+	if c.baseURL != "" {
+		req.BaseURL = c.baseURL
+	}
+
+	return c.internals.DispatchRequest(ctx, req, dst)
+}
+
 type service struct {
 	client *Client
 }
 
+// NewClient creates a new client. Will panic if there is an error in creation.
+//
+// NOTE: don't know about the concurrency stuff.
 func NewClient(apiKey string, opts ...ClientOption) *Client {
-
 	c := Client{
-		apiKey:     apiKey,
-		httpClient: http.DefaultClient,
+		apiKey:    apiKey,
+		internals: &internal.Client{},
 	}
 
 	c.common.client = &c
@@ -55,110 +70,28 @@ type ClientOption func(*Client) error
 
 func WithHTTPClient(c *http.Client) ClientOption {
 	return func(client *Client) error {
-		client.httpClient = c
+		client.internals.HTTP = c
 		return nil
 	}
 }
 
-// makeAndDispatchRequest basically does everything
-func (c *Client) makeAndDispatchRequest(ctx context.Context, region Region, endpoint string, dst any, opts ...requestOption) error {
-	u, err := url.JoinPath(regionToHost[region], endpoint)
-	if err != nil {
-		panic(err)
+func WithBaseURL(u string) ClientOption {
+	return func(client *Client) error {
+		client.baseURL = u
+		return nil
 	}
-
-	return c.makeAndDispatch(ctx, u, dst, opts...)
 }
-
-func (c *Client) makeAndDispatchRequestOnContinent(ctx context.Context, continent Continent, endpoint string, dst any, opts ...requestOption) error {
-	u, err := url.JoinPath(continentToHost[continent], endpoint)
-	if err != nil {
-		panic(err)
-	}
-
-	return c.makeAndDispatch(ctx, u, dst, opts...)
-}
-
-func (c *Client) makeAndDispatch(ctx context.Context, url string, dst any, opts ...requestOption) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-Riot-Token", c.apiKey)
-
-	for _, f := range opts {
-		f(req)
-	}
-
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("http client: %w", err)
-	}
-
-	defer res.Body.Close()
-
-	if err := getError(res.StatusCode); err != nil {
-		return err
-	}
-
-	if err := json.NewDecoder(res.Body).Decode(&dst); err != nil {
-		return fmt.Errorf("json decoder: %w", err)
-	}
-
-	return nil
-}
-
-// should have an Error type
 
 var (
-	ErrBadRequest           = errors.New("riot: bad request")
-	ErrUnauthorized         = errors.New("riot: unauthorized")
-	ErrForbidden            = errors.New("riot: forbidden")
-	ErrNotFound             = errors.New("riot: not found")
-	ErrMethodNotAllowed     = errors.New("riot: method not allowed")
-	ErrUnsupportedMediaType = errors.New("riot: unsupported media type")
-	ErrRateLimitExceeded    = errors.New("riot: rate limit exceeded")
-	ErrInternalServerError  = errors.New("riot: internal server error")
-	ErrBadGateway           = errors.New("riot: bad gateway")
-	ErrServiceUnavailable   = errors.New("riot: service unavailable")
-	ErrGatewayTimeout       = errors.New("riot: gateway timeout")
-	// ErrUnknown              = errors.New("riot: unknown")
+	ErrBadRequest           = internal.ErrBadRequest
+	ErrUnauthorized         = internal.ErrUnauthorized
+	ErrForbidden            = internal.ErrForbidden
+	ErrNotFound             = internal.ErrNotFound
+	ErrMethodNotAllowed     = internal.ErrMethodNotAllowed
+	ErrUnsupportedMediaType = internal.ErrUnsupportedMediaType
+	ErrRateLimitExceeded    = internal.ErrRateLimitExceeded
+	ErrInternalServerError  = internal.ErrInternalServerError
+	ErrBadGateway           = internal.ErrBadGateway
+	ErrServiceUnavailable   = internal.ErrServiceUnavailable
+	ErrGatewayTimeout       = internal.ErrGatewayTimeout
 )
-
-func getError(status int) error {
-	switch status {
-	case 400:
-		return ErrBadRequest
-	case 401:
-		return ErrUnauthorized
-	case 403:
-		return ErrForbidden
-	case 404:
-		return ErrNotFound
-	case 405:
-		return ErrMethodNotAllowed
-	case 415:
-		return ErrUnsupportedMediaType
-	case 429:
-		return ErrRateLimitExceeded
-	case 500:
-		return ErrInternalServerError
-	case 502:
-		return ErrBadGateway
-	case 503:
-		return ErrServiceUnavailable
-	case 504:
-		return ErrGatewayTimeout
-	default:
-		// assume status is OK!
-		return nil
-	}
-}
-
-type requestOption func(*http.Request)
-
-func withParam(k, v string) requestOption {
-	return func(r *http.Request) {
-		query := r.URL.Query()
-		query.Set(k, v)
-		r.URL.RawQuery = query.Encode()
-	}
-}

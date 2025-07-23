@@ -3,6 +3,8 @@ package riot
 import (
 	"context"
 	"fmt"
+
+	"github.com/rank1zen/kevin/internal/riot/internal"
 )
 
 type SummonerService service
@@ -20,10 +22,16 @@ type Summoner struct {
 //
 // GET /lol/summoner/v4/summoners/by-puuid/{encryptedPUUID}
 func (m *SummonerService) GetSummoner(ctx context.Context, region Region, puuid string) (*Summoner, error) {
-	path := fmt.Sprintf("/lol/summoner/v4/summoners/by-puuid/%s", puuid)
+	endpoint := fmt.Sprintf("/lol/summoner/v4/summoners/by-puuid/%s", puuid)
+
+	req := &internal.Request{
+		BaseURL:  region.host(),
+		Endpoint: endpoint,
+		APIKey:   m.client.apiKey,
+	}
 
 	var summoner Summoner
-	if err := m.client.makeAndDispatchRequest(ctx, region, path, &summoner); err != nil {
+	if err := m.client.internals.DispatchRequest(ctx, req, &summoner); err != nil {
 		return nil, err
 	}
 

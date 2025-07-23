@@ -2,61 +2,110 @@ package riot_test
 
 import (
 	"context"
-	"os"
+	"net/http"
 	"testing"
 
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestGetMatchList(t *testing.T) {
+func TestMatchGetMatchList(t *testing.T) {
 	ctx := context.Background()
-	client := riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY"))
 
-	t.Run(
-		"sanity test",
-		func(t *testing.T) {
-			_, err := client.Match.GetMatchList(ctx, riot.ContinentAmericas, "xpzpxnzLQX12ACv3iHZfqgdA8RGZQBLCiqJVa1rfVO8Z3KRiYD7YikD2RZC5mot0YhJNKn1UDxu-Ng", riot.MatchListOptions{Count: 20})
-			assert.NoError(t, err)
+	client, server := MakeTestClient(t, http.StatusOK, "sample/lol/match/v5/matches/by-puuid/0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q/ids.json",
+		func(r *http.Request) {
+			for _, tc := range []struct {
+				Name             string
+				Expected, Actual any
+			}{
+				{
+					Name:     "expects correct endpoint",
+					Expected: "/lol/match/v5/matches/by-puuid/0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q/ids",
+					Actual:   r.URL.Path,
+				},
+				{
+					Name:     "expects correct start time query",
+					Expected: "1751601600",
+					Actual:   r.URL.Query().Get("startTime"),
+				},
+				{
+					Name:     "expects correct end time query",
+					Expected: "1751687999",
+					Actual:   r.URL.Query().Get("endTime"),
+				},
+				{
+					Name:     "expects correct queue query",
+					Expected: "420",
+					Actual:   r.URL.Query().Get("queue"),
+				},
+			} {
+				t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
+			}
 		},
 	)
 
-	t.Run(
-		"all matches in a day",
-		func(t *testing.T) {
-			options := riot.MatchListOptions{
-				StartTime: new(int64),
-				EndTime:   new(int64),
-				Queue:     new(int),
-				Start:     0,
-				Count:     100,
+	defer server.Close()
+
+	options := riot.MatchListOptions{
+		StartTime: new(int64),
+		EndTime:   new(int64),
+		Queue:     new(int),
+		Start:     0,
+		Count:     20,
+	}
+
+	*options.StartTime = 1751601600
+	*options.EndTime = 1751687999
+	*options.Queue = 420
+
+	matches, err := client.Match.GetMatchList(ctx, riot.RegionNA1, sample.SummonerOrrangeNA1.PUUID.String(), options)
+	require.NoError(t, err)
+
+	assert.Len(t, matches, 20)
+}
+
+func TestMatchGetMatch(t *testing.T) {
+	ctx := context.Background()
+
+	client, server := MakeTestClient(t, http.StatusOK, "sample/lol/match/v5/matches/NA1_5304757838.json",
+		func(r *http.Request) {
+			for _, tc := range []struct {
+				Name             string
+				Expected, Actual any
+			}{
+				{
+					Name:     "expects correct endpoint",
+					Expected: "/lol/match/v5/matches/NA1_5304757838",
+					Actual:   r.URL.Path,
+				},
+			} {
+				t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
 			}
-
-			*options.StartTime = 1751601600
-			*options.EndTime = 1751687999
-			*options.Queue = 420
-
-			matches, err := client.Match.GetMatchList(ctx, riot.ContinentAmericas, "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg", options)
-			assert.NoError(t, err)
-
-			expected := riot.MatchList{
-				"NA1_5319611168",
-				"NA1_5319592152",
-				"NA1_5319579789",
-				"NA1_5319551702",
-				"NA1_5319526470",
-				"NA1_5319509894",
-				"NA1_5319489324",
-				"NA1_5319337632",
-				"NA1_5319319764",
-				"NA1_5319307543",
-				"NA1_5319296051",
-				"NA1_5319287528",
-				"NA1_5319275283",
-				"NA1_5319263238",
-			}
-
-			assert.Equal(t, expected, matches)
 		},
 	)
+
+	defer server.Close()
+
+	match, err := client.Match.GetMatch(ctx, riot.RegionNA1, "NA1_5304757838")
+	require.NoError(t, err)
+
+	for _, tc := range []struct {
+		Name             string
+		Expected, Actual any
+	}{
+		{
+			Name:     "expects match id",
+			Expected: "NA1_5304757838",
+			Actual:   match.Metadata.MatchID,
+		},
+		{
+			Name:     "expects correct kills for participant 0",
+			Expected: 8,
+			Actual:   match.Info.Participants[0].Kills,
+		},
+	} {
+		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
+	}
 }

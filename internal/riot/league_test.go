@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccountServiceGetAccountByRiotID(t *testing.T) {
+func TestLeagueGetLeagueEntriesByPUUID(t *testing.T) {
 	ctx := context.Background()
 
-	client, server := MakeTestClient(t, http.StatusOK, "sample/riot/account/v1/accounts/by-riot-id/orrange-NA1.json",
+	client, server := MakeTestClient(t, http.StatusOK, "sample/lol/league/v4/entries/by-puuid/0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q.json",
 		func(r *http.Request) {
 			for _, tc := range []struct {
 				Name             string
@@ -22,7 +22,7 @@ func TestAccountServiceGetAccountByRiotID(t *testing.T) {
 			}{
 				{
 					Name:     "expects correct endpoint",
-					Expected: "/riot/account/v1/accounts/by-riot-id/orrange/NA1",
+					Expected: "/lol/league/v4/entries/by-puuid/0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q",
 					Actual:   r.URL.Path,
 				},
 			} {
@@ -33,8 +33,12 @@ func TestAccountServiceGetAccountByRiotID(t *testing.T) {
 
 	defer server.Close()
 
-	res, err := client.Account.GetAccountByRiotID(ctx, riot.RegionNA1, "orrange", "NA1")
+	entries, err := client.League.GetLeagueEntriesByPUUID(ctx, riot.RegionNA1, sample.SummonerOrrangeNA1.PUUID.String())
+
 	require.NoError(t, err)
+
+	require.Len(t, entries, 1)
+	soloq := entries[0]
 
 	for _, tc := range []struct {
 		Name             string
@@ -42,13 +46,18 @@ func TestAccountServiceGetAccountByRiotID(t *testing.T) {
 	}{
 		{
 			Name:     "expects correct puuid for orrange",
-			Expected: sample.SummonerOrrangeNA1.PUUID,
-			Actual:   res.PUUID,
+			Expected: riot.QueueTypeRankedSolo5x5,
+			Actual:   soloq.QueueType,
 		},
 		{
 			Name:     "expects correct name for orrange",
-			Expected: sample.SummonerOrrangeNA1.Name,
-			Actual:   res.GameName,
+			Expected: riot.TierEmerald,
+			Actual:   soloq.Tier,
+		},
+		{
+			Name:     "expects correct name for orrange",
+			Expected: riot.Division4,
+			Actual:   soloq.Division,
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })

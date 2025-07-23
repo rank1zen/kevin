@@ -2,6 +2,25 @@ package riot
 
 type Region string
 
+func (r Region) host() string {
+	host, ok := regionToHost[r]
+	if !ok {
+		panic("region is not valid")
+	}
+
+	return host
+}
+
+func (r Region) continentHost() string {
+	c := RegionToContinent(r)
+	host, ok := continentToHost[c]
+	if !ok {
+		panic("region is not valid")
+	}
+
+	return host
+}
+
 const (
 	RegionBR1 Region = "BR1"
 	RegionEUN1 Region = "EUN1"

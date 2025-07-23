@@ -3,14 +3,16 @@ package riot
 import (
 	"context"
 	"fmt"
+
+	"github.com/rank1zen/kevin/internal/riot/internal"
 )
 
 type LeagueService service
 
 const (
 	QueueTypeRankedSolo5x5 = "RANKED_SOLO_5x5"
-	QueueTypeRankedFlexSR = "RANKED_FLEX_SR"
-	QueueTypeRankedFlexTT = "RANKED_FLEX_TT"
+	QueueTypeRankedFlexSR  = "RANKED_FLEX_SR"
+	QueueTypeRankedFlexTT  = "RANKED_FLEX_TT"
 )
 
 type Tier string
@@ -82,19 +84,19 @@ const (
 type LeagueList []LeagueEntry
 
 type LeagueEntry struct {
-	Division         Division        `json:"rank"`
-	FreshBlood   bool        `json:"freshBlood"`
-	HotStreak    bool        `json:"hotStreak"`
-	Inactive     bool        `json:"inactive"`
-	LeagueID     string      `json:"leagueId"`
-	LeaguePoints int         `json:"leaguePoints"`
-	Losses       int         `json:"losses"`
+	Division     Division          `json:"rank"`
+	FreshBlood   bool              `json:"freshBlood"`
+	HotStreak    bool              `json:"hotStreak"`
+	Inactive     bool              `json:"inactive"`
+	LeagueID     string            `json:"leagueId"`
+	LeaguePoints int               `json:"leaguePoints"`
+	Losses       int               `json:"losses"`
 	MiniSeries   *LeagueMiniSeries `json:"miniSeries"`
-	QueueType    string      `json:"queueType"`
-	SummonerID   string      `json:"summonerId"`
-	Tier         Tier        `json:"tier"`
-	Veteran      bool        `json:"veteran"`
-	Wins         int         `json:"wins"`
+	QueueType    string            `json:"queueType"`
+	SummonerID   string            `json:"summonerId"`
+	Tier         Tier              `json:"tier"`
+	Veteran      bool              `json:"veteran"`
+	Wins         int               `json:"wins"`
 }
 
 type LeagueMiniSeries struct {
@@ -104,32 +106,26 @@ type LeagueMiniSeries struct {
 	Wins     int    `json:"wins"`
 }
 
-// GetLeagueEntriesForSummoner returns league entries in all queues for a given summoner ID.
-//
-// Riot API docs: https://developer.riotgames.com/apis#league-v4/GET_getLeagueEntriesForSummoner
-//
-// GET /lol/league/v4/entries/by-summoner/{encryptedSummonerId}
-func (m *LeagueService) GetLeagueEntriesForSummoner(ctx context.Context, region Region, summonerID string) (LeagueList, error) {
-	path := fmt.Sprintf("/lol/league/v4/entries/by-summoner/%v", summonerID)
-
-	var entries LeagueList
-	if err := m.client.makeAndDispatchRequest(ctx, region, path, &entries); err != nil {
-		return nil, err
-	}
-
-	return entries, nil
-}
-
 // GetLeagueEntries returns league entries in all queues for a given summoner ID.
 //
 // Riot API docs: https://developer.riotgames.com/apis#league-v4/GET_getLeagueEntriesByPUUID
 //
 // GET /lol/league/v4/entries/by-puuid/{encryptedPUUID}
 func (m *LeagueService) GetLeagueEntriesByPUUID(ctx context.Context, region Region, puuid string) (LeagueList, error) {
-	path := fmt.Sprintf("/lol/league/v4/entries/by-puuid/%v", puuid)
+	endpoint := fmt.Sprintf("/lol/league/v4/entries/by-puuid/%v", puuid)
+
+	req := &internal.Request{
+		BaseURL:  region.host(),
+		Endpoint: endpoint,
+		APIKey:   m.client.apiKey,
+	}
+
+	if m.client.baseURL != "" {
+		req.BaseURL = m.client.baseURL
+	}
 
 	var entries LeagueList
-	if err := m.client.makeAndDispatchRequest(ctx, region, path, &entries); err != nil {
+	if err := m.client.internals.DispatchRequest(ctx, req, &entries); err != nil {
 		return nil, err
 	}
 

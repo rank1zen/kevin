@@ -51,9 +51,7 @@ func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Regio
 	*options.StartTime = start.Unix()
 	*options.EndTime = end.Unix()
 
-	continent := riot.RegionToContinent(region)
-
-	ids, err := ds.riot.Match.GetMatchList(ctx, continent, string(puuid), options)
+	ids, err := ds.riot.Match.GetMatchList(ctx, region, string(puuid), options)
 	if err != nil {
 		return fmt.Errorf("fetching ids: %w", err)
 	}
@@ -69,7 +67,7 @@ func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Regio
 	}
 
 	for _, id := range newIDs {
-		if err := ds.recordMatch(ctx, continent, id); err != nil {
+		if err := ds.recordMatch(ctx, region, id); err != nil {
 			return err
 		}
 	}
@@ -131,9 +129,7 @@ func (ds *Datasource) UpdateMatchHistory(ctx context.Context, region riot.Region
 
 	*options.Queue = 420
 
-	continent := riot.RegionToContinent(region)
-
-	ids, err := ds.riot.Match.GetMatchList(ctx, continent, string(puuid), options)
+	ids, err := ds.riot.Match.GetMatchList(ctx, region, string(puuid), options)
 	if err != nil {
 		return fmt.Errorf("fetching ids: %w", err)
 	}
@@ -149,7 +145,7 @@ func (ds *Datasource) UpdateMatchHistory(ctx context.Context, region riot.Region
 	}
 
 	for _, id := range newIDs {
-		if err := ds.recordMatch(ctx, continent, id); err != nil {
+		if err := ds.recordMatch(ctx, region, id); err != nil {
 			return err
 		}
 	}
@@ -157,8 +153,8 @@ func (ds *Datasource) UpdateMatchHistory(ctx context.Context, region riot.Region
 	return nil
 }
 
-func (ds *Datasource) recordMatch(ctx context.Context, continent riot.Continent, id string) error {
-	riotMatch, err := ds.riot.Match.GetMatch(ctx, continent, id)
+func (ds *Datasource) recordMatch(ctx context.Context, region riot.Region, id string) error {
+	riotMatch, err := ds.riot.Match.GetMatch(ctx, region, id)
 	if err != nil {
 		return fmt.Errorf("fetching match: %w", err)
 	}
@@ -173,10 +169,7 @@ func (ds *Datasource) recordMatch(ctx context.Context, continent riot.Continent,
 
 // ListNewMatches returns the 100 most recent matches that are not in store.
 func (ds *Datasource) ListNewMatches(ctx context.Context, region riot.Region, puuid riot.PUUID) ([]string, error) {
-	// use the continent for now
-	continent := riot.RegionToContinent(region)
-
-	ids, err := ds.riot.Match.GetMatchList(ctx, continent, string(puuid), riot.MatchListOptions{Count: 100})
+	ids, err := ds.riot.Match.GetMatchList(ctx, region, string(puuid), riot.MatchListOptions{Count: 100})
 	if err != nil {
 		return nil, fmt.Errorf("fetching ids: %w", err)
 	}

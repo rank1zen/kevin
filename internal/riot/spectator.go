@@ -3,6 +3,8 @@ package riot
 import (
 	"context"
 	"fmt"
+
+	"github.com/rank1zen/kevin/internal/riot/internal"
 )
 
 type SpectatorService service
@@ -61,10 +63,20 @@ type LiveGameCustomizationObject struct {
 //
 // GET /lol/spectator/v5/active-games/by-summoner/{encryptedPUUID}
 func (m *SpectatorService) GetLiveMatch(ctx context.Context, region Region, puuid string) (*LiveMatch, error) {
-	path := fmt.Sprintf("/lol/spectator/v5/active-games/by-summoner/%s", puuid)
+	endpoint := fmt.Sprintf("/lol/spectator/v5/active-games/by-summoner/%s", puuid)
+
+	req := &internal.Request{
+		BaseURL:  region.host(),
+		Endpoint: endpoint,
+		APIKey:   m.client.apiKey,
+	}
+
+	if m.client.baseURL != "" {
+		req.BaseURL = m.client.baseURL
+	}
 
 	var match LiveMatch
-	if err := m.client.makeAndDispatchRequest(ctx, region, path, &match); err != nil {
+	if err := m.client.internals.DispatchRequest(ctx, req, &match); err != nil {
 		return nil, err
 	}
 
