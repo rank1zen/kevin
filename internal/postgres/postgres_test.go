@@ -240,7 +240,7 @@ func TestGetSummoner(t *testing.T) {
 	puuid := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 
 	t.Run(
-		"fails when summoner is not found",
+		"expects error when summoner is not found",
 		func(t *testing.T) {
 			_, err := store.GetSummoner(ctx, puuid)
 			assert.ErrorIs(t, err, internal.ErrSummonerNotFound)
@@ -259,7 +259,7 @@ func TestGetSummoner(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run(
-		"returns correct values",
+		"expects correct retrieval",
 		func(t *testing.T) {
 			actual, err := store.GetSummoner(ctx, puuid)
 			require.NoError(t, err)

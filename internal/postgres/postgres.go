@@ -369,17 +369,17 @@ func (s *Store) RecordSummoner(ctx context.Context, summoner internal.Summoner, 
 		INSERT INTO Summoner (
 			puuid,
 			name,
-			tagline,
+			tagline
 		)
 		VALUES (
 			@puuid,
 			@name,
-			@tagline,
+			@tagline
 		)
 		ON CONFLICT (puuid)
 		DO UPDATE SET
 			name    = @name,
-			tagline = @tagline,
+			tagline = @tagline;
 	`,
 		pgx.NamedArgs{
 			"puuid":       summoner.PUUID,

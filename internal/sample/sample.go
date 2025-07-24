@@ -53,3 +53,18 @@ func WithMatchID(id string) internal.MatchOption {
 		return nil
 	}
 }
+
+func WithSampleLiveMatch() internal.LiveMatchOption {
+	file, err := content.Open("samples/live_match.json")
+	if err != nil {
+		panic(err)
+	}
+
+	var riotMatch riot.LiveMatch
+	err = json.NewDecoder(file).Decode(&riotMatch)
+	if err != nil {
+		panic(err)
+	}
+
+	return internal.WithRiotLiveMatch(riotMatch)
+}

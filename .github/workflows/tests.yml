@@ -1,6 +1,4 @@
-name: Test
-
-run-name: Run Go tests
+name: Static checks and tests
 
 on:
   push:
@@ -9,32 +7,42 @@ on:
       - dev
 
 jobs:
-
-  go-static-checks:
-    name: 
+  golangci-lint:
+    name: Static checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
           go-version: 1.23
           check-latest: true
+
       - name: Verify go.mod is tidy
         run: |
-          go mod tidy -go=1.23
+          go mod tidy
           git diff --exit-code
+
+      - name: Verify *_templ.go files are up-to-date
+        run: |
+          templ generate
+          git diff --exit-code
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.1
 
-  go-tests:
+  go-test:
+    name: Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
           go-version: 1.23
           check-latest: true
-      - name: Run all tests
-        run: go test -v ./...
+
+      - name: Run all short tests
+        run: go test -short ./...

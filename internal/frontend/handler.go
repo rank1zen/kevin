@@ -65,26 +65,35 @@ func (r MatchHistoryRequest) Validate() (problems map[string]string) {
 
 // Handler provides the API for server operations.
 type Handler struct {
+	// Datasource handles the business logic. A nil value indicates that
+	// Handler will use the zero value [internal.Datasource].
 	Datasource *internal.Datasource
 }
 
-func NewHandler(datasource *internal.Datasource) *Handler {
-	return &Handler{datasource}
-}
-
+// CheckHealth does a simple request to ensure systems are working.
 func (h *Handler) CheckHealth(ctx context.Context) error {
-	_, err := h.Datasource.GetPUUID(ctx, "orrange", "NA1")
+	ds := h.Datasource
+	if ds == nil {
+		ds = &internal.Datasource{}
+	}
+
+	_, err := ds.GetPUUID(ctx, "orrange", "NA1")
 	return err
 }
 
-// UpdateSummoner
+// UpdateSummoner syncs a summoner and their rank with riot.
 func (h *Handler) UpdateSummoner(ctx context.Context, region riot.Region, name, tag string) error {
-	puuid, err := h.Datasource.GetPUUID(ctx, name, tag)
+	ds := h.Datasource
+	if ds == nil {
+		ds = &internal.Datasource{}
+	}
+
+	puuid, err := ds.GetPUUID(ctx, name, tag)
 	if err != nil {
 		return err
 	}
 
-	if err := h.Datasource.UpdateSummoner(ctx, region, puuid); err != nil {
+	if err := ds.UpdateSummoner(ctx, region, puuid); err != nil {
 		return err
 	}
 
@@ -94,7 +103,12 @@ func (h *Handler) UpdateSummoner(ctx context.Context, region riot.Region, name, 
 // GetLiveMatch returns [LiveMatchModalWindow] if the summoner is in game,
 // otherwise [NoLiveMatchModalWindow].
 func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (templ.Component, error) {
-	match, err := h.Datasource.GetLiveMatch(ctx, req.Region, req.PUUID)
+	ds := h.Datasource
+	if ds == nil {
+		ds = &internal.Datasource{}
+	}
+
+	match, err := ds.GetLiveMatch(ctx, req.Region, req.PUUID)
 	if err != nil {
 		if errors.Is(err, internal.ErrNoLiveMatch) {
 			return NoLiveMatchModalWindow{}, err
@@ -106,7 +120,7 @@ func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (te
 	blueSide, redSide := [5]LiveMatchRowLayout{}, [5]LiveMatchRowLayout{}
 
 	for i, p := range match.Participants {
-		name, tag, err := h.Datasource.GetRiotName(ctx, riot.PUUID(p.PUUID))
+		name, tag, err := ds.GetRiotName(ctx, riot.PUUID(p.PUUID))
 		if err != nil {
 			return nil, fmt.Errorf("fetching participant %s: %w", p.PUUID, err)
 		}
@@ -161,7 +175,12 @@ func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (templ.Co
 // [SummonerPage]. If no summoner with name#tag exists, return
 // [NoSummonerPage].
 func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (templ.Component, error) {
-	puuid, err := h.Datasource.GetPUUID(ctx, name, tag)
+	ds := h.Datasource
+	if ds == nil {
+		ds = &internal.Datasource{}
+	}
+
+	puuid, err := ds.GetPUUID(ctx, name, tag)
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerDoesNotExist) {
 			return NoSummonerPage{
@@ -174,24 +193,24 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		return nil, fmt.Errorf("get puuid: %w", err)
 	}
 
-	summoner, err := h.Datasource.GetStore().GetSummoner(ctx, puuid)
+	summoner, err := ds.GetStore().GetSummoner(ctx, puuid)
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerNotFound) {
 			fromCtx(ctx).Info("first time visit", "puuid", puuid)
 
-			if err := h.Datasource.UpdateSummoner(ctx, region, puuid); err != nil {
+			if err := ds.UpdateSummoner(ctx, region, puuid); err != nil {
 				return nil, fmt.Errorf("getting puuid: %w", err)
 			}
 		}
 	}
 
 	// try again
-	summoner, err = h.Datasource.GetStore().GetSummoner(ctx, puuid)
+	summoner, err = ds.GetStore().GetSummoner(ctx, puuid)
 	if err != nil {
 		return nil, fmt.Errorf("get summoner: %w", err)
 	}
 
-	rank, err := h.Datasource.GetStore().GetRank(ctx, puuid, time.Now(), true)
+	rank, err := ds.GetStore().GetRank(ctx, puuid, time.Now(), true)
 	if err != nil {
 		return nil, fmt.Errorf("get rank: %w", err)
 	}
@@ -227,15 +246,20 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 // GetSummonerChampions returns [ChampionModalLayout]. The method will fetch all
 // games played in the specified interval.
 func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerChampionsRequest) (templ.Component, error) {
+	ds := h.Datasource
+	if ds == nil {
+		ds = &internal.Datasource{}
+	}
+
 	start := req.Week
 	end := start.Add(7 * 24 * time.Hour)
 
-	err := h.Datasource.ZUpdateMatchHistory(ctx, req.Region, req.PUUID, start, end)
+	err := ds.ZUpdateMatchHistory(ctx, req.Region, req.PUUID, start, end)
 	if err != nil {
 		return nil, fmt.Errorf("updating matchlist failed: %w", err)
 	}
 
-	storeChampions, err := h.Datasource.GetStore().GetChampions(ctx, req.PUUID, start, end)
+	storeChampions, err := ds.GetStore().GetChampions(ctx, req.PUUID, start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -272,14 +296,19 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 // to date + 24 hours. The method will fetch riot first to ensure all matches
 // played on date are in store.
 func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) (templ.Component, error) {
+	ds := h.Datasource
+	if ds == nil {
+		ds = &internal.Datasource{}
+	}
+
 	// TODO: consider daylight savings
 	end := req.Date.Add(24 * time.Hour)
 
-	if err := h.Datasource.ZUpdateMatchHistory(ctx, req.Region, req.PUUID, req.Date, end); err != nil {
+	if err := ds.ZUpdateMatchHistory(ctx, req.Region, req.PUUID, req.Date, end); err != nil {
 		return nil, err
 	}
 
-	storeMatches, err := h.Datasource.GetStore().GetZMatches(ctx, req.PUUID, req.Date, end)
+	storeMatches, err := ds.GetStore().GetZMatches(ctx, req.PUUID, req.Date, end)
 	if err != nil {
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
@@ -341,7 +370,12 @@ func (h *Handler) GetMatchScoreboard(ctx context.Context, id string) (scoreboard
 // q should be of the form name#tag, if q has no tag, region is used as the
 // tag.
 func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (templ.Component, error) {
-	storeSearchResults, err := h.Datasource.GetStore().SearchSummoner(ctx, q)
+	ds := h.Datasource
+	if ds == nil {
+		ds = &internal.Datasource{}
+	}
+
+	storeSearchResults, err := ds.GetStore().SearchSummoner(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -370,7 +404,7 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 	searchResults := []SearchResultLink{}
 
 	for _, r := range storeSearchResults {
-		rank, err := h.Datasource.GetStore().GetRank(ctx, r.PUUID, time.Now(), true)
+		rank, err := ds.GetStore().GetRank(ctx, r.PUUID, time.Now(), true)
 		if err != nil {
 			return nil, fmt.Errorf("getting rank for %s#%s: %w", r.Name, r.Tagline, err)
 		}

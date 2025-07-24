@@ -45,10 +45,8 @@ create type league_division as enum (
 
 create table Summoner (
         puuid       riot_puuid primary key,
-        platform    riot_platform not null,
         name        varchar(32) not null,
-        tagline     varchar(10) not null,
-        summoner_id varchar(56) not null
+        tagline     varchar(10) not null
 );
 
 create table RankStatus (

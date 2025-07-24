@@ -1,13 +1,10 @@
 package internal_test
 
 import (
-	"encoding/json"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -104,16 +101,8 @@ func TestNewMatch(t *testing.T) {
 	}
 }
 
-func TestLiveParticipant(t *testing.T) {
-	testdata := os.DirFS("../testdata")
-
-	matchFile, err := testdata.Open("spectator/aram.json")
-
-	var riotMatch riot.LiveMatch
-	err = json.NewDecoder(matchFile).Decode(&riotMatch)
-	require.NoError(t, err)
-
-	actual := internal.NewLiveMatch(internal.WithRiotLiveMatch(riotMatch))
+func TestNewLiveMatch(t *testing.T) {
+	actual := internal.NewLiveMatch(sample.WithSampleLiveMatch())
 
 	for _, tc := range []struct {
 		Name             string
@@ -121,12 +110,12 @@ func TestLiveParticipant(t *testing.T) {
 	}{
 		{
 			Name:     "expects correct ID",
-			Expected: "NA1_5304757838",
+			Expected: "NA1_5330985291",
 			Actual:   actual.ID,
 		},
 		{
 			Name:     "expects correct date",
-			Expected: time.UnixMilli(1749596377340),
+			Expected: time.UnixMilli(1753291144171),
 			Actual:   actual.Date,
 		},
 	} {
@@ -142,7 +131,7 @@ func TestLiveParticipant(t *testing.T) {
 	}{
 		{
 			Name:     "expects correct participant champion",
-			Expected: 63,
+			Expected: 517,
 			Actual:   t1.ChampionID,
 		},
 		{
