@@ -33,6 +33,28 @@ jobs:
         with:
           version: v2.1
 
+  templ-check:
+    name: Templ file checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.23
+          check-latest: true
+
+      - name: Setup templ
+        run: go install github.com/a-h/templ/cmd/templ@latest
+
+      - name: Verify *_templ.go files are up-to-date
+        run: |
+          templ generate
+          git diff --exit-code
+
+      - name: Verify *_templ.go files are formatted
+        run: templ fmt -fail .
+
   go-test:
     name: Tests
     runs-on: ubuntu-latest
