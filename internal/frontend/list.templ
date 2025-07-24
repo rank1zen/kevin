@@ -1,7 +1,9 @@
 package frontend
 
-import "context"
-import "io"
+import (
+	"context"
+	"io"
+)
 
 type List struct {
 	Style int
@@ -10,8 +12,7 @@ type List struct {
 }
 
 templ (m List) buildEmpty() {
-	<div class="bg-white h-9 dark:bg-black border border-gray-900/20 dark:border-gray-100/20 shadow shadow-gray-900/20 dark:shadow-gray-100/20 rounded-2xl">
-	</div>
+	<div class="bg-white h-9 dark:bg-black border border-gray-900/20 dark:border-gray-100/20 shadow shadow-gray-900/20 dark:shadow-gray-100/20 rounded-2xl"></div>
 }
 
 templ (m List) buildFlat() {

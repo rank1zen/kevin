@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/ddragon"
+	"github.com/rank1zen/kevin/internal/riot"
 	"io"
 	"path"
-	"github.com/rank1zen/kevin/internal/riot"
 )
 
 // ChampionWidget displays a champion icon and summoner spells.
@@ -321,7 +321,6 @@ templ (m RankWidget) build() {
 }
 
 // generateTierTextColorClass generates a TW text color class.
-//
 // Deprecated
 func (m RankWidget) generateTierTextColorClass() string {
 	if m.Rank == nil {

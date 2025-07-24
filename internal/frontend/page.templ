@@ -146,9 +146,9 @@ templ (m NoSummonerPage) build() {
 
 func (m NoSummonerPage) Render(ctx context.Context, w io.Writer) error {
 	page := Page{
-		Title:   fmt.Sprintf("Summoner not found - Kevin"),
+		Title:          fmt.Sprintf("Summoner not found - Kevin"),
 		HeaderChildren: PageHeaderLayout{Region: m.Region},
-		Content: m.build(),
+		Content:        m.build(),
 	}
 
 	return page.Render(ctx, w)

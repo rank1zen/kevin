@@ -1,7 +1,9 @@
 package frontend
 
-import "context"
-import "io"
+import (
+	"context"
+	"io"
+)
 
 type Tooltip struct {
 	Tip string
@@ -17,7 +19,7 @@ templ (m Tooltip) build() {
 			title={ m.Tip }
 		}
 		if m.ButtonStyle == 0 {
-			 class=""
+			class=""
 		} else {
 			class="bg-transparent rounded-lg dark:hover:bg-gray-100/5 hover:bg-gray-900/5"
 		}
