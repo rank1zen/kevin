@@ -11,19 +11,74 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/riot"
 	"io"
+
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+type PopoverPosition int
+
+const (
+	PopoverPositionBottom PopoverPosition = iota
+	PopoverPositionBottomStart
+	PopoverPositionBottomEnd
+	PopoverPositionTop
+	PopoverPositionTopStart
+	PopoverPositionTopEnd
+	PopoverPositionLeft
+	PopoverPositionLeftStart
+	PopoverPositionLeftEnd
+	PopoverPositionRight
+	PopoverPositionRightStart
+	PopoverPositionRightEnd
 )
 
 // Popover shows a popup on click.
-//
-// TODO: add alignment settings for floating panel
 type Popover struct {
 	// ButtonChildren are placed inside the button that triggers the
 	// popover. A nil value will default to [ButtonLayout].
 	ButtonChildren templ.Component
 
 	Panel PanelWindow
+
+	PanelPosition PopoverPosition
+
+	// PanelOffset is offset in pixels.
+	PanelOffset int
+}
+
+func (m Popover) generateXAnchorAttrKey() templ.Attributes {
+	var position string
+	switch m.PanelPosition {
+	case PopoverPositionBottom:
+		position = "bottom"
+	case PopoverPositionBottomEnd:
+		position = "bottom-end"
+	case PopoverPositionBottomStart:
+		position = "bottom-start"
+	case PopoverPositionTop:
+		position = "top"
+	case PopoverPositionTopEnd:
+		position = "top-end"
+	case PopoverPositionTopStart:
+		position = "top-start"
+	case PopoverPositionLeft:
+		position = "left"
+	case PopoverPositionLeftEnd:
+		position = "left-end"
+	case PopoverPositionLeftStart:
+		position = "left-start"
+	case PopoverPositionRight:
+		position = "right"
+	case PopoverPositionRightEnd:
+		position = "right-end"
+	case PopoverPositionRightStart:
+		position = "right-start"
+	}
+
+	return templ.Attributes{
+		fmt.Sprintf("x-anchor.%s.offset.%d", position, m.PanelOffset): "$refs.button",
+	}
 }
 
 func (m Popover) build() templ.Component {
@@ -62,7 +117,15 @@ func (m Popover) build() templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button><div x-cloak x-ref=\"panel\" x-show=\"open\" @click.outside=\"close($refs.button)\" x-anchor=\"$refs.button\" class=\"mt-4 z-10\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button><div x-cloak x-ref=\"panel\" x-show=\"open\" @click.outside=\"close($refs.button)\" class=\"z-10\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templ.RenderAttributes(ctx, templ_7745c5c3_Buffer, m.generateXAnchorAttrKey())
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -123,7 +186,7 @@ func (m MenuPopover) buildAtIndex(i int) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(m.MenuEntries[i].Label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/popover.templ`, Line: 89, Col: 83}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/popover.templ`, Line: 144, Col: 83}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -136,7 +199,7 @@ func (m MenuPopover) buildAtIndex(i int) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(m.MenuEntries[i].SubLabel)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/popover.templ`, Line: 90, Col: 86}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/popover.templ`, Line: 145, Col: 86}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -246,7 +309,7 @@ func (m RegionPopover) buildButton() templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(convertRiotRegionToString(m.Region))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/popover.templ`, Line: 134, Col: 40}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/popover.templ`, Line: 189, Col: 40}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -435,7 +498,7 @@ func (m ChampionPopover) buildButtonLayout() templ.Component {
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%+d LP", m.LPGain))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/popover.templ`, Line: 197, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/popover.templ`, Line: 252, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {

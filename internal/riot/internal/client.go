@@ -13,7 +13,7 @@ const userAgent = "kevin"
 // Client manages communication with the Riot API.
 type Client struct {
 	// HTTP handles http client details. A nil value indicates a zero
-	// [http.Client] will be used.
+	// [http.Client] is used.
 	HTTP *http.Client
 
 }
@@ -30,13 +30,13 @@ func (c *Client) DispatchRequest(ctx context.Context, req *Request, dst any) err
 
 	res, err := c.HTTP.Do(httpReq)
 	if err != nil {
-		return fmt.Errorf("http client: %w", err)
+		return fmt.Errorf("http request: %w", err)
 	}
 
 	defer res.Body.Close()
 
 	if err := GetError(res.StatusCode); err != nil {
-		return err
+		return fmt.Errorf("http response for host %s: %w", req.BaseURL, err)
 	}
 
 	if err := json.NewDecoder(res.Body).Decode(&dst); err != nil {

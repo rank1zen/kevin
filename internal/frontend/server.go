@@ -14,50 +14,26 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-const (
-	TextSizeXS TextSize = iota
-	TextSizeSM
-	TextSizeBase
-	TextSizeLG
-	TextSizeXL
-	TextSize2XL
-	TextSize3XL
-	TextSize4XL
-	TextSize5XL
-)
-
-type TextSize int
-
-func (m TextSize) Class() string {
-	switch m {
-	case TextSizeXS:
-		return "text-xs"
-	case TextSizeSM:
-		return "text-small"
-	default:
-		return "text-small"
-	}
-}
-
 var (
 	ErrInvalidRegion = errors.New("invalid region")
 	ErrInvalidRiotID = errors.New("invalid riot id")
 	ErrInvalidPUUID = errors.New("invalid puuid")
 )
 
-// Frontend serves [templ.Component].
-type Frontend struct {
+// Server serves [templ.Component].
+type Server struct {
 	router *http.ServeMux
 
-	// logs emitted from [Frontend] will use Logger.
+	// Logger is used to log events emitted from Server. A nil value
+	// indicates Server will use [slog.Default]
 	Logger *slog.Logger
 
 	handler *Handler
 }
 
-// New creates a [Frontend]. If handler is nil, the default [Handler] is used.
-func New(handler *Handler, opts ...FrontendOption) *Frontend {
-	frontend := Frontend{
+// New creates a [Server]. If handler is nil, the default [Handler] is used.
+func New(handler *Handler, opts ...FrontendOption) *Server {
+	frontend := Server{
 		handler: handler,
 	}
 
@@ -92,19 +68,19 @@ func New(handler *Handler, opts ...FrontendOption) *Frontend {
 	return &frontend
 }
 
-type FrontendOption func(*Frontend)
+type FrontendOption func(*Server)
 
 func WithLogger(logger *slog.Logger) FrontendOption {
-	return func(f *Frontend) {
+	return func(f *Server) {
 		f.Logger = logger
 	}
 }
 
-func (f *Frontend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (f *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.router.ServeHTTP(w, r)
 }
 
-func (f *Frontend) getHomePage(w http.ResponseWriter, r *http.Request) {
+func (f *Server) getHomePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	logger := fromCtx(ctx)
@@ -131,7 +107,7 @@ func (f *Frontend) getHomePage(w http.ResponseWriter, r *http.Request) {
 	component.Render(ctx, w)
 }
 
-func (f *Frontend) getSumonerPage(w http.ResponseWriter, r *http.Request) {
+func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	logger := fromCtx(ctx)
@@ -169,7 +145,7 @@ func (f *Frontend) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	component.Render(ctx, w)
 }
 
-func (f *Frontend) serveSearchResults(w http.ResponseWriter, r *http.Request) {
+func (f *Server) serveSearchResults(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := fromCtx(ctx)
 
@@ -193,7 +169,7 @@ func (f *Frontend) serveSearchResults(w http.ResponseWriter, r *http.Request) {
 	component.Render(ctx, w)
 }
 
-func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
+func (f *Server) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := fromCtx(ctx)
 
@@ -217,7 +193,7 @@ func (f *Frontend) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 	component.Render(ctx, w)
 }
 
-func (f *Frontend) updateSummoner(w http.ResponseWriter, r *http.Request) {
+func (f *Server) updateSummoner(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := fromCtx(ctx)
 
@@ -244,7 +220,7 @@ func (f *Frontend) updateSummoner(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
+func (f *Server) serveChampions(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := fromCtx(ctx)
 
@@ -263,7 +239,7 @@ func (f *Frontend) serveChampions(w http.ResponseWriter, r *http.Request) {
 	component.Render(ctx, w)
 }
 
-func (f *Frontend) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
+func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	req, err := decode[GetLiveMatchRequest](r)
@@ -286,7 +262,7 @@ func (f *Frontend) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	component.Render(ctx, w)
 }
 
-func (f *Frontend) addLoggingMiddleware(handler http.Handler) http.Handler {
+func (f *Server) addLoggingMiddleware(handler http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ts := time.Now()
 
@@ -376,3 +352,18 @@ func decode[T Validator](r *http.Request) (T, error) {
 
 	return v, nil
 }
+
+// TextSize follow Tailwind text size classes.
+type TextSize int
+
+const (
+	TextSizeXS TextSize = iota
+	TextSizeSM
+	TextSizeBase
+	TextSizeLG
+	TextSizeXL
+	TextSize2XL
+	TextSize3XL
+	TextSize4XL
+	TextSize5XL
+)

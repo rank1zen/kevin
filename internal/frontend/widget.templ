@@ -15,20 +15,37 @@ type ChampionWidget struct {
 	ChampionSprite ChampionSprite
 
 	// ChampionLevel is the level of the champion at the end of a match.
-	// A zero value indicates to not show champion level.
+	// Zero values indicate that level is not included in the component.
 	ChampionLevel int
 
-	// TODO: SummonerD and SummonerF are ... Values of nil indicates
-	// summoner spells are not shown
+	// SummonerD and SummonerF are summoner spells. Nil values indicate
+	// that summoner spells is not be included in the component.
 	SummonerD, SummonerF *SummonerSprite
+}
+
+templ (m ChampionWidget) buildChampionIconWithLevel() {
+	<div class="rounded-lg size-9 overflow-hidden relative">
+		@m.ChampionSprite
+		<div class="right-0 bottom-0 size-4 text-xs absolute text-white text-center font-semibold">
+			{ fmt.Sprintf("%d", m.ChampionLevel) }
+		</div>
+	</div>
+}
+
+templ (m ChampionWidget) buildChampionIcon() {
+	<div class="rounded-lg size-9 overflow-hidden">
+		@m.ChampionSprite
+	</div>
 }
 
 templ (m ChampionWidget) build() {
 	if m.SummonerD != nil && m.SummonerF != nil {
 		<div class="flex flex-none items-start gap-0.5">
-			<div class="rounded overflow-hidden">
-				@m.ChampionSprite
-			</div>
+			if m.ChampionLevel == 0 {
+				@m.buildChampionIcon()
+			} else {
+				@m.buildChampionIconWithLevel()
+			}
 			<div>
 				<div class="rounded-xs overflow-hidden">
 					@m.SummonerD
@@ -39,9 +56,11 @@ templ (m ChampionWidget) build() {
 			</div>
 		</div>
 	} else {
-		<div class="rounded overflow-hidden">
-			@m.ChampionSprite
-		</div>
+		if m.ChampionLevel == 0 {
+			@m.buildChampionIcon()
+		} else {
+			@m.buildChampionIconWithLevel()
+		}
 	}
 }
 
@@ -54,8 +73,10 @@ type RuneWidget struct {
 	RunePage internal.RunePage
 }
 
-templ (m RuneWidget) buildFullRunPageView() {
-	// TODO
+templ (m RuneWidget) buildFullRunePageLayout() {
+	<div class="p-2">
+		@RunePageWidget{RunePage: m.RunePage}
+	</div>
 }
 
 templ (m RuneWidget) buildKeystone() {
@@ -82,9 +103,26 @@ templ (m RuneWidget) build() {
 		secondaryTree := ddragon.RuneMap[m.RunePage.SecondaryTree]
 	}}
 	<div class="flex flex-none items-center h-9 bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
-		@Tooltip{Tip: keystone.Name, ButtonChildren: m.buildKeystone(), ButtonStyle: 1}
-		@Tooltip{Tip: secondaryTree.Name, ButtonChildren: m.buildSecondary(), ButtonStyle: 1}
-		@Popover{ButtonChildren: ThinButtonLayout{Icon: DownSmallIcon}}
+		@Tooltip{
+			Tip: keystone.Name,
+			ButtonChildren: m.buildKeystone(),
+			ButtonStyle: 1,
+		}
+		@Tooltip{
+			Tip: secondaryTree.Name,
+			ButtonChildren: m.buildSecondary(),
+			ButtonStyle: 1,
+		}
+		@Popover{
+			ButtonChildren: ThinButtonLayout{
+				Icon: DownSmallIcon,
+			},
+			Panel: PanelWindow{
+				Children: m.buildFullRunePageLayout(),
+			},
+			PanelPosition: PopoverPositionBottomStart,
+			PanelOffset: 8,
+		}
 	</div>
 }
 
@@ -92,38 +130,107 @@ func (m RuneWidget) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 
-// ItemWidget displays an inventory of items.
-type ItemWidget struct {
-	Items [7]int
+// RunePageWidget displays all selected runes.
+type RunePageWidget struct {
+	RunePage internal.RunePage
 }
 
-templ (m ItemWidget) makeItemAtIndex(i int) {
-	{{ id := m.Items[i] }}
-	if id == 0 {
-		<div class="size-7 rounded bg-gray-900/5 dark:bg-gray-100/5"></div>
-	} else {
-		<button
-			title={ ddragon.ItemsMap[id].Name }
-			type="button"
-			if i == 6 {
-				class="size-7 shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 overflow-hidden cursor-pointer rounded-full"
-			} else {
-				class="size-7 shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 overflow-hidden cursor-pointer rounded"
-			}
-		>
-			@ItemSprite{ItemID: m.Items[i]}
-		</button>
+templ (m RunePageWidget) build() {
+	<div class="flex flex-none w-max gap-x-2 items-center bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+		<div class="h-9 flex items-center gap-x-1">
+			<img
+				src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.PrimaryKeystone].IconPath) }
+				class="size-9"
+			/>
+			<img
+				src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.PrimaryA].IconPath) }
+				class="size-7"
+			/>
+			<img
+				src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.PrimaryB].IconPath) }
+				class="size-7"
+			/>
+			<img
+				src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.PrimaryC].IconPath) }
+				class="size-7"
+			/>
+		</div>
+		<div class="h-9 flex items-center gap-x-1">
+			<img
+				src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.SecondaryA].IconPath) }
+				class="size-7"
+			/>
+			<img
+				src={ path.Join("/static/", ddragon.RuneMap[m.RunePage.SecondaryB].IconPath) }
+				class="size-7"
+			/>
+		</div>
+		<div class="h-9 flex">
+			<div class="h-9 w-6">
+			</div>
+			<div class="h-9 w-6">
+			</div>
+			<div class="h-9 w-6">
+			</div>
+		</div>
+	</div>
+}
+
+func (m RunePageWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+
+// ItemWidget displays an inventory of items. The last item is the ward, and it
+// should show VisionScore.
+type ItemWidget struct {
+	Items [7]Tooltip
+
+	// VisionScore is the the score at the end of the game.
+	VisionScore int
+
+	// ItemHistory shows additional item build order information.
+	ItemHistory Popover
+}
+
+// NewItemWidget creates an [ItemWidget] using 7 item ids.
+func NewItemWidget(items [7]int, vs int) ItemWidget {
+	widget := ItemWidget{}
+
+	for i, id := range items {
+		widget.Items[i] = Tooltip{
+			ButtonChildren: ItemSprite{ItemID: id},
+		}
 	}
+
+	widget.VisionScore = vs
+
+	widget.ItemHistory = Popover{
+		ButtonChildren: ThinButtonLayout{Icon: DownSmallIcon},
+	}
+
+	return widget
+}
+
+templ (m ItemWidget) buildWardSlot() {
+	{{ c := m.Items[6] }}
+	<div class="relative">
+		@c
+		<div class="text-xs text-white font-medium bottom-0 absolute">
+			{ fmt.Sprintf("%d", m.VisionScore) }
+		</div>
+	</div>
 }
 
 templ (m ItemWidget) build() {
 	<div class="flex flex-none bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
 		<div class="flex gap-1 p-1">
-			for i := range 7 {
-				@m.makeItemAtIndex(i)
+			for i := range len(m.Items) {
+				@m.Items[i]
 			}
+			@m.buildWardSlot()
 		</div>
-		@Popover{ButtonChildren: ThinButtonLayout{Icon: DownSmallIcon}}
+		@m.ItemHistory
 	</div>
 }
 
@@ -178,24 +285,24 @@ func (m KDAWidget) generateAssistTextColor() string {
 templ (m KDAWidget) build() {
 	<div class="h-9">
 		<div class="flex flex-none items-center font-semibold text-sm">
-			<div class="w-5 text-gray-900/90 dark:text-gray-100/90">
+			<div class="w-4 text-gray-900/90 dark:text-gray-100/90 text-left">
 				{ fmt.Sprintf("%d", m.Kills) }
 			</div>
 			<div class="text-gray-900/5 dark:text-gray-100/5">
 				/
 			</div>
-			<div class="w-5 text-red-500/90 ml-2">
+			<div class="w-5 text-red-500/90 text-center">
 				{ fmt.Sprintf("%d", m.Deaths) }
 			</div>
 			<div class="text-gray-900/5 dark:text-gray-100/5">
 				/
 			</div>
-			<div class="w-5 text-gray-900/90 dark:text-gray-100/90 ml-2">
+			<div class="w-4 text-gray-900/90 dark:text-gray-100/90 text-right">
 				{ fmt.Sprintf("%d", m.Assists) }
 			</div>
 		</div>
 		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
-			{ fmt.Sprintf("%.2f", m.KilLDeathRatio) }
+			{ fmt.Sprintf("%.2f KDA", m.KilLDeathRatio) }
 		</div>
 	</div>
 }

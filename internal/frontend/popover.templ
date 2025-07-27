@@ -3,19 +3,74 @@ package frontend
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/riot"
 	"io"
+
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+type PopoverPosition int
+
+const (
+	PopoverPositionBottom PopoverPosition = iota
+	PopoverPositionBottomStart
+	PopoverPositionBottomEnd
+	PopoverPositionTop
+	PopoverPositionTopStart
+	PopoverPositionTopEnd
+	PopoverPositionLeft
+	PopoverPositionLeftStart
+	PopoverPositionLeftEnd
+	PopoverPositionRight
+	PopoverPositionRightStart
+	PopoverPositionRightEnd
 )
 
 // Popover shows a popup on click.
-//
-// TODO: add alignment settings for floating panel
 type Popover struct {
 	// ButtonChildren are placed inside the button that triggers the
 	// popover. A nil value will default to [ButtonLayout].
 	ButtonChildren templ.Component
 
 	Panel PanelWindow
+
+	PanelPosition PopoverPosition
+
+	// PanelOffset is offset in pixels.
+	PanelOffset int
+}
+
+func (m Popover) generateXAnchorAttrKey() templ.Attributes {
+	var position string
+	switch m.PanelPosition {
+	case PopoverPositionBottom:
+		position = "bottom"
+	case PopoverPositionBottomEnd:
+		position = "bottom-end"
+	case PopoverPositionBottomStart:
+		position = "bottom-start"
+	case PopoverPositionTop:
+		position = "top"
+	case PopoverPositionTopEnd:
+		position = "top-end"
+	case PopoverPositionTopStart:
+		position = "top-start"
+	case PopoverPositionLeft:
+		position = "left"
+	case PopoverPositionLeftEnd:
+		position = "left-end"
+	case PopoverPositionLeftStart:
+		position = "left-start"
+	case PopoverPositionRight:
+		position = "right"
+	case PopoverPositionRightEnd:
+		position = "right-end"
+	case PopoverPositionRightStart:
+		position = "right-start"
+	}
+
+	return templ.Attributes{
+		fmt.Sprintf("x-anchor.%s.offset.%d", position, m.PanelOffset): "$refs.button",
+	}
 }
 
 templ (m Popover) build() {
@@ -59,8 +114,8 @@ templ (m Popover) build() {
 			x-ref="panel"
 			x-show="open"
 			@click.outside="close($refs.button)"
-			x-anchor="$refs.button"
-			class="mt-4 z-10"
+			class="z-10"
+			{ m.generateXAnchorAttrKey()... }
 		>
 			@m.Panel
 		</div>

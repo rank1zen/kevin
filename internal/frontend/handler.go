@@ -346,9 +346,7 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 				RuneWidget: RuneWidget{
 					RunePage: m.Runes,
 				},
-				ItemWidget: ItemWidget{
-					Items: m.Items,
-				},
+				ItemWidget: NewItemWidget(m.Items, m.VisionScore),
 				RankChange: nil,
 				LPChange:   nil,
 				Win:        m.Win,

@@ -155,24 +155,18 @@ templ (m MatchHistoryRowLayout) buildRankChangeWidget() {
 }
 
 templ (m MatchHistoryRowLayout) build() {
-	<div class="px-4 py-3 overflow-auto">
-		<div class="flex justify-between items-center gap-x-2">
-			<div class="flex gap-x-2">
-				@m.ChampionWidget
-				@m.KDAWidget
-				@m.CSWidget
-			</div>
-			<div class="flex gap-x-2">
-				@m.buildRankChangeWidget()
-			</div>
+	<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between md:flex-nowrap">
+		<div class="flex gap-x-3">
+			@m.ChampionWidget
+			@m.KDAWidget
+			@m.CSWidget
 		</div>
-		<div class="flex justify-between items-center gap-x-2 mt-1">
-			<div class="flex gap-x-2">
-				@m.RuneWidget
-			</div>
-			<div class="flex gap-x-2">
-				@m.ItemWidget
-			</div>
+		<div class="flex gap-x-2 md:order-last">
+			@m.buildRankChangeWidget()
+		</div>
+		<div class="flex gap-x-2 w-full justify-between md:w-auto">
+			@m.RuneWidget
+			@m.ItemWidget
 		</div>
 	</div>
 }

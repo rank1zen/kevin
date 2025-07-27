@@ -34,7 +34,7 @@ func (m *AccountService) GetAccountByPUUID(ctx context.Context, region Region, p
 	endpoint := fmt.Sprintf("/riot/account/v1/accounts/by-puuid/%s", puuid)
 
 	req := &internal.Request{
-		BaseURL:  region.host(),
+		BaseURL:  region.continentHost(),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}
@@ -60,7 +60,7 @@ func (m *AccountService) GetAccountByRiotID(ctx context.Context, region Region, 
 	endpoint := fmt.Sprintf("/riot/account/v1/accounts/by-riot-id/%s/%s", gameName, tagLine)
 
 	req := &internal.Request{
-		BaseURL:  region.host(),
+		BaseURL:  region.continentHost(),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}
