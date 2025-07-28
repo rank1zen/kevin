@@ -1,0 +1,25 @@
+package component
+
+import "context"
+import "io"
+
+type Section struct {
+	Heading string
+
+	Content templ.Component
+}
+
+templ (m Section) build() {
+	<div>
+		<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90">
+			{ m.Heading }
+		</h2>
+		<div class="mt-3">
+			@m.Content
+		</div>
+	</div>
+}
+
+func (m Section) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}

@@ -1,4 +1,4 @@
-package frontend
+package component
 
 import (
 	"context"
@@ -68,5 +68,54 @@ templ (m ExitModalButton) build() {
 }
 
 func (m ExitModalButton) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// SideModal triggers a side modal panel on click.
+type SideModal struct {
+	// ButtonChildren are placed inside the button that triggers the modal.
+	// A nil value will default to [ButtonLayout].
+	ButtonChildren templ.Component
+
+	// PanelChildren are placed on the right side, in a floating layer.
+	// A nil value indicates no children.
+	PanelChildren templ.Component
+}
+
+templ (m SideModal) build() {
+	<div
+		x-id="['modal-wrapper']"
+		class="relative"
+	>
+		<button
+			type="button"
+			x-ref="button"
+			@click="isModalOpen = true"
+			class="relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20"
+			:class="isModalOpen && 'bg-gray-900/5 dark:bg-gray-100/5'"
+		>
+			if m.ButtonChildren != nil {
+				@m.ButtonChildren
+			} else {
+				@ButtonLayout{}
+			}
+		</button>
+		<div
+			x-cloak
+			x-ref="panel"
+			x-show="isModalOpen"
+			x-transition.opacity
+			class="fixed inset-0 flex items-end z-30 bg-gray-900/20"
+		>
+			<div class="bg-white dark:bg-black shadow max-w-300 md:rounded-l-2xl h-screen overflow-y-auto">
+				if m.PanelChildren != nil {
+					@m.PanelChildren
+				}
+			</div>
+		</div>
+	</div>
+}
+
+func (m SideModal) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }

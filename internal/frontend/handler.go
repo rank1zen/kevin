@@ -7,39 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/a-h/templ"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
 )
-
-type ZGetSummonerChampionsRequest struct {
-	Region riot.Region `json:"region"`
-	PUUID  riot.PUUID  `json:"puuid"`
-	Week   time.Time   `json:"week"`
-}
-
-func (r ZGetSummonerChampionsRequest) Validate() (problems map[string]string) {
-	problems = make(map[string]string)
-
-	validatePUUID(problems, r.PUUID)
-
-	if r.Week.Hour() != 0 || r.Week.Minute() != 0 || r.Week.Second() != 0 {
-		problems["date"] = "date needs to be start of day"
-	}
-
-	return problems
-}
-
-type GetLiveMatchRequest struct {
-	Region riot.Region `json:"region"`
-	PUUID  riot.PUUID  `json:"puuid"`
-}
-
-func (r GetLiveMatchRequest) Validate() (problems map[string]string) {
-	problems = make(map[string]string)
-	validatePUUID(problems, r.PUUID)
-	return problems
-}
 
 type MatchHistoryRequest struct {
 	Region riot.Region `json:"region"`
@@ -100,9 +70,20 @@ func (h *Handler) UpdateSummoner(ctx context.Context, region riot.Region, name, 
 	return nil
 }
 
-// GetLiveMatch returns [LiveMatchModalWindow] if the summoner is in game,
-// otherwise [NoLiveMatchModalWindow].
-func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (templ.Component, error) {
+type GetLiveMatchRequest struct {
+	Region riot.Region `json:"region"`
+	PUUID  riot.PUUID  `json:"puuid"`
+}
+
+func (r GetLiveMatchRequest) Validate() (problems map[string]string) {
+	problems = make(map[string]string)
+	validatePUUID(problems, r.PUUID)
+	return problems
+}
+
+// GetLiveMatch returns [LiveMatch] if the summoner is in game, otherwise it
+// returns [LiveMatchNotFound].
+func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (View, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -111,70 +92,27 @@ func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (te
 	match, err := ds.GetLiveMatch(ctx, req.Region, req.PUUID)
 	if err != nil {
 		if errors.Is(err, internal.ErrNoLiveMatch) {
-			return NoLiveMatchModalWindow{}, err
+			v := LiveMatchNotFound{}
+			return v, err
 		}
 
 		return nil, err
 	}
 
-	blueSide, redSide := [5]LiveMatchRowLayout{}, [5]LiveMatchRowLayout{}
-
-	for i, p := range match.Participants {
-		name, tag, err := ds.GetRiotName(ctx, riot.PUUID(p.PUUID))
-		if err != nil {
-			return nil, fmt.Errorf("fetching participant %s: %w", p.PUUID, err)
-		}
-
-		card := LiveMatchRowLayout{
-			MatchID: p.MatchID,
-			ChampionWidget: ChampionWidget{
-				ChampionSprite: ChampionSprite{
-					ChampionID: p.ChampionID,
-					Size:       TextSize2XL,
-				},
-				SummonerD: &SummonerSprite{
-					SummonerID: p.SummonersIDs[0],
-				},
-				SummonerF: &SummonerSprite{
-					SummonerID: p.SummonersIDs[1],
-				},
-			},
-			RuneWidget: RuneWidget{RunePage: p.Runes},
-			TeamID:     p.TeamID,
-			PUUID:      riot.PUUID(p.PUUID),
-			Name:       name,
-			Tag:        tag,
-			Rank:       nil,
-		}
-
-		if p.TeamID == 100 {
-			blueSide[i%5] = card
-		} else {
-			redSide[i%5] = card
-		}
-	}
-
-	window := LiveMatchModalLayout{
-		AverageRank: &internal.RankDetail{},
-		StartTime:   match.Date,
-		RedSide:     redSide,
-		BlueSide:    blueSide,
-	}
-
-	return window, nil
+	v := LiveMatch{}
+	return v, nil
 }
 
 // GetHomePage returns [HomePage].
-func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (templ.Component, error) {
-	page := HomePage{Region: region}
-	return page, nil
+func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (View, error) {
+	v := HomePage{}
+	return v, nil
 }
 
 // GetSummonerPage returns [SummonerPage] if summoner exists in store,
-// otherwise, it will complete a update for summoner, then return
-// [SummonerPage]. If no summoner with name#tag exists, return
-// [NoSummonerPage].
-func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (templ.Component, error) {
+// otherwise, it will complete a update for summoner, then return the page. If
+// no summoner with name#tag exists, return [SummonerPageNotFound].
+func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (View, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -183,11 +121,13 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	puuid, err := ds.GetPUUID(ctx, name, tag)
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerDoesNotExist) {
-			return NoSummonerPage{
+			v := SummonerPageNotFound{
 				Region: region,
 				Name:   name,
 				Tag:    tag,
-			}, nil
+			}
+
+			return v, nil
 		}
 
 		return nil, fmt.Errorf("get puuid: %w", err)
@@ -204,7 +144,6 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		}
 	}
 
-	// try again
 	summoner, err = ds.GetStore().GetSummoner(ctx, puuid)
 	if err != nil {
 		return nil, fmt.Errorf("get summoner: %w", err)
@@ -215,37 +154,39 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		return nil, fmt.Errorf("get rank: %w", err)
 	}
 
-	page := SummonerPage{
+	v := SummonerPage{
 		Region:              region,
 		PUUID:               puuid,
-		Name:                summoner.Name,
-		Tag:                 summoner.Tagline,
+		Name:                name,
+		Tag:                 tag,
 		LastUpdated:         rank.EffectiveDate,
-		Rank:                &rank.Detail.Rank, // FIXME: this is a security issue (nil pointer)
-		LiveMatchLoader:     LiveMatchModalWindowLoader{Request: GetLiveMatchRequest{Region: region, PUUID: puuid}},
-		ChampionsLoader:     ChampionsLoader{Request: ZGetSummonerChampionsRequest{Region: region, PUUID: puuid, Week: GetDay(7)}},
-		MatchHistoryLoaders: []MatchHistoryListLoader{},
+		Rank:                &rank.Detail.Rank,
 	}
 
-	for i := range 7 {
-		page.MatchHistoryLoaders = append(
-			page.MatchHistoryLoaders,
-			MatchHistoryListLoader{
-				Request: MatchHistoryRequest{
-					Region: region,
-					PUUID:  puuid,
-					Date:   GetDay(i),
-				},
-			},
-		)
-	}
-
-	return page, nil
+	return v, nil
 }
 
-// GetSummonerChampions returns [ChampionModalLayout]. The method will fetch all
+type ZGetSummonerChampionsRequest struct {
+	Region riot.Region `json:"region"`
+	PUUID  riot.PUUID  `json:"puuid"`
+	Week   time.Time   `json:"week"`
+}
+
+func (r ZGetSummonerChampionsRequest) Validate() (problems map[string]string) {
+	problems = make(map[string]string)
+
+	validatePUUID(problems, r.PUUID)
+
+	if r.Week.Hour() != 0 || r.Week.Minute() != 0 || r.Week.Second() != 0 {
+		problems["date"] = "date needs to be start of day"
+	}
+
+	return problems
+}
+
+// GetSummonerChampions returns [SummonerChampion]. The method will fetch all
 // games played in the specified interval.
-func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerChampionsRequest) (templ.Component, error) {
+func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerChampionsRequest) (View, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -264,38 +205,14 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 		return nil, err
 	}
 
-	layout := ChampionModalLayout{
-		List: ChampionModalList{
-			Champions: []ChampionModalRowLayout{},
-		},
-	}
-
-	for _, c := range storeChampions {
-		layout.List.Champions = append(
-			layout.List.Champions,
-			ChampionModalRowLayout{
-				ChampionWidget: ChampionWidget{ChampionSprite: ChampionSprite{ChampionID: int(c.Champion), Size: TextSize2XL}},
-				GamesPlayed:    c.GamesPlayed,
-				Wins:           c.Wins,
-				Losses:         c.Losses,
-				WinRate:        ComputeFraction(c.Wins, c.GamesPlayed),
-				KDAWidget: KDAWidget{
-					Kills:          int(c.AverageKillsPerGame),
-					Deaths:         int(c.AverageDeathsPerGame),
-					Assists:        int(c.AverageAssistsPerGame),
-				},
-				CSWidget: CSWidget{CS: int(c.AverageCreepScorePerGame), CSPerMinute: c.AverageCreepScorePerMinutePerGame},
-			},
-		)
-	}
-
-	return layout, nil
+	v := SummonerChampion{}
+	return v, nil
 }
 
-// GetMatchHistory returns [MatchHistoryList], being the matches played on date
-// to date + 24 hours. The method will fetch riot first to ensure all matches
-// played on date are in store.
-func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) (templ.Component, error) {
+// GetMatchHistory returns [MatchHistory], the matches played on date to date
+// + 24 hours. The method will fetch riot first to ensure all matches played on
+// date are in store.
+func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) (View, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -313,53 +230,9 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
 
-	list := MatchHistoryList{Matches: []MatchHistoryRowLayout{}}
+	v := MatchHistory{}
 
-	for _, m := range storeMatches {
-		list.Matches = append(
-			list.Matches,
-			MatchHistoryRowLayout{
-				MatchID: m.MatchID,
-				ChampionWidget: ChampionWidget{
-					ChampionSprite: ChampionSprite{
-						ChampionID: m.ChampionID,
-						Size:       TextSize2XL,
-					},
-					ChampionLevel: m.ChampionLevel,
-					SummonerD: &SummonerSprite{
-						SummonerID: m.SummonerIDs[0],
-					},
-					SummonerF: &SummonerSprite{
-						SummonerID: m.SummonerIDs[1],
-					},
-				},
-				KDAWidget: KDAWidget{
-					Kills:          m.Kills,
-					Deaths:         m.Deaths,
-					Assists:        m.Assists,
-					KilLDeathRatio: (float32(m.Kills) + float32(m.Assists)) / float32(m.Deaths),
-				},
-				CSWidget: CSWidget{
-					CS:          m.CreepScore,
-					CSPerMinute: m.CreepScorePerMinute,
-				},
-				RuneWidget: RuneWidget{
-					RunePage: m.Runes,
-				},
-				ItemWidget: NewItemWidget(m.Items, m.VisionScore),
-				RankChange: nil,
-				LPChange:   nil,
-				Win:        m.Win,
-			},
-		)
-	}
-
-	return list, nil
-}
-
-// GetMatchScoreboard returns the scoreboard of a match.
-func (h *Handler) GetMatchScoreboard(ctx context.Context, id string) (scoreboard templ.Component, err error) {
-	return nil, nil
+	return v, nil
 }
 
 // GetSearchResults returns a list of [SearchResultCard] for accounts that
@@ -367,7 +240,7 @@ func (h *Handler) GetMatchScoreboard(ctx context.Context, id string) (scoreboard
 //
 // q should be of the form name#tag, if q has no tag, region is used as the
 // tag.
-func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (templ.Component, error) {
+func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (View, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -392,38 +265,30 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 			tag = string(region)
 		}
 
-		return SearchNotFoundCard{
-			Name:     name,
-			Tag:      tag,
-			Platform: string(region),
-		}, nil
+		v := SearchResultNotFound{}
+
+		return v, nil
 	}
 
-	searchResults := []SearchResultLink{}
+	v := SearchResult{}
 
-	for _, r := range storeSearchResults {
-		rank, err := ds.GetStore().GetRank(ctx, r.PUUID, time.Now(), true)
-		if err != nil {
-			return nil, fmt.Errorf("getting rank for %s#%s: %w", r.Name, r.Tagline, err)
-		}
+	return v, nil
+}
 
-		row := SearchResultLink{
-			Region: region,
-			PUUID:  r.PUUID,
-			Name:   r.Name,
-			Tag:    r.Tagline,
-			Rank:   &rank.Detail.Rank,
-		}
+type GetMatchDetailsRequest struct {
+	MatchID string
+}
 
-		searchResults = append(searchResults, row)
+// GetMatchDetails returns [MatchDetail].
+func (h *Handler) GetMatchDetails(ctx context.Context, req GetMatchDetailsRequest) (View, error) {
+	match, err := h.Datasource.GetStore().GetMatch(ctx, riot.PUUID(req.MatchID))
+	if err != nil {
+		return nil, err
 	}
 
-	v := []templ.Component{}
-	for _, r := range searchResults {
-		v = append(v, r)
-	}
+	v := MatchDetail{}
 
-	return templ.Join(v...), nil
+	return v, nil
 }
 
 // GetCurrentWeek returns the start of the day, 7 days ago. Currently returns

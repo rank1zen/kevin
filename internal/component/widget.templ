@@ -1,4 +1,4 @@
-package frontend
+package component
 
 import (
 	"context"
@@ -447,6 +447,59 @@ func (m RankWidget) generateTierBGColorClass() string {
 }
 
 func (m RankWidget) Render(ctx context.Context, w io.Writer) error {
+	return m.build().Render(ctx, w)
+}
+
+// RankDeltaWidget shows a rank change after a match. NOTE: it is currently
+// right aligned.
+type RankDeltaWidget struct {
+	// RankWidget is the rank after the match. A nil value means the store
+	// did not record a rank after the match.
+	RankWidget *RankWidget
+
+	// LPChange is the lp change after the match. A nil value indicates the
+	// lp change is unknown.
+	LPChange *int
+
+	Win bool
+}
+
+templ (m RankDeltaWidget) build() {
+	<div class="h-9">
+		<div clas="flex justify-end">
+			if m.RankWidget != nil {
+				@m.RankWidget
+			} else {
+				<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
+					Unknown
+				</div>
+			}
+		</div>
+		if m.Win {
+			<div class="flex justify-end">
+				<div class="text-xs bg-green-500/80 text-white px-1 rounded">
+					if m.LPChange != nil {
+						{ fmt.Sprintf("WIN %+d", m.LPChange) }
+					} else {
+						{ fmt.Sprintf("WIN +??") }
+					}
+				</div>
+			</div>
+		} else {
+			<div class="flex justify-end">
+				<div class="text-xs bg-red-500/80 text-white px-1 rounded">
+					if m.LPChange != nil {
+						{ fmt.Sprintf("LOSS %+d", m.LPChange) }
+					} else {
+						{ fmt.Sprintf("LOSS +??") }
+					}
+				</div>
+			</div>
+		}
+	</div>
+}
+
+func (m RankDeltaWidget) Render(ctx context.Context, w io.Writer) error {
 	return m.build().Render(ctx, w)
 }
 

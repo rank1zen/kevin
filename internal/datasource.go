@@ -122,9 +122,9 @@ func (ds *Datasource) GetPUUID(ctx context.Context, name, tag string) (riot.PUUI
 // Deprecated: We switched to using date instead of index for match list.
 func (ds *Datasource) UpdateMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, start, count int) error {
 	options := riot.MatchListOptions{
-		Queue:     new(int),
-		Start:     start,
-		Count:     count,
+		Queue: new(int),
+		Start: start,
+		Count: count,
 	}
 
 	*options.Queue = 420
@@ -205,9 +205,9 @@ func (ds *Datasource) UpdateSummoner(ctx context.Context, region riot.Region, pu
 
 	err = ds.store.RecordSummoner(ctx,
 		Summoner{
-			PUUID:      puuid,
-			Name:       name,
-			Tagline:    tag,
+			PUUID:   puuid,
+			Name:    name,
+			Tagline: tag,
 		},
 		RankStatus{
 			PUUID:         puuid,

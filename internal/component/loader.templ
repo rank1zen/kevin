@@ -1,4 +1,4 @@
-package frontend
+package component
 
 import (
 	"context"
@@ -74,7 +74,7 @@ func (m Loader) Render(ctx context.Context, w io.Writer) error {
 //
 // Uses [LoaderTypeOnLoad].
 type MatchHistoryListLoader struct {
-	Request MatchHistoryRequest
+	Request any
 }
 
 // TODO: spinners can be factored into seperate components.
@@ -101,7 +101,7 @@ func (m MatchHistoryListLoader) Render(ctx context.Context, w io.Writer) error {
 //
 // Uses [LoaderTypeOnReveal].
 type LiveMatchModalWindowLoader struct {
-	Request GetLiveMatchRequest
+	Request any
 }
 
 // TODO: spinners can be factored into seperate components.
@@ -126,7 +126,7 @@ func (m LiveMatchModalWindowLoader) Render(ctx context.Context, w io.Writer) err
 //
 // Uses [LoaderTypeOnReveal].
 type ChampionsLoader struct {
-	Request ZGetSummonerChampionsRequest
+	Request any
 }
 
 templ (m ChampionsLoader) buildSpinner() {
