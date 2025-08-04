@@ -1,0 +1,106 @@
+package shared
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal/component"
+)
+
+// Champion displays a champion icon and summoner spells.
+type Champion struct {
+	ChampionSprite component.ChampionSprite
+
+	// ChampionLevel is the level of the champion at the end of a match.
+	// Zero values indicate that level is not included in the component.
+	ChampionLevel int
+
+	// SummonerD and SummonerF are summoner spells. Nil values indicate
+	// that summoner spells is not be included in the component.
+	SummonerD, SummonerF *component.SummonerSprite
+}
+
+func NewMatchChampionWidget(championID int, championLevel int, summonerIDs [2]int) Champion {
+	c := Champion{
+		ChampionSprite: component.ChampionSprite{
+			ChampionID: championID,
+			Size: component.TextSize2XL,
+		},
+		ChampionLevel: championLevel,
+		SummonerD: &component.SummonerSprite{
+			SummonerID: summonerIDs[0],
+		},
+		SummonerF: &component.SummonerSprite{
+			SummonerID: summonerIDs[0],
+		},
+	}
+
+	return c
+}
+
+func NewLiveChampionWidget(championID int, summonerIDs [2]int) Champion {
+	c := Champion{
+		ChampionSprite: component.ChampionSprite{
+			ChampionID: championID,
+			Size: component.TextSize2XL,
+		},
+		SummonerD: &component.SummonerSprite{
+			SummonerID: summonerIDs[0],
+		},
+		SummonerF: &component.SummonerSprite{
+			SummonerID: summonerIDs[0],
+		},
+	}
+
+	return c
+}
+
+func NewSimpleChampionWidget(championID int) Champion {
+	c := Champion{
+		ChampionSprite: component.ChampionSprite{
+			ChampionID: championID,
+			Size: component.TextSize2XL,
+		},
+	}
+
+	return c
+}
+
+templ (m Champion) ToTempl(ctx context.Context) {
+	if m.SummonerD != nil && m.SummonerF != nil {
+		<div class="flex flex-none items-start gap-0.5">
+			if m.ChampionLevel == 0 {
+				<div class="size-9">
+					@m.ChampionSprite.ToTempl(ctx)
+				</div>
+			} else {
+				<div class="size-9 relative">
+					@m.ChampionSprite.ToTempl(ctx)
+					<div class="right-0 bottom-0 size-4 text-xs absolute text-white text-center font-semibold">
+						{ fmt.Sprintf("%d", m.ChampionLevel) }
+					</div>
+				</div>
+			}
+			<div>
+				<div class="rounded-xs overflow-hidden">
+					@m.SummonerD.ToTempl(ctx)
+				</div>
+				<div class="rounded-xs overflow-hidden">
+					@m.SummonerF.ToTempl(ctx)
+				</div>
+			</div>
+		</div>
+	} else {
+		if m.ChampionLevel == 0 {
+			<div class="size-9">
+				@m.ChampionSprite.ToTempl(ctx)
+			</div>
+		} else {
+			<div class="size-9 relative">
+				@m.ChampionSprite.ToTempl(ctx)
+				<div class="right-0 bottom-0 size-4 text-xs absolute text-white text-center font-semibold">
+					{ fmt.Sprintf("%d", m.ChampionLevel) }
+				</div>
+			</div>
+		}
+	}
+}

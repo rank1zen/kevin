@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/component/profile"
 	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/postgres"
@@ -55,7 +56,7 @@ func TestHandlerGetLiveMatch(t *testing.T) {
 	t.Run(
 		"expects no live match",
 		func(t *testing.T) {
-			_, ok := component.(frontend.NoLiveMatchModalWindow)
+			_, ok := component.(profile.LiveMatchNotFound)
 			require.True(t, ok)
 		},
 	)
@@ -87,7 +88,7 @@ func TestHandlerZGetSummonerChampions(t *testing.T) {
 	component, err := handler.ZGetSummonerChampions(ctx, req)
 	require.NoError(t, err)
 
-	actual, ok := component.(frontend.ChampionModalLayout)
+	actual, ok := component.(profile.SummonerChampionStatContent)
 	require.True(t, ok)
 
 	t.Run(

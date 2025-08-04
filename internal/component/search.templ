@@ -3,7 +3,6 @@ package component
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/riot"
-	"io"
 )
 
 type SummonerSearchBar struct {
@@ -11,16 +10,17 @@ type SummonerSearchBar struct {
 	Region riot.Region
 }
 
-templ (m SummonerSearchBar) buildHoldingPanel() {
-	<div id="search-results" class="p-2"></div>
+templ (m SummonerSearchBar) aaaa(ctx context.Context) {
+	<div id="search-results" class="p-2">
+	</div>
 }
 
-templ (m SummonerSearchBar) build() {
+templ (m SummonerSearchBar) ToTempl(ctx context.Context) {
 	<div
 		x-id="['summoner-search-bar']"
 		x-data="{ open: false }"
 		@click.outside="open = false"
-		class="relative flex-1 max-w-96"
+		class="relative flex-1 w-96"
 	>
 		<input
 			type="hidden"
@@ -44,15 +44,9 @@ templ (m SummonerSearchBar) build() {
 			x-cloak
 			class="absolute w-full mt-4 z-10"
 		>
-			@PanelWindow{
-				Children: m.buildHoldingPanel(),
-			}
+			@PanelWindow{Children: ComponentFunc(m.aaaa)}.ToTempl(ctx)
 		</div>
 	</div>
-}
-
-func (m SummonerSearchBar) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
 }
 
 // SearchNotFoundCard is a button that will issue a post to fetch summoner.
@@ -65,7 +59,7 @@ type SearchNotFoundCard struct {
 	Platform string
 }
 
-templ (m SearchNotFoundCard) build() {
+templ (m SearchNotFoundCard) ToTempl(ctx context.Context) {
 	<button
 		type="button"
 		hx-post="/summoner/fetch"
@@ -89,8 +83,4 @@ templ (m SearchNotFoundCard) build() {
 			<input type="hidden" name="tag" value={ m.Platform }/>
 		}
 	</button>
-}
-
-func (m SearchNotFoundCard) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
 }

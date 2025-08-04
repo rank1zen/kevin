@@ -1,0 +1,47 @@
+package shared
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/component"
+)
+
+func DefaultPageHeader() component.Header {
+	return component.Header{
+		StartChildren: []component.Component{
+			component.Link{
+				Href:     "/",
+				Children: component.Button{Icon: component.OpenMenuIcon},
+			},
+		},
+		CenterChildren: []component.Component{
+			component.Popover{
+				ButtonChildren: component.ComponentFunc(regionButton),
+				PanelChildren:  component.PanelWindow{Children: component.ComponentFunc(regionPanel)},
+				PanelOffset:    16,
+			},
+			component.SummonerSearchBar{},
+		},
+		EndChildren: []component.Component{
+			component.Popover{
+				ButtonChildren: component.Button{Icon: component.OpenMenuIcon},
+				PanelChildren:  nil,
+			},
+		},
+	}
+}
+
+templ regionButton(ctx context.Context) {
+	<div class="flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end">
+		<span class="text-sm font-bold">
+			NA1
+		</span>
+		@component.DownSmallIcon.ToTempl(ctx)
+	</div>
+}
+
+templ regionPanel(ctx context.Context) {
+	<div class="p-2">
+		@component.MenuItemLayout{Label: "NA1", SubLabel: "North America"}.ToTempl(ctx)
+		@component.MenuItemLayout{Label: "KR", SubLabel: "Korea"}.ToTempl(ctx)
+	</div>
+}

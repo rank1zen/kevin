@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-type Icon templ.Component
+type Icon Component
 
 var (
 	TierUnrankedIcon    = buildIcon("tier-unranked")
@@ -29,12 +29,18 @@ var (
 )
 
 func buildIcon(name string) Icon {
-	return templ.ComponentFunc(
+	templComp := templ.ComponentFunc(
 		func(ctx context.Context, w io.Writer) error {
 			_, err := w.Write([]byte(iconSVGData[name]))
 			return err
 		},
 	)
+
+	a := func(ctx context.Context) templ.Component {
+		return templComp
+	}
+
+	return ComponentFunc(a)
 }
 
 var iconSVGData = map[string]string{

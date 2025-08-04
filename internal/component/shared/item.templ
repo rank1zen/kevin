@@ -1,0 +1,68 @@
+package shared
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/ddragon"
+)
+
+// ItemInventory displays an inventory of match items.
+type ItemInventory struct {
+	Items [6]component.Tooltip
+
+	Ward component.Tooltip
+
+	// VisionScore is the the score at the end of the game.
+	VisionScore int
+
+	// ItemHistory shows additional item build order information.
+	ItemHistory component.Popover
+}
+
+func CreateItemInventory(items [7]int, visionScore int) ItemInventory {
+	c := ItemInventory{}
+
+	for i := range 6 {
+		id := items[i]
+		item := ddragon.ItemsMap[id]
+		c.Items[i] = component.Tooltip{
+			Tip:         item.Name,
+			ButtonStyle: 1,
+			Children:    component.ItemSprite{
+				ItemID: id,
+			},
+		}
+	}
+
+	c.VisionScore = visionScore
+
+	c.Ward = component.Tooltip{
+		Children: component.ItemSprite{
+			ItemID: items[6],
+		},
+	}
+
+	c.ItemHistory = component.Popover{
+		ButtonChildren: component.ThinButton{Icon: component.DownSmallIcon},
+	}
+
+	return c
+}
+
+templ (m ItemInventory) ToTempl(ctx context.Context) {
+	<div class="flex flex-none bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+		<div class="flex items-center gap-x-1 h-9 px-1">
+			for _, c := range m.Items {
+				@c.ToTempl(ctx)
+			}
+			<div class="size-7 relative">
+				@m.Ward.ToTempl(ctx)
+				<div class="text-xs text-white font-medium bottom-0 absolute">
+					{ fmt.Sprintf("%d", m.VisionScore) }
+				</div>
+			</div>
+		</div>
+		@m.ItemHistory.ToTempl(ctx)
+	</div>
+}

@@ -3,36 +3,53 @@ package component
 
 import (
 	"context"
-	"io"
 )
 
 // PanelWindow is a simple panel for floating layers.
 type PanelWindow struct {
 	// Children are placed in the panel. A nil value indicates a blank
 	// panel with a fixed size.
-	Children templ.Component
+	Children Component
 }
 
-templ (m PanelWindow) build() {
+templ (m PanelWindow) ToTempl(ctx context.Context) {
 	if m.Children != nil {
 		<div class="bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10">
-			@m.Children
+			@m.Children.ToTempl(ctx)
 		</div>
 	} else {
 		<div class="w-36 h-48 bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10"></div>
 	}
 }
 
-func (m PanelWindow) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
+// ModalLayout is the layout used for modal windows.
+type ModalLayout struct {
+	// HeaderChildren are placed in the header. A nil value indicates no
+	// header.
+	HeaderChildren Component
+
+	// Children are placed in the main body. A nil value indicates an empty
+	// page.
+	Children Component
 }
 
-templ exitModal() {
-	<button
-		type="button"
-		@click="isModalOpen = false"
-		class="size-7 p-1.5 bg-gray-900/5 rounded-full"
-	>
-		@WindowCloseIcon
-	</button>
+templ (m ModalLayout) ToTempl(ctx context.Context) {
+	if m.HeaderChildren != nil {
+		<div>
+			<div class="sticky">
+				@m.HeaderChildren.ToTempl(ctx)
+			</div>
+			<div>
+				if m.Children != nil {
+					@m.Children.ToTempl(ctx)
+				}
+			</div>
+		</div>
+	} else {
+		<div>
+			if m.Children != nil {
+				@m.Children.ToTempl(ctx)
+			}
+		</div>
+	}
 }

@@ -2,7 +2,6 @@ package component
 
 import (
 	"context"
-	"io"
 )
 
 type Tooltip struct {
@@ -10,10 +9,10 @@ type Tooltip struct {
 
 	ButtonStyle int // for now 0 is shadow, 1 is flat
 
-	ButtonChildren templ.Component
+	Children Component
 }
 
-templ (m Tooltip) build() {
+templ (m Tooltip) ToTempl(ctx context.Context) {
 	<div
 		if m.Tip != "" {
 			title={ m.Tip }
@@ -25,10 +24,6 @@ templ (m Tooltip) build() {
 		}
 	>
 		// class="shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 rounded-lg dark:hover:shadow-gray-100/90 hover:shadow-gray-900/90"
-		@m.ButtonChildren
+		@m.Children.ToTempl(ctx)
 	</div>
-}
-
-func (m Tooltip) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
 }

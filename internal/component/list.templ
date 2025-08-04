@@ -1,116 +1,37 @@
 package component
 
-import (
-	"context"
-	"io"
+import "context"
+
+type ListStyle int
+
+const (
+	ListStyleFlat ListStyle = iota
+	ListStyleRaised
 )
 
+// List is a list of components.
 type List struct {
-	Style int
+	Style ListStyle
 
-	Items []templ.Component
+	Items []Component
 }
 
-templ (m List) buildEmpty() {
-	<div class="bg-white h-9 dark:bg-black border border-gray-900/20 dark:border-gray-100/20 shadow shadow-gray-900/20 dark:shadow-gray-100/20 rounded-2xl"></div>
-}
-
-templ (m List) buildFlat() {
-	<ol>
-		for _, c := range m.Items {
-			<li class="block">
-				@c
-			</li>
-		}
-	</ol>
-}
-
-templ (m List) build() {
-	<ol class="bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10 rounded-2xl">
-		for _, c := range m.Items {
-			<li class="block bg-white dark:bg-gray-950 hover:bg-gray-900/5 dark:hover:bg-gray-100/5 border-b border-gray-900/10 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none">
-				@c
-			</li>
-		}
-	</ol>
-}
-
-func (m List) Render(ctx context.Context, w io.Writer) error {
-	if len(m.Items) == 0 {
-		return m.buildEmpty().Render(ctx, w)
+templ (m List) ToTempl(ctx context.Context) {
+	if m.Style == ListStyleRaised {
+		<ol class="bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10 rounded-2xl">
+			for _, c := range m.Items {
+				<li class="block bg-white dark:bg-gray-950 border-b border-gray-900/10 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none">
+					@c.ToTempl(ctx)
+				</li>
+			}
+		</ol>
+	} else {
+		<ol>
+			for _, c := range m.Items {
+				<li class="block">
+					@c.ToTempl(ctx)
+				</li>
+			}
+		</ol>
 	}
-
-	if m.Style == 1 {
-		return m.buildFlat().Render(ctx, w)
-	}
-
-	return m.build().Render(ctx, w)
-}
-
-// MatchHistoryList displays a full day of matches.
-type MatchHistoryList struct {
-	Matches []MatchHistoryRowLayout
-}
-
-templ (m MatchHistoryList) buildNoMatchesCard() {
-	<div class="flex items-center justify-center h-15">
-		<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
-			No matches played
-		</div>
-	</div>
-}
-
-func (m MatchHistoryList) Render(ctx context.Context, w io.Writer) error {
-	list := List{Items: []templ.Component{}}
-
-	if len(m.Matches) == 0 {
-		list.Items = append(list.Items, m.buildNoMatchesCard())
-		return list.Render(ctx, w)
-	}
-
-	for _, row := range m.Matches {
-		list.Items = append(list.Items, row)
-	}
-
-	return list.Render(ctx, w)
-}
-
-type SummonerChampionList struct {
-	Champions []ChampionPopover
-}
-
-func (m SummonerChampionList) Render(ctx context.Context, w io.Writer) error {
-	list := List{Style: 1, Items: []templ.Component{}}
-
-	if len(m.Champions) == 0 {
-		return list.Render(ctx, w)
-	}
-
-	for _, row := range m.Champions {
-		list.Items = append(list.Items, row)
-	}
-
-	return list.Render(ctx, w)
-}
-
-// ChampionModalList is a list of champions played in the past week, in
-// most-played order.
-//
-// TODO: find a better name.
-type ChampionModalList struct {
-	Champions []ChampionModalRowLayout
-}
-
-func (m ChampionModalList) Render(ctx context.Context, w io.Writer) error {
-	list := List{Items: []templ.Component{}}
-
-	if len(m.Champions) == 0 {
-		return nil
-	}
-
-	for _, row := range m.Champions {
-		list.Items = append(list.Items, row)
-	}
-
-	return list.Render(ctx, w)
 }

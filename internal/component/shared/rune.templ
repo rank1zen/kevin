@@ -1,0 +1,147 @@
+package shared
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal"
+	"fmt"
+	"path"
+	"github.com/rank1zen/kevin/internal/ddragon"
+)
+
+type RuneImage struct {
+	Src string
+
+	Size int
+}
+
+templ (m RuneImage) ToTempl(ctx context.Context) {
+	<img class={ fmt.Sprintf("size-%d", m.Size)} src={ m.Src } />
+}
+
+// RuneWidget displays match runes.
+type RuneWidget struct {
+	Keystone component.Tooltip
+
+	Subtree component.Tooltip
+
+	MoreInfo component.Popover
+}
+
+func NewRuneWidget(runes internal.RunePage) RuneWidget {
+	keystone := ddragon.RuneMap[runes.PrimaryKeystone]
+	subtree := ddragon.RuneMap[runes.SecondaryTree]
+
+	w := RuneWidget{
+		Keystone: component.Tooltip{
+			ButtonStyle: 1,
+			Tip:      keystone.Name,
+			Children: RuneImage{Src: path.Join("/static/", keystone.IconPath), Size: 9},
+		},
+		Subtree: component.Tooltip{
+			ButtonStyle: 1,
+			Tip: subtree.Name,
+			Children: component.ZThinButton{
+				Icon: RuneImage{Src:  path.Join("/static/", subtree.IconPath), Size: 4},
+			},
+		},
+		MoreInfo: component.Popover{
+			ButtonChildren: component.ZThinButton{
+				Icon: nil,
+			},
+			PanelChildren:  NewRuneRow(runes),
+		},
+	}
+
+	return w
+}
+
+templ (m RuneWidget) ToTempl(ctx context.Context) {
+	<div class="flex flex-none items-center h-9 bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+		<div class="size-9">
+			@m.Keystone.ToTempl(ctx)
+		</div>
+		<div class="h-9 w-6">
+			@m.Subtree.ToTempl(ctx)
+		</div>
+		<div class="h-9 w-6">
+			@m.MoreInfo.ToTempl(ctx)
+		</div>
+	</div>
+}
+
+// RuneRow displays all selected match runes as a row.
+type RuneRow struct {
+	Keystone component.Tooltip
+
+	Primary [3]component.Tooltip
+
+	Secondary [2]component.Tooltip
+
+	Mini [3]component.Tooltip
+}
+
+func NewRuneRow(runes internal.RunePage) RuneRow {
+	w := RuneRow{}
+
+	keystone := ddragon.RuneMap[runes.SecondaryTree]
+	w.Keystone = component.Tooltip{
+		ButtonStyle: 1,
+		Tip:      "s",
+		Children: RuneImage{Src: path.Join("/static/", keystone.IconPath), Size: 9},
+	}
+
+	primary := [3]int{runes.PrimaryA, runes.PrimaryB, runes.PrimaryC}
+	for i := range 3 {
+		rune := ddragon.RuneMap[primary[i]]
+		w.Primary[i] = component.Tooltip{
+			Tip: rune.Name,
+			Children: RuneImage{Src: path.Join("/static/", rune.IconPath), Size: 7},
+		}
+	}
+
+	secondary := [2]int{runes.SecondaryA, runes.SecondaryB}
+	for i := range 2 {
+		rune := ddragon.RuneMap[secondary[i]]
+		w.Secondary[i] = component.Tooltip{
+			Tip: rune.Name,
+			Children: RuneImage{Src: path.Join("/static/", rune.IconPath), Size: 7},
+		}
+	}
+
+	mini := [3]int{runes.MiniOffense, runes.MiniFlex, runes.MiniDefense}
+	for i := range 3 {
+		rune := ddragon.RuneMap[mini[i]]
+		w.Mini[i] = component.Tooltip{
+			Tip: rune.Name,
+			Children: component.ZThinButton{
+				Icon: RuneImage{Src:  path.Join("/static/", rune.IconPath), Size: 4},
+			},
+		}
+	}
+
+	return w
+}
+
+templ (m RuneRow) ToTempl(ctx context.Context) {
+	<div class="flex flex-none gap-x-2 items-center bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+		<div class="h-9 flex items-center gap-x-1">
+			<div class="size-9">
+				@m.Keystone.ToTempl(ctx)
+			</div>
+			for _, c := range m.Primary {
+				@c.ToTempl(ctx)
+			}
+		</div>
+		<div class="h-9 flex items-center gap-x-1">
+			for _, c := range m.Secondary {
+				@c.ToTempl(ctx)
+			}
+		</div>
+		<div class="h-9 flex">
+			for _, c := range m.Mini {
+				@c.ToTempl(ctx)
+			}
+		</div>
+	</div>
+}

@@ -1,28 +1,21 @@
 package component
 
-import (
-	"context"
-	"fmt"
-	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/riot"
-	"io"
-	"time"
-)
+import "context"
 
 // Page is the main html component returned the to browser.
 type Page struct {
-	// ... empty value means no title.
+	// TODO: ... empty value means no title.
 	Title string
 
 	// HeaderChildren is the content to show in header.
-	HeaderChildren templ.Component
+	HeaderChildren Component
 
 	// Content is a body component of the page. A nil value indicates an
 	// empty page.
-	Content templ.Component
+	Content Component
 }
 
-templ (m Page) build() {
+templ (m Page) ToTempl(ctx context.Context) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -49,12 +42,12 @@ templ (m Page) build() {
 		>
 			if m.HeaderChildren != nil {
 				<div class="sticky top-0 z-10 bg-white dark:bg-gray-950">
-					@m.HeaderChildren
+					@m.HeaderChildren.ToTempl(ctx)
 				</div>
 			}
 			<div class="bg-white min-h-screen dark:bg-gray-950">
 				if m.Content != nil {
-					@m.Content
+					@m.Content.ToTempl(ctx)
 				}
 			</div>
 			<div class="flex items-center justify-center">
@@ -64,100 +57,4 @@ templ (m Page) build() {
 			</div>
 		</body>
 	</html>
-}
-
-func (m Page) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
-// SummonerPage represents the page for a summoner.
-type SummonerPage struct {
-	// Region specifies a riot region. All results in the page belong to
-	// this region.
-	Region riot.Region
-
-	PUUID riot.PUUID
-
-	Name, Tag string
-
-	LastUpdated time.Time
-
-	RankWidget RankWidget
-
-	LiveMatch Modal
-
-	Champions Modal
-
-	MatchHistory []Section
-}
-
-templ (m SummonerPage) buildContent() {
-	<div class="px-2">
-		<div class="flex items-center gap-x-2 justify-between">
-			<div class="flex items-center gap-x-2">
-				<h1 class="font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
-					{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
-				</h1>
-				@m.RankWidget
-			</div>
-			<div class="flex items-center gap-x-2">
-				@m.LiveMatch
-				@m.Champions
-			</div>
-		</div>
-		<div class="flex flex-col gap-y-5">
-			for _, c := range m.MatchHistory {
-				<div class="w-full">
-					@c
-				</div>
-			}
-		</div>
-	</div>
-}
-
-func (m SummonerPage) Render(ctx context.Context, w io.Writer) error {
-	page := Page{
-		Title:          fmt.Sprintf("%s#%s - Kevin", m.Name, m.Tag),
-		HeaderChildren: PageHeaderLayout{Region: m.Region},
-		Content:        m.buildContent(),
-	}
-
-	return page.Render(ctx, w)
-}
-
-type NoSummonerPage struct {
-	Region riot.Region
-
-	Name string
-
-	Tag string
-}
-
-templ (m NoSummonerPage) build() {
-	<div>
-		Summoner not found
-	</div>
-}
-
-func (m NoSummonerPage) Render(ctx context.Context, w io.Writer) error {
-	page := Page{
-		Title:          fmt.Sprintf("Summoner not found - Kevin"),
-		HeaderChildren: PageHeaderLayout{Region: m.Region},
-		Content:        m.build(),
-	}
-
-	return page.Render(ctx, w)
-}
-
-type HomePage struct {
-	Region riot.Region
-}
-
-func (m HomePage) Render(ctx context.Context, w io.Writer) error {
-	page := Page{
-		Title:          fmt.Sprintf("Kevin"),
-		HeaderChildren: PageHeaderLayout{Region: m.Region},
-	}
-
-	return page.Render(ctx, w)
 }

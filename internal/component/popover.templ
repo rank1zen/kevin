@@ -3,9 +3,6 @@ package component
 import (
 	"context"
 	"fmt"
-	"io"
-
-	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type PopoverPosition int
@@ -28,10 +25,12 @@ const (
 // Popover shows a popup on click.
 type Popover struct {
 	// ButtonChildren are placed inside the button that triggers the
-	// popover. A nil value will default to [ButtonLayout].
-	ButtonChildren templ.Component
+	// popover. A nil value will default to [Button].
+	ButtonChildren Component
 
-	Panel PanelWindow
+	// PanelChildren are placed inside the popover panel. A nil value
+	// will default to [PanelWindow].
+	PanelChildren Component
 
 	PanelPosition PopoverPosition
 
@@ -39,41 +38,7 @@ type Popover struct {
 	PanelOffset int
 }
 
-func (m Popover) generateXAnchorAttrKey() templ.Attributes {
-	var position string
-	switch m.PanelPosition {
-	case PopoverPositionBottom:
-		position = "bottom"
-	case PopoverPositionBottomEnd:
-		position = "bottom-end"
-	case PopoverPositionBottomStart:
-		position = "bottom-start"
-	case PopoverPositionTop:
-		position = "top"
-	case PopoverPositionTopEnd:
-		position = "top-end"
-	case PopoverPositionTopStart:
-		position = "top-start"
-	case PopoverPositionLeft:
-		position = "left"
-	case PopoverPositionLeftEnd:
-		position = "left-end"
-	case PopoverPositionLeftStart:
-		position = "left-start"
-	case PopoverPositionRight:
-		position = "right"
-	case PopoverPositionRightEnd:
-		position = "right-end"
-	case PopoverPositionRightStart:
-		position = "right-start"
-	}
-
-	return templ.Attributes{
-		fmt.Sprintf("x-anchor.%s.offset.%d", position, m.PanelOffset): "$refs.button",
-	}
-}
-
-templ (m Popover) build() {
+templ (m Popover) ToTempl(ctx context.Context) {
 	<div
 		class="relative"
 		x-id="
@@ -104,9 +69,9 @@ templ (m Popover) build() {
 			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
 			if m.ButtonChildren != nil {
-				@m.ButtonChildren
+				@m.ButtonChildren.ToTempl(ctx)
 			} else {
-				@ButtonLayout{}
+				@Button{}.ToTempl(ctx)
 			}
 		</button>
 		<div
@@ -115,149 +80,47 @@ templ (m Popover) build() {
 			x-show="open"
 			@click.outside="close($refs.button)"
 			class="z-10"
-			{ m.generateXAnchorAttrKey()... }
+			{ generateXAnchorAttrKey(m.PanelPosition, m.PanelOffset)... }
 		>
-			@m.Panel
+			if m.PanelChildren != nil {
+				@m.PanelChildren.ToTempl(ctx)
+			} else {
+				@PanelWindow{}.ToTempl(ctx)
+			}
 		</div>
 	</div>
 }
 
-func (m Popover) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
-// MenuPopover shows a menu on click.
-type MenuPopover struct {
-	// MenuEntries are displayed in the popover. If the slice is empty,
-	// [MenuPopover] is same as [Popover]{}.
-	MenuEntries []struct {
-		Label string
-
-		SubLabel string
-
-		Attrs templ.Attributes
-	}
-}
-
-templ (m MenuPopover) buildAtIndex(i int) {
-	<div class="flex flex-item h-9 items-center justify-between px-2.5 py-2 gap-2.5 rounded-lg hover:bg-gray-900/5">
-		<span class="text-sm text-gray-900/90 whitespace-nowrap">{ m.MenuEntries[i].Label }</span>
-		<span class="text-sm text-gray-500/90 whitespace-nowrap">{ m.MenuEntries[i].SubLabel }</span>
-	</div>
-}
-
-templ (m MenuPopover) buildMenu() {
-	<div class="p-2">
-		for i := range len(m.MenuEntries) {
-			@m.buildAtIndex(i)
-		}
-	</div>
-}
-
-func (m MenuPopover) Render(ctx context.Context, w io.Writer) error {
-	popover := Popover{
-		ButtonChildren: ButtonLayout{Icon: OpenMenuIcon},
+func generateXAnchorAttrKey(position PopoverPosition, offset int) templ.Attributes {
+	var pp string
+	switch position {
+	case PopoverPositionBottom:
+		pp = "bottom"
+	case PopoverPositionBottomEnd:
+		pp = "bottom-end"
+	case PopoverPositionBottomStart:
+		pp = "bottom-start"
+	case PopoverPositionTop:
+		pp = "top"
+	case PopoverPositionTopEnd:
+		pp = "top-end"
+	case PopoverPositionTopStart:
+		pp = "top-start"
+	case PopoverPositionLeft:
+		pp = "left"
+	case PopoverPositionLeftEnd:
+		pp = "left-end"
+	case PopoverPositionLeftStart:
+		pp = "left-start"
+	case PopoverPositionRight:
+		pp = "right"
+	case PopoverPositionRightEnd:
+		pp = "right-end"
+	case PopoverPositionRightStart:
+		pp = "right-start"
 	}
 
-	if len(m.MenuEntries) != 0 {
-		popover.Panel = PanelWindow{
-			Children: m.buildMenu(),
-		}
+	return templ.Attributes{
+		fmt.Sprintf("x-anchor.%s.offset.%d", pp, offset): "$refs.button",
 	}
-
-	return popover.Render(ctx, w)
-}
-
-var regions = []templ.Component{
-	MenuLink{
-		Href: "/NA1",
-		Item: MenuItemLayout{Label: "NA1", SubLabel: "North America"},
-	},
-	MenuLink{
-		Href: "/NA1",
-		Item: MenuItemLayout{Label: "KR", SubLabel: "Korea"},
-	},
-}
-
-type RegionPopover struct {
-	Region riot.Region
-}
-
-templ (m RegionPopover) buildButton() {
-	<div class="flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end">
-		<span class="text-sm font-bold">
-			{ convertRiotRegionToString(m.Region) }
-		</span>
-		@DownSmallIcon
-	</div>
-}
-
-templ (m RegionPopover) buildMenu() {
-	<ul class="p-2">
-		for _, c := range regions {
-			@c
-		}
-	</ul>
-}
-
-func (m RegionPopover) Render(ctx context.Context, w io.Writer) error {
-	popover := Popover{
-		ButtonChildren: m.buildButton(),
-		Panel:          PanelWindow{Children: m.buildMenu()},
-	}
-
-	return popover.Render(ctx, w)
-}
-
-// Deprecated.
-type ChampionPopover struct {
-	Champion               int
-	TotalGamesPlayed       int
-	GamesPlayed            int
-	Wins, Losses           int
-	Kills, Deaths, Assists float32
-	KillParticipation      float32
-	CS                     int
-	CSPerMinute            float32
-	DamageDealt            int
-	DamageTaken            int
-	DamageDeltaEnemy       int
-	DamagePercentageTeam   float32
-	GoldEarned             int
-	GoldDeltaEnemy         int
-	GoldPercentageTeam     float32
-	VisionScore            int
-	PinkWardsBought        int
-	LPGain                 int // lp gain for matches that actually have lp deltas?
-}
-
-templ (m ChampionPopover) buildRelativeBar() {
-	{{
-		if m.TotalGamesPlayed == 0 {
-			panic("0 games played can't be real")
-		}
-		ratio := float32(m.GamesPlayed) / float32(m.TotalGamesPlayed)
-		class := fmt.Sprintf("w-[%.0f%%]", ratio*100)
-	}}
-	<div class="flex-none h-3 bg-gray-900/5 w-24">
-		<div class={ "h-full", "bg-blue-500/50", class }></div>
-	</div>
-}
-
-templ (m ChampionPopover) buildButtonLayout() {
-	<div class="flex h-9 items-center gap-x-2 px-2">
-		@ChampionSprite{ChampionID: m.Champion}
-		@m.buildRelativeBar()
-		<div class="text-sm text-gray-900/90 dark:text-gray-100/90">
-			{ fmt.Sprintf("%+d LP", m.LPGain) }
-		</div>
-	</div>
-}
-
-func (m ChampionPopover) Render(ctx context.Context, w io.Writer) error {
-	popover := Popover{
-		ButtonChildren: m.buildButtonLayout(),
-	}
-
-	return popover.Render(ctx, w)
 }

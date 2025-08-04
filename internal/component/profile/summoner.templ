@@ -1,0 +1,115 @@
+package profile
+
+import "fmt"
+import "github.com/rank1zen/kevin/internal/component/shared"
+import "context"
+import "github.com/rank1zen/kevin/internal/component"
+import "time"
+import "github.com/rank1zen/kevin/internal"
+
+func NewSummonerChampionList(champions []internal.SummonerChampion) component.ModalLayout {
+	c := component.ModalLayout{}
+
+	c.HeaderChildren = nil
+
+	content := SummonerChampionStatContent{
+		ChampionList: component.List{Items: []component.Component{}},
+	}
+
+	for _, m := range champions{
+		content.ChampionList.Items = append(
+			content.ChampionList.Items,
+			SummonerChampionCard{
+				ChampionWidget: shared.NewSimpleChampionWidget(int(m.Champion)),
+				GamesPlayed: m.GamesPlayed,
+				Wins: m.Wins,
+				Losses: m.Losses,
+				WinRate: (float32(m.Wins) / (float32(m.Wins) + float32(m.Losses))),
+				KDAWidget: shared.NewKDAWidget(int(m.AverageKillsPerGame), int(m.AverageDeathsPerGame), int(m.AverageAssistsPerGame)),
+				CSWidget: shared.NewCSWidget(int(m.AverageCreepScorePerGame), m.AverageCreepScorePerMinutePerGame),
+			},
+		)
+	}
+
+
+	return c
+}
+
+// SummonerChampionCard displays average champion stats over a set of games.
+//
+// TODO: add LP gain for all matches.
+type SummonerChampionCard struct {
+	ChampionWidget shared.Champion
+
+	GamesPlayed int
+
+	Wins, Losses int
+
+	WinRate float32
+
+	KDAWidget shared.KDAWidget
+
+	CSWidget shared.CSWidget
+}
+
+templ (m SummonerChampionCard) buildWinRateWidget() {
+	<div class="h-9 flex-1 min-w-0 whitespace-nowrap">
+		<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%d Games, %d W %d L", m.Wins, m.Losses, m.GamesPlayed) }
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%.0f%%", m.WinRate*100) }
+		</div>
+	</div>
+}
+
+templ (m SummonerChampionCard) ToTempl(ctx context.Context) {
+	<div class="flex px-4 gap-x-4 py-3 justify-between items-center">
+		<div class="flex flex-1 min-w-0 gap-x-2">
+			@m.ChampionWidget.ToTempl(ctx)
+			@m.buildWinRateWidget()
+		</div>
+		<div class="flex gap-x-2">
+			@m.KDAWidget.ToTempl(ctx)
+			@m.CSWidget.ToTempl(ctx)
+		</div>
+	</div>
+}
+
+type SummonerChampionStatHeader struct {
+}
+
+templ (m SummonerChampionStatHeader) ToTempl(ctx context.Context) {
+	<div></div>
+}
+
+type SummonerChampionStatContent struct {
+	ChampionList component.List
+}
+
+templ (m SummonerChampionStatContent) ToTempl(ctx context.Context) {
+	<div class="px-2 mt-3">
+		@m.ChampionList.ToTempl(ctx)
+	</div>
+}
+
+// SummonerChampionStatLoader requests the server for
+// [SummonerChampionStatContent].
+//
+// Uses [LoaderTypeOnReveal].
+type SummonerChampionStatLoader struct{}
+
+templ (m SummonerChampionStatLoader) ToTempl(ctx context.Context) {
+	<div class="px-2 mt-3">
+		This is a loader for summoner champions.
+	</div>
+}
+
+// GetDay returns the start of the day, offset days ago. Currently returns UTC
+// time.
+func GetDay(offset int) time.Time {
+	now := time.Now().In(time.UTC)
+	y, m, d := now.Date()
+	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
+	return startOfDay.Add(time.Duration(-24*offset) * time.Hour)
+}

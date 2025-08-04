@@ -1,0 +1,202 @@
+package profile
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/shared"
+	"time"
+	"github.com/rank1zen/kevin/internal"
+)
+
+func NewMatchHistoryList(matches []internal.SummonerMatch) component.List {
+	c := component.List{Items: []component.Component{}}
+
+	for _, m := range matches {
+		card := MatchHistoryCard{
+			ChampionWidget: shared.NewMatchChampionWidget(m.ChampionID, m.ChampionLevel, m.SummonerIDs),
+			KDAWidget:      shared.NewKDAWidget(m.Kills, m.Deaths, m.Assists),
+			CSWidget:       shared.NewCSWidget(m.CreepScore, m.CreepScorePerMinute),
+			RuneWidget:     shared.NewRuneWidget(m.Runes),
+			ItemWidget:     shared.CreateItemInventory(m.Items, m.VisionScore),
+			RankChange:     shared.NewRankDeltaWidget(nil, nil, false),
+		}
+
+		drawer := component.Drawer{
+			ButtonChildren: card,
+			PanelChildren:  nil,
+		}
+
+		c.Items = append(c.Items, drawer)
+	}
+
+	return c
+}
+
+// TODO: not a lot
+func NewMatchDetail(match internal.Match) component.ModalLayout {
+	blueSide, redSide := []component.Component{}, []component.Component{}
+
+	for i, m := range match.Participants {
+		row := MatchParticipantCard{
+			Name:            "XXXX",
+			Tag:             "XXXX",
+			ChampionWidget: shared.NewMatchChampionWidget(m.ChampionID, m.ChampionLevel, m.SummonerIDs),
+			KDAWidget:      shared.NewKDAWidget(m.Kills, m.Deaths, m.Assists),
+			CSWidget:       shared.NewCSWidget(m.CreepScore, m.CreepScorePerMinute),
+			RuneWidget:     shared.NewRuneWidget(m.Runes),
+			Items:          shared.CreateItemInventory(m.Items, m.VisionScore),
+			RankDeltaWidget:shared.NewRankDeltaWidget(nil, nil, false),
+		}
+
+		if m.TeamID == 100 {
+			blueSide[i%5] = row
+		} else {
+			redSide[i%5] = row
+		}
+	}
+
+	content := MatchPanel{
+		BlueSide: component.Section{
+			Heading: "Blue Side",
+			Content: component.List{
+				Items: blueSide,
+			},
+		},
+		RedSide:  component.Section{
+			Heading: "Red Side",
+			Content: component.List{
+				Items: redSide,
+			},
+		},
+	}
+
+	layout := component.ModalLayout{
+		HeaderChildren: nil,
+		Children:       content,
+	}
+
+	return layout
+}
+
+// MatchHistory is a day of matches.
+type MatchHistory struct {
+	Date time.Time
+
+	Request string
+}
+
+templ (m MatchHistory) ToTempl(ctx context.Context) {
+	<div>
+		<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90">
+			{ m.Date.Format("Monday, Jan 2") }
+		</h2>
+		<div class="mt-2">
+			@MatchHistoryLoader(m.Request).ToTempl(ctx)
+		</div>
+	</div>
+}
+
+// MatchHistoryCard displays a match in a summoner's match history.
+type MatchHistoryCard struct {
+	ChampionWidget shared.Champion
+
+	KDAWidget shared.KDAWidget
+
+	CSWidget shared.CSWidget
+
+	RuneWidget shared.RuneWidget
+
+	ItemWidget shared.ItemInventory
+
+	RankChange shared.RankDeltaWidget
+}
+
+templ (m MatchHistoryCard) ToTempl(ctx context.Context) {
+	<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between md:flex-nowrap">
+		<div class="flex gap-x-3">
+			@m.ChampionWidget.ToTempl(ctx)
+			@m.KDAWidget.ToTempl(ctx)
+			@m.CSWidget.ToTempl(ctx)
+		</div>
+		<div class="flex gap-x-2 md:order-last">
+			@m.RankChange.ToTempl(ctx)
+		</div>
+		<div class="flex gap-x-2 w-full justify-between md:w-auto">
+			@m.RuneWidget.ToTempl(ctx)
+			@m.ItemWidget.ToTempl(ctx)
+		</div>
+	</div>
+}
+
+// MatchHistoryLoader creates a loading component for match history.
+func MatchHistoryLoader(data string) component.Loader {
+	list := component.List{
+		Style: component.ListStyleRaised,
+		Items: []component.Component{},
+	}
+
+	loader := component.Loader{
+		Path:     "/summoner/matchlist",
+		Data:     data,
+		Children: list,
+	}
+
+	list.Items = append(list.Items, component.ComponentFunc(mhc))
+
+	return loader
+}
+
+templ mhc(ctx context.Context) {
+	<div class="px-4 h-15 flex justify-center items-center">
+		@component.Spinner{}.ToTempl(ctx)
+	</div>
+}
+
+type MatchParticipantCard struct {
+	Name, Tag string
+
+	ChampionWidget shared.Champion
+
+	KDAWidget shared.KDAWidget
+
+	CSWidget shared.CSWidget
+
+	RuneWidget shared.RuneWidget
+
+	Items shared.ItemInventory
+
+	RankDeltaWidget shared.RankDeltaWidget
+}
+
+templ (m MatchParticipantCard) ToTempl(ctx context.Context) {
+	<div class="flex h-15 gap-x-4 px-4 justify-between items-center">
+		<div class="flex gap-x-4">
+			@m.ChampionWidget.ToTempl(ctx)
+			<div class="flex-1 min-w-0 h-9">
+				<div class="text-sm text-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+					{ m.Name + "#" + m.Tag }
+				</div>
+			</div>
+			@m.KDAWidget.ToTempl(ctx)
+			@m.CSWidget.ToTempl(ctx)
+		</div>
+		<div class="flex gap-x-2 md:order-last">
+			@m.RankDeltaWidget.ToTempl(ctx)
+		</div>
+		<div class="flex gap-x-4 w-full justify-between md:w-auto">
+			@m.RuneWidget.ToTempl(ctx)
+			@m.Items.ToTempl(ctx)
+		</div>
+	</div>
+}
+
+type MatchPanel struct {
+	BlueSide, RedSide component.Section
+}
+
+templ (m MatchPanel) ToTempl(ctx context.Context) {
+	<div class="flex">
+		@m.BlueSide.ToTempl(ctx)
+		@m.RedSide.ToTempl(ctx)
+	</div>
+}

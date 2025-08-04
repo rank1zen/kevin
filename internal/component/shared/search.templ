@@ -1,0 +1,96 @@
+package shared
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal"
+	"fmt"
+)
+
+func NewSearchResultList(results []internal.SearchResult) component.List {
+	c := component.List{
+		Style: component.ListStyleFlat,
+		Items: []component.Component{},
+	}
+
+	for _, r := range results {
+		card := SearchResult{
+			Name:   r.Name,
+			Tag:    r.Tagline,
+		}
+
+		if d := r.Rank.Detail; d != nil {
+			card.Rank.Rank = &d.Rank
+		}
+
+		link := component.Link{Href: fmt.Sprintf("/%s-%s", r.Name, r.Tagline), Children: card}
+
+		c.Items = append(c.Items, link)
+	}
+
+	return c
+}
+
+func NewSearchResultNotFound(name, tag string) component.Component {
+	c := component.SearchNotFoundCard{
+		Name:     name,
+		Tag:      tag,
+		Platform: "NA1",
+	}
+
+	return c
+}
+
+// SearchResult displays a found search result.
+type SearchResult struct {
+	Name, Tag string
+
+	Rank RankWidget
+}
+
+templ (m SearchResult) ToTempl(ctx context.Context) {
+	<div class="px-3 py-2">
+		<div class="text-sm font-medium text-gray-900/90 dark:text-gray-200/90 truncate">
+			{ m.Name +"#"+ m.Tag }
+		</div>
+		<div class="flex gap-x-1">
+			@m.Rank.ToTempl(ctx)
+		</div>
+	</div>
+}
+
+// SearchNotFoundCard is a button that will issue a post to fetch summoner.
+type SearchNotFoundCard struct {
+	Name string
+
+	// Tag is the tagline. If empty, Platform is used.
+	Tag string
+
+	Platform string
+}
+
+templ (m SearchNotFoundCard) ToTempl(ctx context.Context) {
+	<button
+		type="button"
+		hx-post="/summoner/fetch"
+		hx-trigger="click"
+		hx-include="[name='region'], [name='name'], [name='tag']"
+		class="flex w-full rounded-lg items-center hover:bg-gray-900/5 dark:hover:bg-gray-200/5 cursor-pointer justify-between px-3 py-2 gap-x-3"
+	>
+		<div class="flex-1 min-w-0">
+			<div class="text-sm text-gray-900/90 dark:text-gray-200/90 text-left truncate">
+				{ m.Name + "#" + m.Tag } is not found
+			</div>
+			<div class="text-xs text-gray-500/90 text-left truncate">
+				Click to fetch
+			</div>
+		</div>
+		<input type="hidden" name="region" value={ m.Platform }/>
+		<input type="hidden" name="name" value={ m.Name }/>
+		if m.Tag != "" {
+			<input type="hidden" name="tag" value={ m.Tag }/>
+		} else {
+			<input type="hidden" name="tag" value={ m.Platform }/>
+		}
+	</button>
+}

@@ -104,7 +104,7 @@ func (f *Server) getHomePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	component.Render(ctx, w)
+	component.ToTempl(ctx).Render(ctx, w)
 }
 
 func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +142,7 @@ func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	component.Render(ctx, w)
+	component.ToTempl(ctx).Render(ctx, w)
 }
 
 func (f *Server) serveSearchResults(w http.ResponseWriter, r *http.Request) {
@@ -166,7 +166,7 @@ func (f *Server) serveSearchResults(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	component.Render(ctx, w)
+	component.ToTempl(ctx).Render(ctx, w)
 }
 
 func (f *Server) serveMatchlist(w http.ResponseWriter, r *http.Request) {
@@ -190,7 +190,7 @@ func (f *Server) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	component.Render(ctx, w)
+	component.ToTempl(ctx).Render(ctx, w)
 }
 
 func (f *Server) updateSummoner(w http.ResponseWriter, r *http.Request) {
@@ -236,7 +236,7 @@ func (f *Server) serveChampions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	component.Render(ctx, w)
+	component.ToTempl(ctx).Render(ctx, w)
 }
 
 func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
@@ -259,7 +259,7 @@ func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	component.Render(ctx, w)
+	component.ToTempl(ctx).Render(ctx, w)
 }
 
 func (f *Server) addLoggingMiddleware(handler http.Handler) http.Handler {

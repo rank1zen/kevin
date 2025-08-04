@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/rank1zen/kevin/internal/ddragon"
-	"io"
 )
 
 // Sprite is a sprite.
@@ -24,7 +23,7 @@ type Sprite struct {
 	Y int
 }
 
-templ (m Sprite) build() {
+templ (m Sprite) ToTempl(ctx context.Context) {
 	{{
 		// TODO: dynamically generating these without tailwind might be
 		// easier
@@ -37,33 +36,31 @@ templ (m Sprite) build() {
 	<div class={ spriteMap, bgPosition, bgSize, height, width }></div>
 }
 
-func (m Sprite) Render(ctx context.Context, w io.Writer) error {
-	return m.build().Render(ctx, w)
-}
-
 type ItemSprite struct {
 	ItemID int
 }
 
-func (m ItemSprite) Render(ctx context.Context, w io.Writer) error {
-	item := ddragon.ItemsMap[m.ItemID]
+templ (m ItemSprite) ToTempl(ctx context.Context) {
+	{{
+		item := ddragon.ItemsMap[m.ItemID]
 
-	x, y := item.X/48, item.Y/48
+		x, y := item.X/48, item.Y/48
 
-	sprite := Sprite{
-		SpriteMap: "/static/sprite/" + "small_" + item.Sprite,
-		BGHeight:  280,
-		BGWidth:   280,
-		Height:    28,
-		Width:     28,
-		X:         x * 28,
-		Y:         y * 28,
-	}
-
-	return sprite.Render(ctx, w)
+		sprite := Sprite{
+			SpriteMap: "/static/sprite/" + "small_" + item.Sprite,
+			BGHeight:  280,
+			BGWidth:   280,
+			Height:    28,
+			Width:     28,
+			X:         x * 28,
+			Y:         y * 28,
+		}
+	}}
+	@sprite.ToTempl(ctx)
 }
 
-// ChampionSprite is a sprite of a champion icon.
+// ChampionSprite is a sprite of a champion icon. It will crop the shadow
+// around the edge.
 type ChampionSprite struct {
 	// TODO: change to new champion id type
 	ChampionID int
@@ -73,72 +70,72 @@ type ChampionSprite struct {
 	Size TextSize
 }
 
-func (m ChampionSprite) Render(ctx context.Context, w io.Writer) error {
-	champion := ddragon.ChampionMap[m.ChampionID]
-	x, y := champion.X/48, champion.Y/48
-	if m.Size == TextSizeLG {
-		// 28 x 28
-		bgHeight := 84
-		if champion.Sprite == "champion5.png" {
-			bgHeight = 56 // the last sprite map is not the usual height. this is bec.
-		}
+templ (m ChampionSprite) ToTempl(ctx context.Context) {
+	{{
+		champion := ddragon.ChampionMap[m.ChampionID]
 
-		sprite := Sprite{
-			SpriteMap: "/static/sprite/" + champion.Sprite,
-			BGHeight:  bgHeight,
-			BGWidth:   280,
-			Height:    28,
-			Width:     28,
-			X:         x * 28,
-			Y:         y * 28,
-		}
+		sprite := Sprite{}
 
-		return sprite.Render(ctx, w)
-	} else {
-		// 36 x 36 i.e. we want 40 x 40 crop out 2 pixels on each side
-		size := 40
-		bgHeight := size * 3
-		bgWidth := size * 10
-		if champion.Sprite == "champion5.png" {
-			bgHeight = size * 2 // the last sprite map is not the usual height. this is bec.
-		}
+		sprite.SpriteMap = "/static/sprite/" + champion.Sprite
 
-		sprite := Sprite{
-			SpriteMap: "/static/sprite/" + champion.Sprite,
-			BGHeight:  bgHeight,
-			BGWidth:   bgWidth,
-			Height:    36,
-			Width:     36,
-			X:         x*40 + 2,
-			Y:         y*40 + 2,
-		}
+		x, y := champion.X/48, champion.Y/48
+		if m.Size == TextSizeLG {
+			// 28 x 28
+			size := 28
+			bgHeight := size * 3
+			bgWidth := size * 10
+			if champion.Sprite == "champion5.png" {
+				bgHeight = size * 2 // the last sprite map is not the usual height. this is bec.
+			}
 
-		return sprite.Render(ctx, w)
-	}
+			sprite.BGHeight = bgHeight
+			sprite.BGWidth = bgWidth
+			sprite.Height = size
+			sprite.Width = size
+			sprite.X = x * size
+			sprite.Y = y * size
+		} else {
+			// 36 x 36 i.e. we want 40 x 40 crop out 2 pixels on each side
+			size := 40
+			bgHeight := size * 3
+			bgWidth := size * 10
+			if champion.Sprite == "champion5.png" {
+				bgHeight = size * 2
+			}
+
+			sprite.BGHeight = bgHeight
+			sprite.BGWidth = bgWidth
+			sprite.Height = size
+			sprite.Width = size
+			sprite.X = x * size
+			sprite.Y = y * size
+		}
+	}}
+	@sprite.ToTempl(ctx)
 }
 
 // SummonerSprite is a sprite of a summoner spell icon.
-//
 // NOTE: currently only in 18px
 type SummonerSprite struct {
 	SummonerID int
 }
 
-func (m SummonerSprite) Render(ctx context.Context, w io.Writer) error {
-	summ := ddragon.SummonerMap[m.SummonerID]
-	x, y := summ.X/48, summ.Y/48
+templ (m SummonerSprite) ToTempl(ctx context.Context) {
+	{{
+		summ := ddragon.SummonerMap[m.SummonerID]
+		x, y := summ.X/48, summ.Y/48
 
-	size := 18
+		size := 18
 
-	sprite := Sprite{
-		SpriteMap: "/static/sprite/" + "tiny_" + summ.Sprite,
-		BGHeight:  size * 4,
-		BGWidth:   size * 10,
-		Height:    size,
-		Width:     size,
-		X:         size * x,
-		Y:         size * y,
-	}
-
-	return sprite.Render(ctx, w)
+		sprite := Sprite{
+			SpriteMap: "/static/sprite/" + "tiny_" + summ.Sprite,
+			BGHeight:  size * 4,
+			BGWidth:   size * 10,
+			Height:    size,
+			Width:     size,
+			X:         size * x,
+			Y:         size * y,
+		}
+	}}
+	@sprite.ToTempl(ctx)
 }

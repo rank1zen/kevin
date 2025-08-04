@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/profile"
+	"github.com/rank1zen/kevin/internal/component/shared"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
@@ -81,9 +84,9 @@ func (r GetLiveMatchRequest) Validate() (problems map[string]string) {
 	return problems
 }
 
-// GetLiveMatch returns [LiveMatch] if the summoner is in game, otherwise it
-// returns [LiveMatchNotFound].
-func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (View, error) {
+// GetLiveMatch returns a live match view depending on whether the summoner is
+// on game.
+func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (component.Component, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -92,27 +95,28 @@ func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (Vi
 	match, err := ds.GetLiveMatch(ctx, req.Region, req.PUUID)
 	if err != nil {
 		if errors.Is(err, internal.ErrNoLiveMatch) {
-			v := LiveMatchNotFound{}
+			v := profile.NewLiveMatchNotFound()
 			return v, err
 		}
 
 		return nil, err
 	}
 
-	v := LiveMatch{}
+	v := profile.NewLiveMatch(internal.Rank{}, match)
+
 	return v, nil
 }
 
-// GetHomePage returns [HomePage].
-func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (View, error) {
-	v := HomePage{}
+// GetHomePage returns the home page.
+func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (component.Component, error) {
+	v := shared.NewHomePage()
 	return v, nil
 }
 
-// GetSummonerPage returns [SummonerPage] if summoner exists in store,
-// otherwise, it will complete a update for summoner, then return the page. If
-// no summoner with name#tag exists, return [SummonerPageNotFound].
-func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (View, error) {
+// GetSummonerPage returns a summoner's profile page if summoner exists in
+// store, otherwise, it will complete a update for summoner, then return the
+// page. If no summoner with name#tag exists, return a does not exist page.
+func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (component.Component, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -121,10 +125,8 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	puuid, err := ds.GetPUUID(ctx, name, tag)
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerDoesNotExist) {
-			v := SummonerPageNotFound{
-				Region: region,
-				Name:   name,
-				Tag:    tag,
+			v := component.Page{
+				Title: "Not found",
 			}
 
 			return v, nil
@@ -154,13 +156,11 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		return nil, fmt.Errorf("get rank: %w", err)
 	}
 
-	v := SummonerPage{
-		Region:              region,
-		PUUID:               puuid,
-		Name:                name,
-		Tag:                 tag,
-		LastUpdated:         rank.EffectiveDate,
-		Rank:                &rank.Detail.Rank,
+	var v component.Component
+	if rank.Detail == nil {
+		v = profile.CreatePage(region, summoner, nil)
+	} else {
+		v = profile.CreatePage(region, summoner, &rank.Detail.Rank)
 	}
 
 	return v, nil
@@ -184,9 +184,9 @@ func (r ZGetSummonerChampionsRequest) Validate() (problems map[string]string) {
 	return problems
 }
 
-// GetSummonerChampions returns [SummonerChampion]. The method will fetch all
+// GetSummonerChampions returns The method will fetch all
 // games played in the specified interval.
-func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerChampionsRequest) (View, error) {
+func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerChampionsRequest) (component.Component, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -205,14 +205,15 @@ func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerCha
 		return nil, err
 	}
 
-	v := SummonerChampion{}
+	v := profile.NewSummonerChampionList(storeChampions)
+
 	return v, nil
 }
 
 // GetMatchHistory returns [MatchHistory], the matches played on date to date
 // + 24 hours. The method will fetch riot first to ensure all matches played on
 // date are in store.
-func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) (View, error) {
+func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) (component.Component, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -230,7 +231,7 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
 
-	v := MatchHistory{}
+	v := profile.NewMatchHistoryList(storeMatches)
 
 	return v, nil
 }
@@ -240,7 +241,7 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 //
 // q should be of the form name#tag, if q has no tag, region is used as the
 // tag.
-func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (View, error) {
+func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (component.Component, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -265,12 +266,12 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 			tag = string(region)
 		}
 
-		v := SearchResultNotFound{}
+		v := shared.NewSearchResultNotFound(name, tag)
 
 		return v, nil
 	}
 
-	v := SearchResult{}
+	v := shared.NewSearchResultList(storeSearchResults)
 
 	return v, nil
 }
@@ -280,13 +281,13 @@ type GetMatchDetailsRequest struct {
 }
 
 // GetMatchDetails returns [MatchDetail].
-func (h *Handler) GetMatchDetails(ctx context.Context, req GetMatchDetailsRequest) (View, error) {
+func (h *Handler) GetMatchDetails(ctx context.Context, req GetMatchDetailsRequest) (component.Component, error) {
 	match, err := h.Datasource.GetStore().GetMatch(ctx, riot.PUUID(req.MatchID))
 	if err != nil {
 		return nil, err
 	}
 
-	v := MatchDetail{}
+	v := profile.NewMatchDetail(match)
 
 	return v, nil
 }
