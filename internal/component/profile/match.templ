@@ -17,7 +17,7 @@ func NewMatchHistoryList(matches []internal.SummonerMatch) component.List {
 			KDAWidget:      shared.NewKDAWidget(m.Kills, m.Deaths, m.Assists),
 			CSWidget:       shared.NewCSWidget(m.CreepScore, m.CreepScorePerMinute),
 			RuneWidget:     shared.NewRuneWidget(m.Runes),
-			ItemWidget:     shared.CreateItemInventory(m.Items, m.VisionScore),
+			ItemWidget:     shared.NewItemInventory(m.Items, m.VisionScore),
 			RankChange:     shared.NewRankDeltaWidget(nil, nil, false),
 		}
 
@@ -44,7 +44,7 @@ func NewMatchDetail(match internal.Match) component.ModalLayout {
 			KDAWidget:      shared.NewKDAWidget(m.Kills, m.Deaths, m.Assists),
 			CSWidget:       shared.NewCSWidget(m.CreepScore, m.CreepScorePerMinute),
 			RuneWidget:     shared.NewRuneWidget(m.Runes),
-			Items:          shared.CreateItemInventory(m.Items, m.VisionScore),
+			Items:          shared.NewItemInventory(m.Items, m.VisionScore),
 			RankDeltaWidget:shared.NewRankDeltaWidget(nil, nil, false),
 		}
 

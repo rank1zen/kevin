@@ -25,7 +25,7 @@ func NewMatchHistoryList(matches []internal.SummonerMatch) component.List {
 			KDAWidget:      shared.NewKDAWidget(m.Kills, m.Deaths, m.Assists),
 			CSWidget:       shared.NewCSWidget(m.CreepScore, m.CreepScorePerMinute),
 			RuneWidget:     shared.NewRuneWidget(m.Runes),
-			ItemWidget:     shared.CreateItemInventory(m.Items, m.VisionScore),
+			ItemWidget:     shared.NewItemInventory(m.Items, m.VisionScore),
 			RankChange:     shared.NewRankDeltaWidget(nil, nil, false),
 		}
 
@@ -42,7 +42,46 @@ func NewMatchHistoryList(matches []internal.SummonerMatch) component.List {
 
 // TODO: not a lot
 func NewMatchDetail(match internal.Match) component.ModalLayout {
-	layout := component.ModalLayout{}
+	blueSide, redSide := []component.Component{}, []component.Component{}
+
+	for i, m := range match.Participants {
+		row := MatchParticipantCard{
+			Name:            "XXXX",
+			Tag:             "XXXX",
+			ChampionWidget:  shared.NewMatchChampionWidget(m.ChampionID, m.ChampionLevel, m.SummonerIDs),
+			KDAWidget:       shared.NewKDAWidget(m.Kills, m.Deaths, m.Assists),
+			CSWidget:        shared.NewCSWidget(m.CreepScore, m.CreepScorePerMinute),
+			RuneWidget:      shared.NewRuneWidget(m.Runes),
+			Items:           shared.NewItemInventory(m.Items, m.VisionScore),
+			RankDeltaWidget: shared.NewRankDeltaWidget(nil, nil, false),
+		}
+
+		if m.TeamID == 100 {
+			blueSide[i%5] = row
+		} else {
+			redSide[i%5] = row
+		}
+	}
+
+	content := MatchPanel{
+		BlueSide: component.Section{
+			Heading: "Blue Side",
+			Content: component.List{
+				Items: blueSide,
+			},
+		},
+		RedSide: component.Section{
+			Heading: "Red Side",
+			Content: component.List{
+				Items: redSide,
+			},
+		},
+	}
+
+	layout := component.ModalLayout{
+		HeaderChildren: nil,
+		Children:       content,
+	}
 
 	return layout
 }
@@ -82,7 +121,7 @@ func (m MatchHistory) ToTempl(ctx context.Context) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(m.Date.Format("Monday, Jan 2"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/match.templ`, Line: 52, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/match.templ`, Line: 91, Col: 35}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -291,7 +330,7 @@ func (m MatchParticipantCard) ToTempl(ctx context.Context) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(m.Name + "#" + m.Tag)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/match.templ`, Line: 138, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/match.templ`, Line: 177, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {

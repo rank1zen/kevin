@@ -28,7 +28,7 @@ type ItemInventory struct {
 	ItemHistory component.Popover
 }
 
-func CreateItemInventory(items [7]int, visionScore int) ItemInventory {
+func NewItemInventory(items [7]int, visionScore int) ItemInventory {
 	c := ItemInventory{}
 
 	for i := range 6 {
