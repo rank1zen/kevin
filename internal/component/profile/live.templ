@@ -5,17 +5,30 @@ import (
 	"fmt"
 	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal/component/shared"
-	"time"
 	"github.com/rank1zen/kevin/internal"
+	"time"
 )
+
+func NewLiveMatchHeader(avgRank internal.Rank, match internal.LiveMatch) component.Header {
+	header := component.Header{}
+
+	header.StartChildren = []component.Component{
+		NewLiveMatchWidget(avgRank, match.Date),
+	}
+
+	header.CenterChildren = []component.Component{}
+
+	header.EndChildren = []component.Component{
+		component.ModalExitButton{},
+	}
+
+	return header
+}
 
 func NewLiveMatch(avgRank internal.Rank, match internal.LiveMatch) component.ModalLayout {
 	c := component.ModalLayout{}
 
-	c.HeaderChildren = LiveMatchHeader{
-		AverageRank: shared.RankWidget{Rank: &avgRank},
-		StartTime:   match.Date,
-	}
+	c.HeaderChildren = NewLiveMatchHeader(avgRank, match)
 
 	content := LiveMatchContent{
 		BlueSide: component.List{Items: []component.Component{}},
@@ -23,11 +36,11 @@ func NewLiveMatch(avgRank internal.Rank, match internal.LiveMatch) component.Mod
 	}
 
 	for _, p := range match.GetTeamParticipants(100) {
-		content.BlueSide.Items = append(content.BlueSide.Items, newLiveParticipantCard(p))
+		content.BlueSide.Items = append(content.BlueSide.Items, NewLiveParticipantCard(p))
 	}
 
 	for _, p := range match.GetTeamParticipants(200) {
-		content.RedSide.Items = append(content.RedSide.Items, newLiveParticipantCard(p))
+		content.RedSide.Items = append(content.RedSide.Items, NewLiveParticipantCard(p))
 	}
 
 	c.Children = content
@@ -38,7 +51,57 @@ func NewLiveMatch(avgRank internal.Rank, match internal.LiveMatch) component.Mod
 func NewLiveMatchNotFound() component.ModalLayout {
 	c := component.ModalLayout{}
 
+	c.HeaderChildren = component.Header{
+		StartChildren:  []component.Component{},
+		CenterChildren: []component.Component{},
+		EndChildren:    []component.Component{component.ModalExitButton{}},
+	}
+
+	c.Children = component.ComponentFunc(liveMatchNotFoundContent)
+
 	return c
+}
+
+type LiveMatchWidget struct {
+	StartTimestamp time.Time
+
+	AverageRank shared.RankWidget
+}
+
+func NewLiveMatchWidget(avgRank internal.Rank, startTS time.Time) LiveMatchWidget {
+	widget := LiveMatchWidget{
+		StartTimestamp: startTS,
+		AverageRank: shared.RankWidget{Rank: &avgRank, Size: component.TextSizeXS},
+	}
+
+	return widget
+}
+
+templ (m LiveMatchWidget) ToTempl(ctx context.Context) {
+	<div class="h-9">
+		<div>
+			{ m.StartTimestamp.Format("Jan 2, 3:04PM") }
+		</div>
+		@m.AverageRank.ToTempl(ctx)
+	</div>
+}
+
+type ParticipantWidget struct {
+	Name, Tag string
+
+	// TODO: add docs
+	Rank *shared.RankWidget
+}
+
+templ (m ParticipantWidget) ToTempl(ctx context.Context) {
+	<div class="flex flex-col h-9">
+		<div class="text-sm text-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+			{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
+		</div>
+		if m.Rank != nil {
+			@m.Rank.ToTempl(ctx)
+		}
+	</div>
 }
 
 // LiveParticipantCard displays a participant in a live match.
@@ -47,43 +110,27 @@ type LiveParticipantCard struct {
 
 	RuneWidget shared.RuneWidget
 
-	Name, Tag string
+	Participant ParticipantWidget
+}
 
-	Rank shared.RankWidget
+func NewLiveParticipantCard(p internal.LiveParticipant) LiveParticipantCard {
+	c := LiveParticipantCard{
+		ChampionWidget: shared.NewLiveChampionWidget(p.ChampionID, p.SummonersIDs),
+		RuneWidget:     shared.NewRuneWidget(p.Runes),
+		Participant:    ParticipantWidget{Name: "XXX", Tag: "XXX"},
+	}
+
+	return c
 }
 
 templ (m LiveParticipantCard) ToTempl(ctx context.Context) {
 	<div class="flex h-15 gap-x-4 px-4 justify-between items-center">
 		<div class="flex gap-x-4">
 			@m.ChampionWidget.ToTempl(ctx)
-			<div class="flex-1 min-w-0 h-9">
-				<div class="text-sm text-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
-					{ m.Name + "#" + m.Tag }
-				</div>
-				@m.Rank.ToTempl(ctx)
-			</div>
-			@m.RuneWidget.ToTempl(ctx)
+			@m.Participant.ToTempl(ctx)
 		</div>
 		<div class="flex gap-x-4">
 			@m.RuneWidget.ToTempl(ctx)
-		</div>
-	</div>
-}
-
-// LiveMatchHeader is a layout for details on a live match.
-type LiveMatchHeader struct {
-	AverageRank shared.RankWidget
-
-	StartTime time.Time
-}
-
-templ (m LiveMatchHeader) ToTempl(ctx context.Context) {
-	<div class="flex items-center justify-between gap-2">
-		<div class="flex">
-			{ fmt.Sprintf("%v", m.StartTime) }
-		</div>
-		<div class="flex">
-			@m.AverageRank.ToTempl(ctx)
 		</div>
 	</div>
 }
@@ -112,31 +159,10 @@ templ (m LiveMatchContent) ToTempl(ctx context.Context) {
 	</div>
 }
 
-// FIXME: very bare
-type LiveMatchNotFound struct{}
-
-templ (m LiveMatchNotFound) ToTempl(ctx context.Context) {
-	<div class="px-2">
-		Live match is not found
+templ liveMatchNotFoundContent(ctx context.Context) {
+	<div class="w-full flex-1 flex items-center justify-center">
+		<span class="font-semibold text-base text-gray-900/90 dark:text-gray-100/90">
+			Summoner not in game
+		</span>
 	</div>
-}
-
-// LiveMatchLoader requests the server for [LiveMatchContent].
-// Uses [LoaderTypeOnReveal].
-type LiveMatchLoader struct{}
-
-templ (m LiveMatchLoader) ToTempl(ctx context.Context) {
-	// TODO: implement
-}
-
-func newLiveParticipantCard(p internal.LiveParticipant) LiveParticipantCard {
-	c := LiveParticipantCard{
-		ChampionWidget: shared.NewLiveChampionWidget(p.ChampionID, p.SummonersIDs),
-		RuneWidget: shared.NewRuneWidget(p.Runes),
-		Name: "XXX",
-		Tag: "XXX",
-		Rank: shared.NewRankWidget(nil),
-	}
-
-	return c
 }

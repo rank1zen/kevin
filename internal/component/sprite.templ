@@ -3,10 +3,10 @@ package component
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/ddragon"
 )
 
 // Sprite is a sprite.
+// TODO: Sprite implementation works, but is kinda iffy.
 type Sprite struct {
 	SpriteMap string
 
@@ -21,121 +21,18 @@ type Sprite struct {
 	X int
 
 	Y int
+
+	Round RoundSize
 }
 
 templ (m Sprite) ToTempl(ctx context.Context) {
-	{{
-		// TODO: dynamically generating these without tailwind might be
-		// easier
-		spriteMap := fmt.Sprintf("bg-[url(%s)]", m.SpriteMap)
-		bgPosition := fmt.Sprintf("bg-position-[-%dpx_-%dpx]", m.X, m.Y)
-		bgSize := fmt.Sprintf("bg-size-[%dpx_%dpx]", m.BGWidth, m.BGHeight)
-		height := fmt.Sprintf("h-[%dpx]", m.Height)
-		width := fmt.Sprintf("w-[%dpx]", m.Width)
-	}}
-	<div class={ spriteMap, bgPosition, bgSize, height, width }></div>
+	<div class={ sprite(m), m.Round.class() }></div>
 }
 
-type ItemSprite struct {
-	ItemID int
-}
-
-templ (m ItemSprite) ToTempl(ctx context.Context) {
-	{{
-		item := ddragon.ItemsMap[m.ItemID]
-
-		x, y := item.X/48, item.Y/48
-
-		sprite := Sprite{
-			SpriteMap: "/static/sprite/" + "small_" + item.Sprite,
-			BGHeight:  280,
-			BGWidth:   280,
-			Height:    28,
-			Width:     28,
-			X:         x * 28,
-			Y:         y * 28,
-		}
-	}}
-	@sprite.ToTempl(ctx)
-}
-
-// ChampionSprite is a sprite of a champion icon. It will crop the shadow
-// around the edge.
-type ChampionSprite struct {
-	// TODO: change to new champion id type
-	ChampionID int
-
-	// Size is the size of the image. Currently supports [TextSizeLG],
-	// [TextSize2XL].
-	Size TextSize
-}
-
-templ (m ChampionSprite) ToTempl(ctx context.Context) {
-	{{
-		champion := ddragon.ChampionMap[m.ChampionID]
-
-		sprite := Sprite{}
-
-		sprite.SpriteMap = "/static/sprite/" + champion.Sprite
-
-		x, y := champion.X/48, champion.Y/48
-		if m.Size == TextSizeLG {
-			// 28 x 28
-			size := 28
-			bgHeight := size * 3
-			bgWidth := size * 10
-			if champion.Sprite == "champion5.png" {
-				bgHeight = size * 2 // the last sprite map is not the usual height. this is bec.
-			}
-
-			sprite.BGHeight = bgHeight
-			sprite.BGWidth = bgWidth
-			sprite.Height = size
-			sprite.Width = size
-			sprite.X = x * size
-			sprite.Y = y * size
-		} else {
-			// 36 x 36 i.e. we want 40 x 40 crop out 2 pixels on each side
-			size := 40
-			bgHeight := size * 3
-			bgWidth := size * 10
-			if champion.Sprite == "champion5.png" {
-				bgHeight = size * 2
-			}
-
-			sprite.BGHeight = bgHeight
-			sprite.BGWidth = bgWidth
-			sprite.Height = size
-			sprite.Width = size
-			sprite.X = x * size
-			sprite.Y = y * size
-		}
-	}}
-	@sprite.ToTempl(ctx)
-}
-
-// SummonerSprite is a sprite of a summoner spell icon.
-// NOTE: currently only in 18px
-type SummonerSprite struct {
-	SummonerID int
-}
-
-templ (m SummonerSprite) ToTempl(ctx context.Context) {
-	{{
-		summ := ddragon.SummonerMap[m.SummonerID]
-		x, y := summ.X/48, summ.Y/48
-
-		size := 18
-
-		sprite := Sprite{
-			SpriteMap: "/static/sprite/" + "tiny_" + summ.Sprite,
-			BGHeight:  size * 4,
-			BGWidth:   size * 10,
-			Height:    size,
-			Width:     size,
-			X:         size * x,
-			Y:         size * y,
-		}
-	}}
-	@sprite.ToTempl(ctx)
+css sprite(sprite Sprite) {
+	background-image: { fmt.Sprintf("url(%s)", sprite.SpriteMap) };
+	background-position: { fmt.Sprintf("-%dpx -%dpx", sprite.X, sprite.Y) };
+	background-size: { fmt.Sprintf("%dpx %dpx", sprite.BGWidth, sprite.BGHeight) };
+	width: { fmt.Sprintf("%dpx", sprite.Width) };
+	height: { fmt.Sprintf("%dpx", sprite.Height) };
 }

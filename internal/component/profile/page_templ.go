@@ -10,60 +10,19 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal/component/shared"
 	"github.com/rank1zen/kevin/internal/riot"
-	"time"
 )
 
-// CreatePage creates a profile page.
-func CreatePage(region riot.Region, summoner internal.Summoner, rank *internal.Rank) component.Page {
-	matches := []MatchHistory{}
-
-	for i := range 7 {
-		data := struct {
-			Region riot.Region `json:"region"`
-
-			PUUID riot.PUUID `json:"puuid"`
-
-			// Date should be the start of the day. The request will fetch all
-			// matches played on the day.
-			Date time.Time `json:"date"`
-		}{
-			Region: region,
-			PUUID:  summoner.PUUID,
-			Date:   GetDay(i),
-		}
-
-		j, _ := json.Marshal(data)
-
-		matches = append(matches, MatchHistory{
-			Date:    GetDay(i),
-			Request: string(j),
-		})
-	}
-
+// NewPage creates a profile page.
+func NewPage(ep EndpointProvider, region riot.Region, summoner internal.Summoner, rank *internal.Rank) component.Page {
 	page := component.Page{
 		Title:          fmt.Sprintf("%s#%s - Kevin", summoner.Name, summoner.Tagline),
 		HeaderChildren: shared.DefaultPageHeader(),
-		Content: PageBody{
-			TitleBar: PageTitleBar{
-				Name: summoner.Name,
-				Tag:  summoner.Tagline,
-				Champions: component.Modal{
-					ButtonChildren: component.Button{Icon: component.OpenMenuIcon},
-					PanelChildren:  component.Loader{},
-				},
-				LiveMatch: component.Modal{
-					ButtonChildren: component.Button{Icon: component.OpenMenuIcon},
-					PanelChildren:  component.Loader{},
-				},
-			},
-			Matches: matches,
-		},
+		Children:       NewPageBody(ep, region, summoner, rank),
 	}
 
 	return page
@@ -73,7 +32,25 @@ func CreatePage(region riot.Region, summoner internal.Summoner, rank *internal.R
 type PageBody struct {
 	TitleBar PageTitleBar
 
-	Matches []MatchHistory
+	Matches []component.Section
+}
+
+func NewPageBody(ep EndpointProvider, region riot.Region, summoner internal.Summoner, rank *internal.Rank) PageBody {
+	body := PageBody{
+		TitleBar: NewPageTitleBar(ep, region, summoner, rank),
+		Matches:  []component.Section{},
+	}
+
+	for i := range 7 {
+		path, data := ep.GetMatchHistory(region, summoner.PUUID, i)
+
+		body.Matches = append(body.Matches, component.Section{
+			Heading: GetDay(i).Format("Monday, Jan 2"),
+			Content: NewMatchHistoryLoader(path, string(data)),
+		})
+	}
+
+	return body
 }
 
 func (m PageBody) ToTempl(ctx context.Context) templ.Component {
@@ -105,7 +82,7 @@ func (m PageBody) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex flex-col gap-9 max-w-5xl mx-auto md:flex-row md:flex-wrap\"><div class=\"flex flex-col h-100 gap-y-5 md:order-last md:w-3xs bg-black\"></div><div class=\"flex flex-col flex-1 gap-y-5\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex flex-col gap-9 max-w-5xl mx-auto\"><div class=\"flex flex-col flex-1 gap-y-5\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -129,6 +106,42 @@ type PageTitleBar struct {
 	Rank shared.RankWidget
 
 	Champions, LiveMatch component.Modal
+}
+
+func NewPageTitleBar(ep EndpointProvider, region riot.Region, summoner internal.Summoner, rank *internal.Rank) PageTitleBar {
+	livePath, liveData := ep.GetLiveMatch(region, summoner.PUUID)
+	champPath, champData := ep.GetChampionList(region, summoner.PUUID)
+
+	bar := PageTitleBar{
+		Name: summoner.Name,
+		Tag:  summoner.Tagline,
+		Rank: shared.RankWidget{
+			Rank:         rank,
+			ShowTierName: true,
+		},
+		Champions: component.Modal{
+			ButtonChildren: component.Button{
+				Icon: component.ViewListIcon,
+			},
+			PanelChildren: component.Loader{
+				Path:     champPath,
+				Data:     string(champData),
+				Children: shared.NewLoadingModal(),
+			},
+		},
+		LiveMatch: component.Modal{
+			ButtonChildren: component.Button{
+				Icon: component.OpenMenuIcon,
+			},
+			PanelChildren: component.Loader{
+				Path:     livePath,
+				Data:     string(liveData),
+				Children: shared.NewLoadingModal(),
+			},
+		},
+	}
+
+	return bar
 }
 
 func (m PageTitleBar) ToTempl(ctx context.Context) templ.Component {
@@ -159,7 +172,7 @@ func (m PageTitleBar) ToTempl(ctx context.Context) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s#%s", m.Name, m.Tag))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/page.templ`, Line: 97, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/page.templ`, Line: 109, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

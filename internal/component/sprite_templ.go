@@ -11,10 +11,10 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/ddragon"
 )
 
 // Sprite is a sprite.
+// TODO: Sprite implementation works, but is kinda iffy.
 type Sprite struct {
 	SpriteMap string
 
@@ -29,6 +29,8 @@ type Sprite struct {
 	X int
 
 	Y int
+
+	Round RoundSize
 }
 
 func (m Sprite) ToTempl(ctx context.Context) templ.Component {
@@ -52,15 +54,7 @@ func (m Sprite) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-
-		// TODO: dynamically generating these without tailwind might be
-		// easier
-		spriteMap := fmt.Sprintf("bg-[url(%s)]", m.SpriteMap)
-		bgPosition := fmt.Sprintf("bg-position-[-%dpx_-%dpx]", m.X, m.Y)
-		bgSize := fmt.Sprintf("bg-size-[%dpx_%dpx]", m.BGWidth, m.BGHeight)
-		height := fmt.Sprintf("h-[%dpx]", m.Height)
-		width := fmt.Sprintf("w-[%dpx]", m.Width)
-		var templ_7745c5c3_Var2 = []any{spriteMap, bgPosition, bgSize, height, width}
+		var templ_7745c5c3_Var2 = []any{sprite(m), m.Round.class()}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -86,180 +80,18 @@ func (m Sprite) ToTempl(ctx context.Context) templ.Component {
 	})
 }
 
-type ItemSprite struct {
-	ItemID int
-}
-
-func (m ItemSprite) ToTempl(ctx context.Context) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-
-		item := ddragon.ItemsMap[m.ItemID]
-
-		x, y := item.X/48, item.Y/48
-
-		sprite := Sprite{
-			SpriteMap: "/static/sprite/" + "small_" + item.Sprite,
-			BGHeight:  280,
-			BGWidth:   280,
-			Height:    28,
-			Width:     28,
-			X:         x * 28,
-			Y:         y * 28,
-		}
-		templ_7745c5c3_Err = sprite.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-// ChampionSprite is a sprite of a champion icon. It will crop the shadow
-// around the edge.
-type ChampionSprite struct {
-	// TODO: change to new champion id type
-	ChampionID int
-
-	// Size is the size of the image. Currently supports [TextSizeLG],
-	// [TextSize2XL].
-	Size TextSize
-}
-
-func (m ChampionSprite) ToTempl(ctx context.Context) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-
-		champion := ddragon.ChampionMap[m.ChampionID]
-
-		sprite := Sprite{}
-
-		sprite.SpriteMap = "/static/sprite/" + champion.Sprite
-
-		x, y := champion.X/48, champion.Y/48
-		if m.Size == TextSizeLG {
-			// 28 x 28
-			size := 28
-			bgHeight := size * 3
-			bgWidth := size * 10
-			if champion.Sprite == "champion5.png" {
-				bgHeight = size * 2 // the last sprite map is not the usual height. this is bec.
-			}
-
-			sprite.BGHeight = bgHeight
-			sprite.BGWidth = bgWidth
-			sprite.Height = size
-			sprite.Width = size
-			sprite.X = x * size
-			sprite.Y = y * size
-		} else {
-			// 36 x 36 i.e. we want 40 x 40 crop out 2 pixels on each side
-			size := 40
-			bgHeight := size * 3
-			bgWidth := size * 10
-			if champion.Sprite == "champion5.png" {
-				bgHeight = size * 2
-			}
-
-			sprite.BGHeight = bgHeight
-			sprite.BGWidth = bgWidth
-			sprite.Height = size
-			sprite.Width = size
-			sprite.X = x * size
-			sprite.Y = y * size
-		}
-		templ_7745c5c3_Err = sprite.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-// SummonerSprite is a sprite of a summoner spell icon.
-// NOTE: currently only in 18px
-type SummonerSprite struct {
-	SummonerID int
-}
-
-func (m SummonerSprite) ToTempl(ctx context.Context) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var6 == nil {
-			templ_7745c5c3_Var6 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-
-		summ := ddragon.SummonerMap[m.SummonerID]
-		x, y := summ.X/48, summ.Y/48
-
-		size := 18
-
-		sprite := Sprite{
-			SpriteMap: "/static/sprite/" + "tiny_" + summ.Sprite,
-			BGHeight:  size * 4,
-			BGWidth:   size * 10,
-			Height:    size,
-			Width:     size,
-			X:         size * x,
-			Y:         size * y,
-		}
-		templ_7745c5c3_Err = sprite.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
+func sprite(sprite Sprite) templ.CSSClass {
+	templ_7745c5c3_CSSBuilder := templruntime.GetBuilder()
+	templ_7745c5c3_CSSBuilder.WriteString(string(templ.SanitizeCSS(`background-image`, fmt.Sprintf("url(%s)", sprite.SpriteMap))))
+	templ_7745c5c3_CSSBuilder.WriteString(string(templ.SanitizeCSS(`background-position`, fmt.Sprintf("-%dpx -%dpx", sprite.X, sprite.Y))))
+	templ_7745c5c3_CSSBuilder.WriteString(string(templ.SanitizeCSS(`background-size`, fmt.Sprintf("%dpx %dpx", sprite.BGWidth, sprite.BGHeight))))
+	templ_7745c5c3_CSSBuilder.WriteString(string(templ.SanitizeCSS(`width`, fmt.Sprintf("%dpx", sprite.Width))))
+	templ_7745c5c3_CSSBuilder.WriteString(string(templ.SanitizeCSS(`height`, fmt.Sprintf("%dpx", sprite.Height))))
+	templ_7745c5c3_CSSID := templ.CSSID(`sprite`, templ_7745c5c3_CSSBuilder.String())
+	return templ.ComponentCSSClass{
+		ID:    templ_7745c5c3_CSSID,
+		Class: templ.SafeCSS(`.` + templ_7745c5c3_CSSID + `{` + templ_7745c5c3_CSSBuilder.String() + `}`),
+	}
 }
 
 var _ = templruntime.GeneratedTemplate

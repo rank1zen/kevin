@@ -11,8 +11,12 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
+// DefaultPageHeader is the default header for all pages.
+//
+// TODO: rename to NewPageHeader.
 func DefaultPageHeader() component.Header {
 	return component.Header{
 		StartChildren: []component.Component{
@@ -25,17 +29,24 @@ func DefaultPageHeader() component.Header {
 			component.Popover{
 				ButtonChildren: component.ComponentFunc(regionButton),
 				PanelChildren:  component.PanelWindow{Children: component.ComponentFunc(regionPanel)},
-				PanelOffset:    16,
+				PanelOffset:    8,
 			},
 			component.SummonerSearchBar{},
 		},
 		EndChildren: []component.Component{
-			component.Popover{
-				ButtonChildren: component.Button{Icon: component.OpenMenuIcon},
-				PanelChildren:  nil,
-			},
+			NewExtraMenu(),
 		},
 	}
+}
+
+func NewLoadingHeader() component.Header {
+	c := component.Header{}
+
+	c.EndChildren = []component.Component{
+		component.ModalExitButton{},
+	}
+
+	return c
 }
 
 func regionButton(ctx context.Context) templ.Component {
@@ -114,6 +125,59 @@ func regionPanel(ctx context.Context) templ.Component {
 		}
 		return nil
 	})
+}
+
+type RegionPickerButton struct {
+	Region riot.Region
+}
+
+func RegionPanel() component.PanelWindow {
+	list := component.List{Items: []component.Component{}}
+	for _, region := range []riot.Region{
+		riot.RegionBR1,
+		riot.RegionEUW1,
+		riot.RegionKR,
+		riot.RegionNA1,
+	} {
+		list.Items = append(list.Items, component.MenuItemLayout{Label: regionToString(region), SubLabel: regionName(region)})
+	}
+
+	c := component.PanelWindow{
+		Children: component.ComponentFunc(regionPanel),
+	}
+
+	return c
+}
+
+func regionName(region riot.Region) string {
+	names := map[riot.Region]string{
+		riot.RegionNA1: "North America",
+	}
+
+	return names[region]
+}
+
+func regionToString(region riot.Region) string {
+	return string(region)
+}
+
+func NewExtraMenu() component.Popover {
+	list := component.List{Items: []component.Component{}}
+
+	list.Items = append(list.Items, component.Link{
+		Href:     "https://github.com/rank1zen/kevin",
+		Children: component.MenuItemLayout{Label: "Github"},
+	})
+
+	panel := component.Panel{Children: list}
+
+	popover := component.Popover{
+		ButtonChildren: component.Button{Icon: component.OpenMenuIcon},
+		PanelChildren:  panel,
+		PanelOffset:    8,
+	}
+
+	return popover
 }
 
 var _ = templruntime.GeneratedTemplate

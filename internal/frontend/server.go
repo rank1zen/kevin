@@ -242,7 +242,7 @@ func (f *Server) serveChampions(w http.ResponseWriter, r *http.Request) {
 func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	req, err := decode[GetLiveMatchRequest](r)
+	req, err := decode[LiveMatchRequest](r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		slog.Debug("bad request", "err", err)

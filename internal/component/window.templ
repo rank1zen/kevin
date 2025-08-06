@@ -6,6 +6,7 @@ import (
 )
 
 // PanelWindow is a simple panel for floating layers.
+// Deprecated: use Panel instead
 type PanelWindow struct {
 	// Children are placed in the panel. A nil value indicates a blank
 	// panel with a fixed size.
@@ -22,34 +23,19 @@ templ (m PanelWindow) ToTempl(ctx context.Context) {
 	}
 }
 
-// ModalLayout is the layout used for modal windows.
-type ModalLayout struct {
-	// HeaderChildren are placed in the header. A nil value indicates no
-	// header.
-	HeaderChildren Component
-
-	// Children are placed in the main body. A nil value indicates an empty
-	// page.
+// Panel is a simple panel for floating layers.
+type Panel struct {
+	// Children are placed in the panel. A nil value indicates a blank
+	// panel with a fixed size.
 	Children Component
 }
 
-templ (m ModalLayout) ToTempl(ctx context.Context) {
-	if m.HeaderChildren != nil {
-		<div>
-			<div class="sticky">
-				@m.HeaderChildren.ToTempl(ctx)
-			</div>
-			<div>
-				if m.Children != nil {
-					@m.Children.ToTempl(ctx)
-				}
-			</div>
+templ (m Panel) ToTempl(ctx context.Context) {
+	if m.Children != nil {
+		<div class="w-max bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10">
+			@m.Children.ToTempl(ctx)
 		</div>
 	} else {
-		<div>
-			if m.Children != nil {
-				@m.Children.ToTempl(ctx)
-			}
-		</div>
+		<div class="w-36 h-48 bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10"></div>
 	}
 }

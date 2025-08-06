@@ -23,6 +23,9 @@ const (
 )
 
 // Popover shows a popup on click.
+//
+// NOTE: the panel has fixed rounding for now.
+// NOTE: could add transitions when popup shows.
 type Popover struct {
 	// ButtonChildren are placed inside the button that triggers the
 	// popover. A nil value will default to [Button].
@@ -40,32 +43,43 @@ type Popover struct {
 
 templ (m Popover) ToTempl(ctx context.Context) {
 	<div
-		class="relative"
-		x-id="
-			['dropdown-wrapper']
+		x-id="['popover-button']"
+
+		x-data="{ open: false }"
+
+		@keydown.escape.prevent.stop="
+			open = false;
+			$refs.button.focus();
 		"
-		x-data="{
-			open: false,
-		        toggle() {
-				if (this.open) {
-				    return this.close()
-				}
-				this.$refs.button.focus()
-				this.open = true
-			},
-			close(focusAfter) {
-				if (! this.open) return
-				this.open = false
-				focusAfter && focusAfter.focus()
+
+		@focusin.window="
+			if (! $refs.panel.contains($event.target)) {
+				open = false;
 			}
-		}"
-		@focusin.window="! $refs.panel.contains($event.target) && close()"
+		"
+
+		class="relative"
 	>
 		<button
 			type="button"
+
 			x-ref="button"
-			@click="toggle()"
-			class="relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/10 dark:active:bg-gray-100/10"
+
+			@click="
+				if (open) {
+					open = false;
+				} else {
+					$refs.button.focus();
+					open = true;
+				}
+			"
+
+			:aria-controls="$id('popover-button')"
+
+			:aria-expanded="open"
+
+			class="relative rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
+
 			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
 			if m.ButtonChildren != nil {
@@ -74,20 +88,33 @@ templ (m Popover) ToTempl(ctx context.Context) {
 				@Button{}.ToTempl(ctx)
 			}
 		</button>
-		<div
-			x-cloak
-			x-ref="panel"
-			x-show="open"
-			@click.outside="close($refs.button)"
-			class="z-10"
-			{ generateXAnchorAttrKey(m.PanelPosition, m.PanelOffset)... }
-		>
-			if m.PanelChildren != nil {
-				@m.PanelChildren.ToTempl(ctx)
-			} else {
-				@PanelWindow{}.ToTempl(ctx)
-			}
-		</div>
+		<template x-if="true">
+			// NOTE: rounding is fixed
+			<div
+				x-ref="panel"
+
+				x-show="open"
+
+				@click.outside="
+					if (open) {
+						open = false;
+						$refs.button.focus();
+					}
+				"
+
+				:id="$id('popover-button')"
+
+				class="z-10 rounded-2xl"
+
+				{ generateXAnchorAttrKey(m.PanelPosition, m.PanelOffset)... }
+			>
+				if m.PanelChildren != nil {
+					@m.PanelChildren.ToTempl(ctx)
+				} else {
+					@PanelWindow{}.ToTempl(ctx)
+				}
+			</div>
+		</template>
 	</div>
 }
 

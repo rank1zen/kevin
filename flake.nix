@@ -35,6 +35,10 @@
 
             # https://github.com/golangci/golangci-lint
             golangci-lint
+
+            tailwindcss_4
+
+            rustywind
           ];
         };
       });

@@ -16,6 +16,8 @@ import (
 )
 
 // ItemInventory displays an inventory of match items.
+//
+// TODO: rename to ItemWidget.
 type ItemInventory struct {
 	Items [6]component.Tooltip
 
@@ -37,22 +39,20 @@ func NewItemInventory(items [7]int, visionScore int) ItemInventory {
 		c.Items[i] = component.Tooltip{
 			Tip:         item.Name,
 			ButtonStyle: 1,
-			Children: component.ItemSprite{
-				ItemID: id,
-			},
+			Children:    NewItemSprite(id, component.TextSizeLG),
 		}
 	}
 
 	c.VisionScore = visionScore
 
 	c.Ward = component.Tooltip{
-		Children: component.ItemSprite{
-			ItemID: items[6],
-		},
+		Children: NewWardSprite(items[6], component.TextSizeLG),
 	}
 
 	c.ItemHistory = component.Popover{
-		ButtonChildren: component.ThinButton{Icon: component.DownSmallIcon},
+		ButtonChildren: component.ZThinButton{
+			Icon: component.DownSmallIcon,
+		},
 	}
 
 	return c
@@ -97,7 +97,7 @@ func (m ItemInventory) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"text-xs text-white font-medium bottom-0 absolute\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"text-xs text-white font-medium left-1/2 -translate-x-1/2 bottom-0 absolute\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

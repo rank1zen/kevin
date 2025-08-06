@@ -17,13 +17,26 @@ import (
 	"time"
 )
 
+func NewLiveMatchHeader(avgRank internal.Rank, match internal.LiveMatch) component.Header {
+	header := component.Header{}
+
+	header.StartChildren = []component.Component{
+		NewLiveMatchWidget(avgRank, match.Date),
+	}
+
+	header.CenterChildren = []component.Component{}
+
+	header.EndChildren = []component.Component{
+		component.ModalExitButton{},
+	}
+
+	return header
+}
+
 func NewLiveMatch(avgRank internal.Rank, match internal.LiveMatch) component.ModalLayout {
 	c := component.ModalLayout{}
 
-	c.HeaderChildren = LiveMatchHeader{
-		AverageRank: shared.RankWidget{Rank: &avgRank},
-		StartTime:   match.Date,
-	}
+	c.HeaderChildren = NewLiveMatchHeader(avgRank, match)
 
 	content := LiveMatchContent{
 		BlueSide: component.List{Items: []component.Component{}},
@@ -31,11 +44,11 @@ func NewLiveMatch(avgRank internal.Rank, match internal.LiveMatch) component.Mod
 	}
 
 	for _, p := range match.GetTeamParticipants(100) {
-		content.BlueSide.Items = append(content.BlueSide.Items, newLiveParticipantCard(p))
+		content.BlueSide.Items = append(content.BlueSide.Items, NewLiveParticipantCard(p))
 	}
 
 	for _, p := range match.GetTeamParticipants(200) {
-		content.RedSide.Items = append(content.RedSide.Items, newLiveParticipantCard(p))
+		content.RedSide.Items = append(content.RedSide.Items, NewLiveParticipantCard(p))
 	}
 
 	c.Children = content
@@ -46,21 +59,33 @@ func NewLiveMatch(avgRank internal.Rank, match internal.LiveMatch) component.Mod
 func NewLiveMatchNotFound() component.ModalLayout {
 	c := component.ModalLayout{}
 
+	c.HeaderChildren = component.Header{
+		StartChildren:  []component.Component{},
+		CenterChildren: []component.Component{},
+		EndChildren:    []component.Component{component.ModalExitButton{}},
+	}
+
+	c.Children = component.ComponentFunc(liveMatchNotFoundContent)
+
 	return c
 }
 
-// LiveParticipantCard displays a participant in a live match.
-type LiveParticipantCard struct {
-	ChampionWidget shared.Champion
+type LiveMatchWidget struct {
+	StartTimestamp time.Time
 
-	RuneWidget shared.RuneWidget
-
-	Name, Tag string
-
-	Rank shared.RankWidget
+	AverageRank shared.RankWidget
 }
 
-func (m LiveParticipantCard) ToTempl(ctx context.Context) templ.Component {
+func NewLiveMatchWidget(avgRank internal.Rank, startTS time.Time) LiveMatchWidget {
+	widget := LiveMatchWidget{
+		StartTimestamp: startTS,
+		AverageRank:    shared.RankWidget{Rank: &avgRank, Size: component.TextSizeXS},
+	}
+
+	return widget
+}
+
+func (m LiveMatchWidget) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -81,24 +106,24 @@ func (m LiveParticipantCard) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex h-15 gap-x-4 px-4 justify-between items-center\"><div class=\"flex gap-x-4\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.ChampionWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex-1 min-w-0 h-9\"><div class=\"text-sm text-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"h-9\"><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(m.Name + "#" + m.Tag)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(m.StartTimestamp.Format("Jan 2, 3:04PM"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/live.templ`, Line: 61, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/live.templ`, Line: 83, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = m.AverageRank.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -106,42 +131,18 @@ func (m LiveParticipantCard) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = m.Rank.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.RuneWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"flex gap-x-4\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.RuneWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
 		return nil
 	})
 }
 
-// LiveMatchHeader is a layout for details on a live match.
-type LiveMatchHeader struct {
-	AverageRank shared.RankWidget
+type ParticipantWidget struct {
+	Name, Tag string
 
-	StartTime time.Time
+	// TODO: add docs
+	Rank *shared.RankWidget
 }
 
-func (m LiveMatchHeader) ToTempl(ctx context.Context) templ.Component {
+func (m ParticipantWidget) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -162,24 +163,94 @@ func (m LiveMatchHeader) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"flex items-center justify-between gap-2\"><div class=\"flex\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex flex-col h-9\"><div class=\"text-sm text-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%v", m.StartTime))
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s#%s", m.Name, m.Tag))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/live.templ`, Line: 83, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/live.templ`, Line: 99, Col: 40}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div><div class=\"flex\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = m.AverageRank.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if m.Rank != nil {
+			templ_7745c5c3_Err = m.Rank.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+// LiveParticipantCard displays a participant in a live match.
+type LiveParticipantCard struct {
+	ChampionWidget shared.Champion
+
+	RuneWidget shared.RuneWidget
+
+	Participant ParticipantWidget
+}
+
+func NewLiveParticipantCard(p internal.LiveParticipant) LiveParticipantCard {
+	c := LiveParticipantCard{
+		ChampionWidget: shared.NewLiveChampionWidget(p.ChampionID, p.SummonersIDs),
+		RuneWidget:     shared.NewRuneWidget(p.Runes),
+		Participant:    ParticipantWidget{Name: "XXX", Tag: "XXX"},
+	}
+
+	return c
+}
+
+func (m LiveParticipantCard) ToTempl(ctx context.Context) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var5 == nil {
+			templ_7745c5c3_Var5 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"flex h-15 gap-x-4 px-4 justify-between items-center\"><div class=\"flex gap-x-4\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = m.ChampionWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = m.Participant.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div><div class=\"flex gap-x-4\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = m.RuneWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -212,9 +283,9 @@ func (m LiveMatchContent) ToTempl(ctx context.Context) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"px-2\"><div class=\"\"><h2 class=\"font-bold text-base text-gray-900/90 dark:text-gray-100/90 mt-9\">Blue Side</h2><div class=\"mt-3\">")
@@ -241,43 +312,7 @@ func (m LiveMatchContent) ToTempl(ctx context.Context) templ.Component {
 	})
 }
 
-// FIXME: very bare
-type LiveMatchNotFound struct{}
-
-func (m LiveMatchNotFound) ToTempl(ctx context.Context) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var6 == nil {
-			templ_7745c5c3_Var6 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"px-2\">Live match is not found</div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-// LiveMatchLoader requests the server for [LiveMatchContent].
-// Uses [LoaderTypeOnReveal].
-type LiveMatchLoader struct{}
-
-func (m LiveMatchLoader) ToTempl(ctx context.Context) templ.Component {
+func liveMatchNotFoundContent(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -298,20 +333,12 @@ func (m LiveMatchLoader) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"w-full flex-1 flex items-center justify-center\"><span class=\"font-semibold text-base text-gray-900/90 dark:text-gray-100/90\">Summoner not in game</span></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		return nil
 	})
-}
-
-func newLiveParticipantCard(p internal.LiveParticipant) LiveParticipantCard {
-	c := LiveParticipantCard{
-		ChampionWidget: shared.NewLiveChampionWidget(p.ChampionID, p.SummonersIDs),
-		RuneWidget:     shared.NewRuneWidget(p.Runes),
-		Name:           "XXX",
-		Tag:            "XXX",
-		Rank:           shared.NewRankWidget(nil),
-	}
-
-	return c
 }
 
 var _ = templruntime.GeneratedTemplate

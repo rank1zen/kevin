@@ -73,12 +73,12 @@ func (h *Handler) UpdateSummoner(ctx context.Context, region riot.Region, name, 
 	return nil
 }
 
-type GetLiveMatchRequest struct {
+type LiveMatchRequest struct {
 	Region riot.Region `json:"region"`
 	PUUID  riot.PUUID  `json:"puuid"`
 }
 
-func (r GetLiveMatchRequest) Validate() (problems map[string]string) {
+func (r LiveMatchRequest) Validate() (problems map[string]string) {
 	problems = make(map[string]string)
 	validatePUUID(problems, r.PUUID)
 	return problems
@@ -86,7 +86,7 @@ func (r GetLiveMatchRequest) Validate() (problems map[string]string) {
 
 // GetLiveMatch returns a live match view depending on whether the summoner is
 // on game.
-func (h *Handler) GetLiveMatch(ctx context.Context, req GetLiveMatchRequest) (component.Component, error) {
+func (h *Handler) GetLiveMatch(ctx context.Context, req LiveMatchRequest) (component.Component, error) {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
@@ -158,14 +158,15 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 
 	var v component.Component
 	if rank.Detail == nil {
-		v = profile.CreatePage(region, summoner, nil)
+		v = profile.NewPage(EndpointProvider{}, region, summoner, nil)
 	} else {
-		v = profile.CreatePage(region, summoner, &rank.Detail.Rank)
+		v = profile.NewPage(EndpointProvider{}, region, summoner, &rank.Detail.Rank)
 	}
 
 	return v, nil
 }
 
+// TODO: rename to SummonerChampionsRequest
 type ZGetSummonerChampionsRequest struct {
 	Region riot.Region `json:"region"`
 	PUUID  riot.PUUID  `json:"puuid"`
@@ -229,6 +230,11 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 	storeMatches, err := ds.GetStore().GetZMatches(ctx, req.PUUID, req.Date, end)
 	if err != nil {
 		return nil, fmt.Errorf("storage failure: %w", err)
+	}
+
+	if len(storeMatches) == 0 {
+		v := profile.NewMatchHistoryNoMatches()
+		return v, nil
 	}
 
 	v := profile.NewMatchHistoryList(storeMatches)

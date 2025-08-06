@@ -111,9 +111,11 @@ func NewRuneWidget(runes internal.RunePage) RuneWidget {
 		},
 		MoreInfo: component.Popover{
 			ButtonChildren: component.ZThinButton{
-				Icon: nil,
+				Icon: component.DownSmallIcon,
 			},
-			PanelChildren: NewRuneRow(runes),
+			PanelChildren: component.Panel{
+				Children: RuneExtraInfoContent{RuneRow: NewRuneRow(runes)},
+			},
 		},
 	}
 
@@ -187,10 +189,10 @@ type RuneRow struct {
 func NewRuneRow(runes internal.RunePage) RuneRow {
 	w := RuneRow{}
 
-	keystone := ddragon.RuneMap[runes.SecondaryTree]
+	keystone := ddragon.RuneMap[runes.PrimaryKeystone]
 	w.Keystone = component.Tooltip{
 		ButtonStyle: 1,
-		Tip:         "s",
+		Tip:         keystone.Name,
 		Children:    RuneImage{Src: path.Join("/static/", keystone.IconPath), Size: 9},
 	}
 
@@ -247,7 +249,7 @@ func (m RuneRow) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"flex flex-none gap-x-2 items-center bg-gray-900/5 dark:bg-gray-100/5 rounded-lg\"><div class=\"h-9 flex items-center gap-x-1\"><div class=\"size-9\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"flex flex-none gap-x-4 items-center bg-gray-900/5 dark:bg-gray-100/5 rounded-lg\"><div class=\"h-9 flex items-center gap-x-1\"><div class=\"size-9\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -286,6 +288,47 @@ func (m RuneRow) ToTempl(ctx context.Context) templ.Component {
 			}
 		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+type RuneExtraInfoContent struct {
+	RuneRow RuneRow
+}
+
+func (m RuneExtraInfoContent) ToTempl(ctx context.Context) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var7 == nil {
+			templ_7745c5c3_Var7 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"p-2\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = m.RuneRow.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

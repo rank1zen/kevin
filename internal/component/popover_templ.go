@@ -31,6 +31,9 @@ const (
 )
 
 // Popover shows a popup on click.
+//
+// NOTE: the panel has fixed rounding for now.
+// NOTE: could add transitions when popup shows.
 type Popover struct {
 	// ButtonChildren are placed inside the button that triggers the
 	// popover. A nil value will default to [Button].
@@ -67,7 +70,7 @@ func (m Popover) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"relative\" x-id=\"\n\t\t\t['dropdown-wrapper']\n\t\t\" x-data=\"{\n\t\t\topen: false,\n\t\t        toggle() {\n\t\t\t\tif (this.open) {\n\t\t\t\t    return this.close()\n\t\t\t\t}\n\t\t\t\tthis.$refs.button.focus()\n\t\t\t\tthis.open = true\n\t\t\t},\n\t\t\tclose(focusAfter) {\n\t\t\t\tif (! this.open) return\n\t\t\t\tthis.open = false\n\t\t\t\tfocusAfter && focusAfter.focus()\n\t\t\t}\n\t\t}\" @focusin.window=\"! $refs.panel.contains($event.target) && close()\"><button type=\"button\" x-ref=\"button\" @click=\"toggle()\" class=\"relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/10 dark:active:bg-gray-100/10\" :class=\"open && 'bg-gray-900/5 dark:bg-gray-100/5'\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['popover-button']\" x-data=\"{ open: false }\" @keydown.escape.prevent.stop=\"\n\t\t\topen = false;\n\t\t\t$refs.button.focus();\n\t\t\" @focusin.window=\"\n\t\t\tif (! $refs.panel.contains($event.target)) {\n\t\t\t\topen = false;\n\t\t\t}\n\t\t\" class=\"relative\"><button type=\"button\" x-ref=\"button\" @click=\"\n\t\t\t\tif (open) {\n\t\t\t\t\topen = false;\n\t\t\t\t} else {\n\t\t\t\t\t$refs.button.focus();\n\t\t\t\t\topen = true;\n\t\t\t\t}\n\t\t\t\" :aria-controls=\"$id('popover-button')\" :aria-expanded=\"open\" class=\"relative rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10\" :class=\"open && 'bg-gray-900/5 dark:bg-gray-100/5'\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -82,7 +85,7 @@ func (m Popover) ToTempl(ctx context.Context) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button><div x-cloak x-ref=\"panel\" x-show=\"open\" @click.outside=\"close($refs.button)\" class=\"z-10\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button><template x-if=\"true\"><div x-ref=\"panel\" x-show=\"open\" @click.outside=\"\n\t\t\t\t\tif (open) {\n\t\t\t\t\t\topen = false;\n\t\t\t\t\t\t$refs.button.focus();\n\t\t\t\t\t}\n\t\t\t\t\" :id=\"$id('popover-button')\" class=\"z-10 rounded-2xl\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -105,7 +108,7 @@ func (m Popover) ToTempl(ctx context.Context) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></template></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

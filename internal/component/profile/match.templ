@@ -4,12 +4,11 @@ import (
 	"context"
 	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal/component/shared"
-	"time"
 	"github.com/rank1zen/kevin/internal"
 )
 
 func NewMatchHistoryList(matches []internal.SummonerMatch) component.List {
-	c := component.List{Items: []component.Component{}}
+	c := component.List{Style: component.ListStyleRaised, Items: []component.Component{}}
 
 	for _, m := range matches {
 		card := MatchHistoryCard{
@@ -18,18 +17,35 @@ func NewMatchHistoryList(matches []internal.SummonerMatch) component.List {
 			CSWidget:       shared.NewCSWidget(m.CreepScore, m.CreepScorePerMinute),
 			RuneWidget:     shared.NewRuneWidget(m.Runes),
 			ItemWidget:     shared.NewItemInventory(m.Items, m.VisionScore),
-			RankChange:     shared.NewRankDeltaWidget(nil, nil, false),
+			RankChange:     shared.NewRankDeltaWidget(nil, nil, m.Win),
 		}
 
-		drawer := component.Drawer{
+		_ = component.Drawer{
 			ButtonChildren: card,
 			PanelChildren:  nil,
 		}
 
-		c.Items = append(c.Items, drawer)
+		c.Items = append(c.Items, card)
 	}
 
 	return c
+}
+
+func NewMatchHistoryNoMatches() component.List {
+	c := component.List{Style: component.ListStyleRaised, Items: []component.Component{}}
+
+
+	c.Items = append(c.Items, component.ComponentFunc(jlkjksdfjksfjk))
+
+	return c
+}
+
+templ jlkjksdfjksfjk(ctx context.Context) {
+	<div class="flex justify-center items-center w-full h-15">
+		<span class="font-medium text-gray-900/90 dark:text-gray-100/90 text-sm">
+			No matches played
+		</span>
+	</div>
 }
 
 // TODO: not a lot
@@ -78,21 +94,27 @@ func NewMatchDetail(match internal.Match) component.ModalLayout {
 	return layout
 }
 
-// MatchHistory is a day of matches.
-type MatchHistory struct {
-	Date time.Time
+// NewMatchHistoryLoader creates a loading component for match history.
+func NewMatchHistoryLoader(path string, data string) component.Loader {
+	list := component.List{
+		Style: component.ListStyleRaised,
+		Items: []component.Component{},
+	}
 
-	Request string
+	loader := component.Loader{
+		Path:     path,
+		Data:     data,
+		Children: list,
+	}
+
+	list.Items = append(list.Items, component.ComponentFunc(mhc))
+
+	return loader
 }
 
-templ (m MatchHistory) ToTempl(ctx context.Context) {
-	<div>
-		<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90">
-			{ m.Date.Format("Monday, Jan 2") }
-		</h2>
-		<div class="mt-2">
-			@MatchHistoryLoader(m.Request).ToTempl(ctx)
-		</div>
+templ mhc(ctx context.Context) {
+	<div class="px-4 h-15 flex justify-center items-center">
+		@component.Spinner{}.ToTempl(ctx)
 	</div>
 }
 
@@ -125,30 +147,6 @@ templ (m MatchHistoryCard) ToTempl(ctx context.Context) {
 			@m.RuneWidget.ToTempl(ctx)
 			@m.ItemWidget.ToTempl(ctx)
 		</div>
-	</div>
-}
-
-// MatchHistoryLoader creates a loading component for match history.
-func MatchHistoryLoader(data string) component.Loader {
-	list := component.List{
-		Style: component.ListStyleRaised,
-		Items: []component.Component{},
-	}
-
-	loader := component.Loader{
-		Path:     "/summoner/matchlist",
-		Data:     data,
-		Children: list,
-	}
-
-	list.Items = append(list.Items, component.ComponentFunc(mhc))
-
-	return loader
-}
-
-templ mhc(ctx context.Context) {
-	<div class="px-4 h-15 flex justify-center items-center">
-		@component.Spinner{}.ToTempl(ctx)
 	</div>
 }
 

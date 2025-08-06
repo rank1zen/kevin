@@ -4,12 +4,18 @@ import (
 	"context"
 )
 
+// Tooltip shows a tooltip on hover.
+// NOTE: Tooltip uses the title attribute, TODO: eventually implement custom
+// tooltip hovers.
 type Tooltip struct {
 	Tip string
 
-	ButtonStyle int // for now 0 is shadow, 1 is flat
+	// NOTE: not used. TODO: implement custom styles.
+	ButtonStyle int
 
 	Children Component
+
+	Round RoundSize
 }
 
 templ (m Tooltip) ToTempl(ctx context.Context) {
@@ -20,10 +26,9 @@ templ (m Tooltip) ToTempl(ctx context.Context) {
 		if m.ButtonStyle == 0 {
 			class=""
 		} else {
-			class="bg-transparent rounded-lg dark:hover:bg-gray-100/5 hover:bg-gray-900/5"
+			class={ "transition dark:hover:bg-gray-100/5 hover:bg-gray-900/5", m.Round.class() }
 		}
 	>
-		// class="shadow-xs shadow-gray-900/50 dark:shadow-gray-100/50 rounded-lg dark:hover:shadow-gray-100/90 hover:shadow-gray-900/90"
 		@m.Children.ToTempl(ctx)
 	</div>
 }

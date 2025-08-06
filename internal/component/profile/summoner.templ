@@ -1,36 +1,36 @@
 package profile
 
-import "fmt"
-import "github.com/rank1zen/kevin/internal/component/shared"
-import "context"
-import "github.com/rank1zen/kevin/internal/component"
-import "time"
-import "github.com/rank1zen/kevin/internal"
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/shared"
+	"github.com/rank1zen/kevin/internal/ddragon"
+	"time"
+)
 
+func NewChampstatHeader() component.Header {
+	header := component.Header{}
+
+	header.CenterChildren = []component.Component{
+		component.ComponentFunc(dakjdakldjkl),
+	}
+
+	header.EndChildren = []component.Component{
+		component.ModalExitButton{},
+	}
+
+	return header
+}
+
+// TODO: rename to NewSummonerChampstat
 func NewSummonerChampionList(champions []internal.SummonerChampion) component.ModalLayout {
 	c := component.ModalLayout{}
 
-	c.HeaderChildren = nil
+	c.HeaderChildren = NewChampstatHeader()
 
-	content := SummonerChampionStatContent{
-		ChampionList: component.List{Items: []component.Component{}},
-	}
-
-	for _, m := range champions{
-		content.ChampionList.Items = append(
-			content.ChampionList.Items,
-			SummonerChampionCard{
-				ChampionWidget: shared.NewSimpleChampionWidget(int(m.Champion)),
-				GamesPlayed: m.GamesPlayed,
-				Wins: m.Wins,
-				Losses: m.Losses,
-				WinRate: (float32(m.Wins) / (float32(m.Wins) + float32(m.Losses))),
-				KDAWidget: shared.NewKDAWidget(int(m.AverageKillsPerGame), int(m.AverageDeathsPerGame), int(m.AverageAssistsPerGame)),
-				CSWidget: shared.NewCSWidget(int(m.AverageCreepScorePerGame), m.AverageCreepScorePerMinutePerGame),
-			},
-		)
-	}
-
+	c.Children = NewSummonerChampionStatContent(champions)
 
 	return c
 }
@@ -41,67 +41,123 @@ func NewSummonerChampionList(champions []internal.SummonerChampion) component.Mo
 type SummonerChampionCard struct {
 	ChampionWidget shared.Champion
 
-	GamesPlayed int
+	SummonerChampion SummonerChampionWidget
 
-	Wins, Losses int
-
-	WinRate float32
+	WinRate WinRateWidget
 
 	KDAWidget shared.KDAWidget
 
 	CSWidget shared.CSWidget
 }
 
-templ (m SummonerChampionCard) buildWinRateWidget() {
-	<div class="h-9 flex-1 min-w-0 whitespace-nowrap">
-		<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
-			{ fmt.Sprintf("%d Games, %d W %d L", m.Wins, m.Losses, m.GamesPlayed) }
-		</div>
-		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
-			{ fmt.Sprintf("%.0f%%", m.WinRate*100) }
-		</div>
-	</div>
+func NewSummonerChampionCard(champion internal.SummonerChampion) SummonerChampionCard {
+	name := ddragon.ChampionMap[int(champion.Champion)].Name
+
+	card := SummonerChampionCard{
+		ChampionWidget:   shared.NewSimpleChampionWidget(int(champion.Champion)),
+		SummonerChampion: SummonerChampionWidget{ChampionName: name, GamesPlayed: champion.GamesPlayed},
+		WinRate:          NewWinRateWidget(champion.Wins, champion.Losses),
+
+		KDAWidget: shared.KDAWidget{
+			Kills:      int(champion.AverageKillsPerGame),
+			Deaths:     int(champion.AverageKillsPerGame),
+			Assists:    int(champion.AverageKillsPerGame),
+			AlignRight: true,
+		},
+
+		CSWidget: shared.CSWidget{
+			CS:          int(champion.AverageCreepScorePerGame),
+			CSPerMinute: champion.AverageCreepScorePerMinutePerGame,
+			AlignRight:  true,
+		},
+	}
+
+	return card
 }
 
 templ (m SummonerChampionCard) ToTempl(ctx context.Context) {
-	<div class="flex px-4 gap-x-4 py-3 justify-between items-center">
-		<div class="flex flex-1 min-w-0 gap-x-2">
+	<div class="flex h-15 px-4 gap-x-4 justify-between items-center">
+		<div class="flex min-w-0 gap-x-2">
 			@m.ChampionWidget.ToTempl(ctx)
-			@m.buildWinRateWidget()
+			@m.SummonerChampion.ToTempl(ctx)
+			@m.WinRate.ToTempl(ctx)
 		</div>
-		<div class="flex gap-x-2">
+		<div class="flex gap-x-4">
 			@m.KDAWidget.ToTempl(ctx)
 			@m.CSWidget.ToTempl(ctx)
 		</div>
 	</div>
 }
 
-type SummonerChampionStatHeader struct {
-}
-
-templ (m SummonerChampionStatHeader) ToTempl(ctx context.Context) {
-	<div></div>
-}
-
+// TODO: rename to SummonerChampstatBody
 type SummonerChampionStatContent struct {
-	ChampionList component.List
+	Champions component.List
+}
+
+func NewSummonerChampionStatContent(champions []internal.SummonerChampion) SummonerChampionStatContent {
+	list := component.List{Style: component.ListStyleRaised, Items: []component.Component{}}
+
+	for _, c := range champions {
+		list.Items = append(list.Items, NewSummonerChampionCard(c))
+	}
+
+	content := SummonerChampionStatContent{Champions: list}
+
+	return content
 }
 
 templ (m SummonerChampionStatContent) ToTempl(ctx context.Context) {
-	<div class="px-2 mt-3">
-		@m.ChampionList.ToTempl(ctx)
+	<div class="px-3 py-5 md:mx-auto md:max-w-xl">
+		@m.Champions.ToTempl(ctx)
 	</div>
 }
 
-// SummonerChampionStatLoader requests the server for
-// [SummonerChampionStatContent].
-//
-// Uses [LoaderTypeOnReveal].
-type SummonerChampionStatLoader struct{}
+type SummonerChampionWidget struct {
+	ChampionName string
 
-templ (m SummonerChampionStatLoader) ToTempl(ctx context.Context) {
-	<div class="px-2 mt-3">
-		This is a loader for summoner champions.
+	GamesPlayed int
+}
+
+templ (m SummonerChampionWidget) ToTempl(ctx context.Context) {
+	<div class="h-9 w-13">
+		<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
+			{ m.ChampionName }
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%d Games", m.GamesPlayed) }
+		</div>
+	</div>
+}
+
+type WinRateWidget struct {
+	Wins, Losses int
+
+	WinRate float32
+}
+
+func NewWinRateWidget(w, l int) WinRateWidget {
+	widget := WinRateWidget{
+		Wins:    w,
+		Losses:  l,
+		WinRate: float32(w) / (float32(w) + float32(l)),
+	}
+
+	return widget
+}
+
+templ (m WinRateWidget) ToTempl(ctx context.Context) {
+	<div class="h-9 w-13">
+		<div class="flex text-sm font-semibold">
+			<div class="flex-1 text-green-500/90">
+				{ fmt.Sprintf("%d", m.Wins) }
+			</div>
+			<div class="flex-1 text-red-500/90">
+				{ fmt.Sprintf("%d", m.Losses) }
+			</div>
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%.0f%%", m.WinRate*100) }
+		</div>
 	</div>
 }
 
@@ -112,4 +168,12 @@ func GetDay(offset int) time.Time {
 	y, m, d := now.Date()
 	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	return startOfDay.Add(time.Duration(-24*offset) * time.Hour)
+}
+
+templ dakjdakldjkl(ctx context.Context) {
+	<div class="flex w-full items-center h-9">
+		<span class="text-sm font-bold text-gray-900/90 dark:text-gray-100/90">
+			Champions
+		</span>
+	</div>
 }

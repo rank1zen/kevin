@@ -47,9 +47,11 @@ func NewRuneWidget(runes internal.RunePage) RuneWidget {
 		},
 		MoreInfo: component.Popover{
 			ButtonChildren: component.ZThinButton{
-				Icon: nil,
+				Icon: component.DownSmallIcon,
 			},
-			PanelChildren:  NewRuneRow(runes),
+			PanelChildren: component.Panel{
+				Children: RuneExtraInfoContent{RuneRow: NewRuneRow(runes)},
+			},
 		},
 	}
 
@@ -84,10 +86,10 @@ type RuneRow struct {
 func NewRuneRow(runes internal.RunePage) RuneRow {
 	w := RuneRow{}
 
-	keystone := ddragon.RuneMap[runes.SecondaryTree]
+	keystone := ddragon.RuneMap[runes.PrimaryKeystone]
 	w.Keystone = component.Tooltip{
 		ButtonStyle: 1,
-		Tip:      "s",
+		Tip:      keystone.Name,
 		Children: RuneImage{Src: path.Join("/static/", keystone.IconPath), Size: 9},
 	}
 
@@ -124,7 +126,7 @@ func NewRuneRow(runes internal.RunePage) RuneRow {
 }
 
 templ (m RuneRow) ToTempl(ctx context.Context) {
-	<div class="flex flex-none gap-x-2 items-center bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+	<div class="flex flex-none gap-x-4 items-center bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
 		<div class="h-9 flex items-center gap-x-1">
 			<div class="size-9">
 				@m.Keystone.ToTempl(ctx)
@@ -143,5 +145,15 @@ templ (m RuneRow) ToTempl(ctx context.Context) {
 				@c.ToTempl(ctx)
 			}
 		</div>
+	</div>
+}
+
+type RuneExtraInfoContent struct {
+	RuneRow RuneRow
+}
+
+templ (m RuneExtraInfoContent) ToTempl(ctx context.Context) {
+	<div class="p-2">
+		@m.RuneRow.ToTempl(ctx)
 	</div>
 }

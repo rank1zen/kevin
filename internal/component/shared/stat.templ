@@ -7,9 +7,10 @@ import (
 
 func NewKDAWidget(k, d, a int) KDAWidget {
 	c := KDAWidget{
-		Kills: k,
-		Deaths: d,
-		Assists: a,
+		Kills:          k,
+		Deaths:         d,
+		Assists:        a,
+		KilLDeathRatio: (float32(k) + float32(a)) / float32(d),
 	}
 
 	return c
@@ -17,7 +18,7 @@ func NewKDAWidget(k, d, a int) KDAWidget {
 
 func NewCSWidget(cs int, cspm float32) CSWidget {
 	c := CSWidget{
-		CS: cs,
+		CS:          cs,
 		CSPerMinute: cspm,
 	}
 
@@ -29,30 +30,38 @@ type KDAWidget struct {
 	Kills, Deaths, Assists int
 
 	KilLDeathRatio float32
+
+	AlignRight bool
 }
 
 templ (m KDAWidget) ToTempl(ctx context.Context) {
-	<div class="h-9">
+	<div class="h-9 w-18">
 		<div class="flex flex-none items-center font-semibold text-sm">
-			<div class="w-4 text-gray-900/90 dark:text-gray-100/90 text-left">
+			<div class="flex-1 text-gray-900/90 dark:text-gray-100/90 text-left">
 				{ fmt.Sprintf("%d", m.Kills) }
 			</div>
-			<div class="text-gray-900/5 dark:text-gray-100/5">
+			<div class="text-gray-900/5 dark:text-gray-100/5 mx-1">
 				/
 			</div>
-			<div class="w-5 text-red-500/90 text-center">
+			<div class="flex-1 text-red-500/90 text-center">
 				{ fmt.Sprintf("%d", m.Deaths) }
 			</div>
-			<div class="text-gray-900/5 dark:text-gray-100/5">
+			<div class="text-gray-900/5 dark:text-gray-100/5 mx-1">
 				/
 			</div>
-			<div class="w-4 text-gray-900/90 dark:text-gray-100/90 text-right">
+			<div class="flex-1 text-gray-900/90 dark:text-gray-100/90 text-right">
 				{ fmt.Sprintf("%d", m.Assists) }
 			</div>
 		</div>
-		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
-			{ fmt.Sprintf("%.2f KDA", m.KilLDeathRatio) }
-		</div>
+		if m.AlignRight {
+			<div class="text-xs text-right text-gray-900/90 dark:text-gray-100/90">
+				{ fmt.Sprintf("%.2f KDA", m.KilLDeathRatio) }
+			</div>
+		} else {
+			<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+				{ fmt.Sprintf("%.2f KDA", m.KilLDeathRatio) }
+			</div>
+		}
 	</div>
 }
 
@@ -60,10 +69,20 @@ type CSWidget struct {
 	CS int
 
 	CSPerMinute float32
+
+	AlignRight bool
 }
 
 templ (m CSWidget) ToTempl(ctx context.Context) {
-	<div class="h-9">
+	{{
+		var textAlign string
+		if m.AlignRight {
+			textAlign = "text-right"
+		} else {
+			textAlign = "text-left"
+		}
+	}}
+	<div class={ "h-9 w-15", textAlign }>
 		<div class="font-semibold text-sm text-gray-900/90 dark:text-gray-100/90">
 			{ fmt.Sprintf("%d CS", m.CS) }
 		</div>

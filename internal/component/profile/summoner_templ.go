@@ -8,36 +8,37 @@ package profile
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "fmt"
-import "github.com/rank1zen/kevin/internal/component/shared"
-import "context"
-import "github.com/rank1zen/kevin/internal/component"
-import "time"
-import "github.com/rank1zen/kevin/internal"
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/shared"
+	"github.com/rank1zen/kevin/internal/ddragon"
+	"time"
+)
 
+func NewChampstatHeader() component.Header {
+	header := component.Header{}
+
+	header.CenterChildren = []component.Component{
+		component.ComponentFunc(dakjdakldjkl),
+	}
+
+	header.EndChildren = []component.Component{
+		component.ModalExitButton{},
+	}
+
+	return header
+}
+
+// TODO: rename to NewSummonerChampstat
 func NewSummonerChampionList(champions []internal.SummonerChampion) component.ModalLayout {
 	c := component.ModalLayout{}
 
-	c.HeaderChildren = nil
+	c.HeaderChildren = NewChampstatHeader()
 
-	content := SummonerChampionStatContent{
-		ChampionList: component.List{Items: []component.Component{}},
-	}
-
-	for _, m := range champions {
-		content.ChampionList.Items = append(
-			content.ChampionList.Items,
-			SummonerChampionCard{
-				ChampionWidget: shared.NewSimpleChampionWidget(int(m.Champion)),
-				GamesPlayed:    m.GamesPlayed,
-				Wins:           m.Wins,
-				Losses:         m.Losses,
-				WinRate:        (float32(m.Wins) / (float32(m.Wins) + float32(m.Losses))),
-				KDAWidget:      shared.NewKDAWidget(int(m.AverageKillsPerGame), int(m.AverageDeathsPerGame), int(m.AverageAssistsPerGame)),
-				CSWidget:       shared.NewCSWidget(int(m.AverageCreepScorePerGame), m.AverageCreepScorePerMinutePerGame),
-			},
-		)
-	}
+	c.Children = NewSummonerChampionStatContent(champions)
 
 	return c
 }
@@ -48,18 +49,41 @@ func NewSummonerChampionList(champions []internal.SummonerChampion) component.Mo
 type SummonerChampionCard struct {
 	ChampionWidget shared.Champion
 
-	GamesPlayed int
+	SummonerChampion SummonerChampionWidget
 
-	Wins, Losses int
-
-	WinRate float32
+	WinRate WinRateWidget
 
 	KDAWidget shared.KDAWidget
 
 	CSWidget shared.CSWidget
 }
 
-func (m SummonerChampionCard) buildWinRateWidget() templ.Component {
+func NewSummonerChampionCard(champion internal.SummonerChampion) SummonerChampionCard {
+	name := ddragon.ChampionMap[int(champion.Champion)].Name
+
+	card := SummonerChampionCard{
+		ChampionWidget:   shared.NewSimpleChampionWidget(int(champion.Champion)),
+		SummonerChampion: SummonerChampionWidget{ChampionName: name, GamesPlayed: champion.GamesPlayed},
+		WinRate:          NewWinRateWidget(champion.Wins, champion.Losses),
+
+		KDAWidget: shared.KDAWidget{
+			Kills:      int(champion.AverageKillsPerGame),
+			Deaths:     int(champion.AverageKillsPerGame),
+			Assists:    int(champion.AverageKillsPerGame),
+			AlignRight: true,
+		},
+
+		CSWidget: shared.CSWidget{
+			CS:          int(champion.AverageCreepScorePerGame),
+			CSPerMinute: champion.AverageCreepScorePerMinutePerGame,
+			AlignRight:  true,
+		},
+	}
+
+	return card
+}
+
+func (m SummonerChampionCard) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -80,62 +104,7 @@ func (m SummonerChampionCard) buildWinRateWidget() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"h-9 flex-1 min-w-0 whitespace-nowrap\"><div class=\"text-sm font-semibold text-gray-900/90 dark:text-gray-100/90\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d Games, %d W %d L", m.Wins, m.Losses, m.GamesPlayed))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/summoner.templ`, Line: 58, Col: 72}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"text-xs text-gray-900/90 dark:text-gray-100/90\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f%%", m.WinRate*100))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/summoner.templ`, Line: 61, Col: 41}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-func (m SummonerChampionCard) ToTempl(ctx context.Context) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex px-4 gap-x-4 py-3 justify-between items-center\"><div class=\"flex flex-1 min-w-0 gap-x-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex h-15 px-4 gap-x-4 justify-between items-center\"><div class=\"flex min-w-0 gap-x-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -143,11 +112,15 @@ func (m SummonerChampionCard) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = m.buildWinRateWidget().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = m.SummonerChampion.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"flex gap-x-2\">")
+		templ_7745c5c3_Err = m.WinRate.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"flex gap-x-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -159,7 +132,7 @@ func (m SummonerChampionCard) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -167,10 +140,24 @@ func (m SummonerChampionCard) ToTempl(ctx context.Context) templ.Component {
 	})
 }
 
-type SummonerChampionStatHeader struct {
+// TODO: rename to SummonerChampstatBody
+type SummonerChampionStatContent struct {
+	Champions component.List
 }
 
-func (m SummonerChampionStatHeader) ToTempl(ctx context.Context) templ.Component {
+func NewSummonerChampionStatContent(champions []internal.SummonerChampion) SummonerChampionStatContent {
+	list := component.List{Style: component.ListStyleRaised, Items: []component.Component{}}
+
+	for _, c := range champions {
+		list.Items = append(list.Items, NewSummonerChampionCard(c))
+	}
+
+	content := SummonerChampionStatContent{Champions: list}
+
+	return content
+}
+
+func (m SummonerChampionStatContent) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -186,12 +173,20 @@ func (m SummonerChampionStatHeader) ToTempl(ctx context.Context) templ.Component
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"px-3 py-5 md:mx-auto md:max-w-xl\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = m.Champions.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -199,11 +194,84 @@ func (m SummonerChampionStatHeader) ToTempl(ctx context.Context) templ.Component
 	})
 }
 
-type SummonerChampionStatContent struct {
-	ChampionList component.List
+type SummonerChampionWidget struct {
+	ChampionName string
+
+	GamesPlayed int
 }
 
-func (m SummonerChampionStatContent) ToTempl(ctx context.Context) templ.Component {
+func (m SummonerChampionWidget) ToTempl(ctx context.Context) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"h-9 w-13\"><div class=\"text-sm font-semibold text-gray-900/90 dark:text-gray-100/90\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(m.ChampionName)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/summoner.templ`, Line: 124, Col: 19}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div><div class=\"text-xs text-gray-900/90 dark:text-gray-100/90\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d Games", m.GamesPlayed))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/summoner.templ`, Line: 127, Col: 43}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+type WinRateWidget struct {
+	Wins, Losses int
+
+	WinRate float32
+}
+
+func NewWinRateWidget(w, l int) WinRateWidget {
+	widget := WinRateWidget{
+		Wins:    w,
+		Losses:  l,
+		WinRate: float32(w) / (float32(w) + float32(l)),
+	}
+
+	return widget
+}
+
+func (m WinRateWidget) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -224,15 +292,46 @@ func (m SummonerChampionStatContent) ToTempl(ctx context.Context) templ.Componen
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"px-2 mt-3\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"h-9 w-13\"><div class=\"flex text-sm font-semibold\"><div class=\"flex-1 text-green-500/90\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = m.ChampionList.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		var templ_7745c5c3_Var7 string
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.Wins))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/summoner.templ`, Line: 152, Col: 31}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><div class=\"flex-1 text-red-500/90\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var8 string
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.Losses))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/summoner.templ`, Line: 155, Col: 33}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div></div><div class=\"text-xs text-gray-900/90 dark:text-gray-100/90\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var9 string
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f%%", m.WinRate*100))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/summoner.templ`, Line: 159, Col: 41}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -240,13 +339,16 @@ func (m SummonerChampionStatContent) ToTempl(ctx context.Context) templ.Componen
 	})
 }
 
-// SummonerChampionStatLoader requests the server for
-// [SummonerChampionStatContent].
-//
-// Uses [LoaderTypeOnReveal].
-type SummonerChampionStatLoader struct{}
+// GetDay returns the start of the day, offset days ago. Currently returns UTC
+// time.
+func GetDay(offset int) time.Time {
+	now := time.Now().In(time.UTC)
+	y, m, d := now.Date()
+	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
+	return startOfDay.Add(time.Duration(-24*offset) * time.Hour)
+}
 
-func (m SummonerChampionStatLoader) ToTempl(ctx context.Context) templ.Component {
+func dakjdakldjkl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -262,26 +364,17 @@ func (m SummonerChampionStatLoader) ToTempl(ctx context.Context) templ.Component
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var7 == nil {
-			templ_7745c5c3_Var7 = templ.NopComponent
+		templ_7745c5c3_Var10 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var10 == nil {
+			templ_7745c5c3_Var10 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"px-2 mt-3\">This is a loader for summoner champions.</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"flex w-full items-center h-9\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90\">Champions</span></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		return nil
 	})
-}
-
-// GetDay returns the start of the day, offset days ago. Currently returns UTC
-// time.
-func GetDay(offset int) time.Time {
-	now := time.Now().In(time.UTC)
-	y, m, d := now.Date()
-	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
-	return startOfDay.Add(time.Duration(-24*offset) * time.Hour)
 }
 
 var _ = templruntime.GeneratedTemplate

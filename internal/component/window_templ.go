@@ -15,6 +15,7 @@ import (
 )
 
 // PanelWindow is a simple panel for floating layers.
+// Deprecated: use Panel instead
 type PanelWindow struct {
 	// Children are placed in the panel. A nil value indicates a blank
 	// panel with a fixed size.
@@ -65,18 +66,14 @@ func (m PanelWindow) ToTempl(ctx context.Context) templ.Component {
 	})
 }
 
-// ModalLayout is the layout used for modal windows.
-type ModalLayout struct {
-	// HeaderChildren are placed in the header. A nil value indicates no
-	// header.
-	HeaderChildren Component
-
-	// Children are placed in the main body. A nil value indicates an empty
-	// page.
+// Panel is a simple panel for floating layers.
+type Panel struct {
+	// Children are placed in the panel. A nil value indicates a blank
+	// panel with a fixed size.
 	Children Component
 }
 
-func (m ModalLayout) ToTempl(ctx context.Context) templ.Component {
+func (m Panel) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -97,41 +94,21 @@ func (m ModalLayout) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		if m.HeaderChildren != nil {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div><div class=\"sticky\">")
+		if m.Children != nil {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"w-max bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = m.HeaderChildren.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = m.Children.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if m.Children != nil {
-				templ_7745c5c3_Err = m.Children.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if m.Children != nil {
-				templ_7745c5c3_Err = m.Children.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"w-36 h-48 bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10\"></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

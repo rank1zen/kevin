@@ -15,8 +15,10 @@ import (
 )
 
 // Champion displays a champion icon and summoner spells.
+//
+// TODO: rename to ChampionWidget.
 type Champion struct {
-	ChampionSprite component.ChampionSprite
+	ChampionSprite component.Sprite
 
 	// ChampionLevel is the level of the champion at the end of a match.
 	// Zero values indicate that level is not included in the component.
@@ -24,50 +26,41 @@ type Champion struct {
 
 	// SummonerD and SummonerF are summoner spells. Nil values indicate
 	// that summoner spells is not be included in the component.
-	SummonerD, SummonerF *component.SummonerSprite
+	SummonerD, SummonerF *component.Sprite
 }
 
 func NewMatchChampionWidget(championID int, championLevel int, summonerIDs [2]int) Champion {
 	c := Champion{
-		ChampionSprite: component.ChampionSprite{
-			ChampionID: championID,
-			Size:       component.TextSize2XL,
-		},
-		ChampionLevel: championLevel,
-		SummonerD: &component.SummonerSprite{
-			SummonerID: summonerIDs[0],
-		},
-		SummonerF: &component.SummonerSprite{
-			SummonerID: summonerIDs[0],
-		},
+		ChampionSprite: NewChampionSprite(championID, component.TextSize2XL),
+		ChampionLevel:  championLevel,
 	}
+
+	c.SummonerD = new(component.Sprite)
+	*c.SummonerD = NewSummonerSpellSprite(summonerIDs[0], component.TextSizeXS)
+
+	c.SummonerF = new(component.Sprite)
+	*c.SummonerF = NewSummonerSpellSprite(summonerIDs[1], component.TextSizeXS)
 
 	return c
 }
 
 func NewLiveChampionWidget(championID int, summonerIDs [2]int) Champion {
 	c := Champion{
-		ChampionSprite: component.ChampionSprite{
-			ChampionID: championID,
-			Size:       component.TextSize2XL,
-		},
-		SummonerD: &component.SummonerSprite{
-			SummonerID: summonerIDs[0],
-		},
-		SummonerF: &component.SummonerSprite{
-			SummonerID: summonerIDs[0],
-		},
+		ChampionSprite: NewChampionSprite(championID, component.TextSize2XL),
 	}
+
+	c.SummonerD = new(component.Sprite)
+	*c.SummonerD = NewSummonerSpellSprite(summonerIDs[0], component.TextSizeXS)
+
+	c.SummonerF = new(component.Sprite)
+	*c.SummonerF = NewSummonerSpellSprite(summonerIDs[1], component.TextSizeXS)
 
 	return c
 }
 
 func NewSimpleChampionWidget(championID int) Champion {
 	c := Champion{
-		ChampionSprite: component.ChampionSprite{
-			ChampionID: championID,
-			Size:       component.TextSize2XL,
-		},
+		ChampionSprite: NewChampionSprite(championID, component.TextSize2XL),
 	}
 
 	return c
@@ -95,7 +88,7 @@ func (m Champion) ToTempl(ctx context.Context) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if m.SummonerD != nil && m.SummonerF != nil {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none items-start gap-0.5\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none gap-x-0.5 items-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -121,14 +114,14 @@ func (m Champion) ToTempl(ctx context.Context) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"right-0 bottom-0 size-4 text-xs absolute text-white text-center font-semibold\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"right-0 bottom-0 size-4 text-xs absolute text-white text-center font-medium\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var2 string
 				templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.ChampionLevel))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/champion.templ`, Line: 79, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/champion.templ`, Line: 72, Col: 42}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 				if templ_7745c5c3_Err != nil {
@@ -139,7 +132,7 @@ func (m Champion) ToTempl(ctx context.Context) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div><div class=\"rounded-xs overflow-hidden\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"flex flex-col gap-y-0.5\"><div class=\"rounded-xs overflow-hidden\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -182,14 +175,14 @@ func (m Champion) ToTempl(ctx context.Context) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"right-0 bottom-0 size-4 text-xs absolute text-white text-center font-semibold\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"right-0 bottom-0 size-4 text-xs absolute text-white text-center font-medium\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var3 string
 				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.ChampionLevel))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/champion.templ`, Line: 101, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/champion.templ`, Line: 94, Col: 41}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 				if templ_7745c5c3_Err != nil {
