@@ -28,9 +28,6 @@ jobs:
           go mod tidy
           git diff --exit-code
 
-      - name: Install dependencies
-        run: go get .
-
       - name: Check *_templ.go files are up-to-date
         run: |
           templ generate
