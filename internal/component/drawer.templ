@@ -6,8 +6,8 @@ import (
 
 // Drawer triggers a drawer panel on click.
 type Drawer struct {
-	// ButtonChildren are placed inside the button that triggers the modal.
-	// A nil value will default to [Button].
+	// ButtonChildren are placed inside the button that triggers the
+	// drawer. A nil value will default to [Button].
 	ButtonChildren Component
 
 	// PanelChildren are placed on the right side, in a floating layer.
@@ -17,15 +17,24 @@ type Drawer struct {
 
 templ (m Drawer) ToTempl(ctx context.Context) {
 	<div
-		x-id="['modal-wrapper']"
+		x-id="['drawer-button']"
+
+		x-data="{ open: false }"
+
+		@keydown.escape.window="open = false"
+
 		class="relative"
 	>
 		<button
 			type="button"
+
 			x-ref="button"
-			@click="isModalOpen = true"
+
+			@click="open = true"
+
 			class="relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20"
-			:class="isModalOpen && 'bg-gray-900/5 dark:bg-gray-100/5'"
+
+			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
 			if m.ButtonChildren != nil {
 				@m.ButtonChildren.ToTempl(ctx)
@@ -33,18 +42,56 @@ templ (m Drawer) ToTempl(ctx context.Context) {
 				@Button{}.ToTempl(ctx)
 			}
 		</button>
-		<div
-			x-cloak
-			x-ref="panel"
-			x-show="isModalOpen"
-			x-transition.opacity
-			class="fixed inset-0 flex items-end z-30 bg-gray-900/20"
-		>
-			<div class="bg-white dark:bg-black shadow max-w-300 md:rounded-l-2xl h-screen overflow-y-auto">
-				if m.PanelChildren != nil {
-					@m.PanelChildren.ToTempl(ctx)
-				}
+		<template x-if="true">
+			<div
+				role="dialog"
+
+				x-ref="panel"
+
+				x-show="open"
+
+				x-trap.inert.noscroll="open"
+
+				aria-modal="true"
+
+				@click.stop
+
+				:id="$id('drawer-button')"
+
+				x-transition.opacity
+
+				class="fixed inset-0 flex justify-end z-30 bg-gray-900/20"
+			>
+				<div
+					x-show="open"
+
+					x-transition
+
+					class="bg-gray-50 dark:bg-gray-950 shadow w-lg md:rounded-l-2xl h-screen overflow-y-auto"
+				>
+					if m.PanelChildren != nil {
+						@m.PanelChildren.ToTempl(ctx)
+					}
+				</div>
 			</div>
-		</div>
+		</template>
 	</div>
+}
+
+func NewDrawerExitButton() Component {
+	return ComponentFunc(drawerExitButton)
+}
+
+templ drawerExitButton(ctx context.Context) {
+	<button
+		type="button"
+
+		x-ref="exit"
+
+		@click="open = false"
+
+		class="cursor-pointer size-9 rounded-lg flex items-center justify-center bg-gray-900/5 dark:bg-gray-100/5"
+	>
+		@WindowCloseIcon.ToTempl(ctx)
+	</button>
 }

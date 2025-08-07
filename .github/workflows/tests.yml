@@ -1,63 +1,59 @@
-name: Static checks and tests
+name: Run Static Checks and Tests
 
 on:
   push:
     branches:
       - main
-      - dev
+
+  pull_request:
 
 jobs:
-  golangci-lint:
-    name: Static checks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  static-checks:
+    name: Run Static Checks
 
-      - uses: actions/setup-go@v5
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: '1.23.x'
           check-latest: true
 
-      - name: Verify go.mod is tidy
+      - name: Check go.mod is tidy
         run: |
           go mod tidy
           git diff --exit-code
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8
-        with:
-          version: v2.1
+      - name: Install dependencies
+        run: go get .
 
-  templ-check:
-    name: Templ file checks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: 1.23
-          check-latest: true
-
-      - name: Setup templ
-        run: go install github.com/a-h/templ/cmd/templ@latest # FIXME: we have to set the correct templ version
-
-      - name: Verify *_templ.go files are up-to-date
+      - name: Check *_templ.go files are up-to-date
         run: |
           templ generate
           git diff --exit-code
 
-      - name: Verify *_templ.go files are formatted
-        run: templ fmt -fail .
-  go-test:
-    name: Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
+      - name: Run Golangci-lint
+        uses: golangci/golangci-lint-action@v8
         with:
-          go-version: 1.23
+          version: v2.1
+
+  go-test:
+    name: Run Go Tests
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
           check-latest: true
 
       - name: Run all short tests

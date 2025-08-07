@@ -57,7 +57,7 @@ func (m Modal) ToTempl(ctx context.Context) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button><template x-if=\"true\"><div role=\"dialog\" x-ref=\"panel\" x-show=\"open\" x-trap.inert.noscroll=\"open\" aria-modal=\"true\" @click.stop :id=\"$id('modal-button')\" x-transition.opacity class=\"fixed inset-0 flex items-end md:items-center justify-center z-30 bg-gray-900/20\"><div x-transition class=\"bg-gray-50 dark:bg-gray-950 border border-gray-900/10 dark:border-gray-100/10 shadow-lg shadow-gray-900/10 dark:shadow-gray-100/10 w-full md:w-2xl rounded-t-2xl md:rounded-2xl h-3/5\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button><template x-if=\"true\"><div role=\"dialog\" x-ref=\"panel\" x-show=\"open\" x-trap.inert.noscroll=\"open\" aria-modal=\"true\" @click.stop :id=\"$id('modal-button')\" x-transition.opacity class=\"fixed inset-0 flex items-end md:items-center justify-center z-30 bg-gray-900/20\"><div x-show=\"open\" x-transition class=\"bg-gray-50 dark:bg-gray-950 border border-gray-900/10 dark:border-gray-100/10 shadow-lg shadow-gray-900/10 dark:shadow-gray-100/10 w-full md:w-2xl rounded-t-2xl md:rounded-2xl h-3/5\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

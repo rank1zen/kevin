@@ -1,0 +1,30 @@
+name: Build and Push Canary Image
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+jobs:
+  build-and-push-canary-image:
+    name: Build and Push Canary Image
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Docker image metadata
+
+      - name: Log in to Docker Hub
+
+      - name: Set up Docker Buildx
+
+      - name: Build and push Docker image

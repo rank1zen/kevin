@@ -28,12 +28,12 @@ func NewMatchHistoryList(matches []internal.SummonerMatch) component.List {
 			RankChange:     shared.NewRankDeltaWidget(nil, nil, m.Win),
 		}
 
-		_ = component.Drawer{
+		drawer := component.Popover{
 			ButtonChildren: card,
 			PanelChildren:  nil,
 		}
 
-		c.Items = append(c.Items, card)
+		c.Items = append(c.Items, drawer)
 	}
 
 	return c
@@ -76,7 +76,6 @@ func jlkjksdfjksfjk(ctx context.Context) templ.Component {
 	})
 }
 
-// TODO: not a lot
 func NewMatchDetail(match internal.Match) component.ModalLayout {
 	blueSide, redSide := []component.Component{}, []component.Component{}
 
@@ -99,20 +98,7 @@ func NewMatchDetail(match internal.Match) component.ModalLayout {
 		}
 	}
 
-	content := MatchPanel{
-		BlueSide: component.Section{
-			Heading: "Blue Side",
-			Content: component.List{
-				Items: blueSide,
-			},
-		},
-		RedSide: component.Section{
-			Heading: "Red Side",
-			Content: component.List{
-				Items: redSide,
-			},
-		},
-	}
+	content := NewMatchScoreboardView(match)
 
 	layout := component.ModalLayout{
 		HeaderChildren: nil,
@@ -120,6 +106,17 @@ func NewMatchDetail(match internal.Match) component.ModalLayout {
 	}
 
 	return layout
+}
+
+// TODO: rename to MatchXXXX something else
+func NewMatchDetailLoader(path string, data string) component.Loader {
+	loader := component.Loader{
+		Path:     path,
+		Data:     data,
+		Children: shared.NewLoadingModal(),
+	}
+
+	return loader
 }
 
 // NewMatchHistoryLoader creates a loading component for match history.
@@ -273,6 +270,21 @@ type MatchParticipantCard struct {
 	RankDeltaWidget shared.RankDeltaWidget
 }
 
+func NewMatchParticipantCard(name, tag string, p internal.Participant) MatchParticipantCard {
+	card := MatchParticipantCard{
+		Name:            name,
+		Tag:             tag,
+		ChampionWidget:  shared.NewMatchChampionWidget(p.ChampionID, p.ChampionLevel, p.SummonerIDs),
+		KDAWidget:       shared.NewKDAWidget(p.Kills, p.Deaths, p.Assists),
+		CSWidget:        shared.NewCSWidget(p.CreepScore, p.CreepScorePerMinute),
+		RuneWidget:      shared.NewRuneWidget(p.Runes),
+		Items:           shared.NewItemInventory(p.Items, p.VisionScore),
+		RankDeltaWidget: shared.NewRankDeltaWidget(nil, nil, false),
+	}
+
+	return card
+}
+
 func (m MatchParticipantCard) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -309,7 +321,7 @@ func (m MatchParticipantCard) ToTempl(ctx context.Context) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(m.Name + "#" + m.Tag)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/match.templ`, Line: 175, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/match.templ`, Line: 187, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -355,11 +367,38 @@ func (m MatchParticipantCard) ToTempl(ctx context.Context) templ.Component {
 	})
 }
 
-type MatchPanel struct {
+type MatchScoreboardView struct {
 	BlueSide, RedSide component.Section
 }
 
-func (m MatchPanel) ToTempl(ctx context.Context) templ.Component {
+func NewMatchScoreboardView(match internal.Match) MatchScoreboardView {
+	blue := component.List{Style: component.ListStyleRaised, Items: []component.Component{}}
+
+	for _, p := range match.GetTeamParticipants(100) {
+		blue.Items = append(blue.Items, NewMatchParticipantCard("XXX", "XXX", p))
+	}
+
+	red := component.List{Style: component.ListStyleRaised, Items: []component.Component{}}
+
+	for _, p := range match.GetTeamParticipants(200) {
+		red.Items = append(red.Items, NewMatchParticipantCard("XXX", "XXX", p))
+	}
+
+	content := MatchScoreboardView{
+		BlueSide: component.Section{
+			Heading: "Blue Side",
+			Content: blue,
+		},
+		RedSide: component.Section{
+			Heading: "Red Side",
+			Content: red,
+		},
+	}
+
+	return content
+}
+
+func (m MatchScoreboardView) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -380,7 +419,7 @@ func (m MatchPanel) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"flex\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"px-2 py-5\"><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -388,11 +427,15 @@ func (m MatchPanel) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div><div class=\"mt-10\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		templ_7745c5c3_Err = m.RedSide.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

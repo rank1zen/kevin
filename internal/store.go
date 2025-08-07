@@ -36,8 +36,8 @@ type Store interface {
 	// return ErrSummonerNotFound.
 	GetPUUID(ctx context.Context, name, tag string) (riot.PUUID, error)
 
-	// GetMatch returns the match, if found in store, otherwise,
-	// return ...
+	// GetMatch returns the match, if found in store, otherwise, return
+	// ErrMatchNotFound.
 	GetMatch(ctx context.Context, id riot.PUUID) (Match, error)
 
 	// GetRank returns the most recent rank for a summoner before or at
@@ -136,6 +136,20 @@ func WithRiotMatch(match *riot.Match) MatchOption {
 
 		return nil
 	}
+}
+
+// TODO: behaviour undocumented.
+func (m Match) GetTeamParticipants(teamID int) [5]Participant {
+	result := [5]Participant{}
+	i := 0
+	for _, p := range m.Participants {
+		if p.TeamID == teamID {
+			result[i] = p
+			i++
+		}
+	}
+
+	return result
 }
 
 // Participant represents a record of a summoner in a ranked match.

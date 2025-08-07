@@ -14,8 +14,8 @@ import (
 
 // Drawer triggers a drawer panel on click.
 type Drawer struct {
-	// ButtonChildren are placed inside the button that triggers the modal.
-	// A nil value will default to [Button].
+	// ButtonChildren are placed inside the button that triggers the
+	// drawer. A nil value will default to [Button].
 	ButtonChildren Component
 
 	// PanelChildren are placed on the right side, in a floating layer.
@@ -44,7 +44,7 @@ func (m Drawer) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['modal-wrapper']\" class=\"relative\"><button type=\"button\" x-ref=\"button\" @click=\"isModalOpen = true\" class=\"relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20\" :class=\"isModalOpen && 'bg-gray-900/5 dark:bg-gray-100/5'\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['drawer-button']\" x-data=\"{ open: false }\" @keydown.escape.window=\"open = false\" class=\"relative\"><button type=\"button\" x-ref=\"button\" @click=\"open = true\" class=\"relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20\" :class=\"open && 'bg-gray-900/5 dark:bg-gray-100/5'\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -59,7 +59,7 @@ func (m Drawer) ToTempl(ctx context.Context) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button><div x-cloak x-ref=\"panel\" x-show=\"isModalOpen\" x-transition.opacity class=\"fixed inset-0 flex items-end z-30 bg-gray-900/20\"><div class=\"bg-white dark:bg-black shadow max-w-300 md:rounded-l-2xl h-screen overflow-y-auto\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button><template x-if=\"true\"><div role=\"dialog\" x-ref=\"panel\" x-show=\"open\" x-trap.inert.noscroll=\"open\" aria-modal=\"true\" @click.stop :id=\"$id('drawer-button')\" x-transition.opacity class=\"fixed inset-0 flex justify-end z-30 bg-gray-900/20\"><div x-show=\"open\" x-transition class=\"bg-gray-50 dark:bg-gray-950 shadow w-lg md:rounded-l-2xl h-screen overflow-y-auto\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -69,7 +69,48 @@ func (m Drawer) ToTempl(ctx context.Context) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div></template></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func NewDrawerExitButton() Component {
+	return ComponentFunc(drawerExitButton)
+}
+
+func drawerExitButton(ctx context.Context) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<button type=\"button\" x-ref=\"exit\" @click=\"open = false\" class=\"cursor-pointer size-9 rounded-lg flex items-center justify-center bg-gray-900/5 dark:bg-gray-100/5\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = WindowCloseIcon.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</button>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
