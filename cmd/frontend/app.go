@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/tern/v2/migrate"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/postgres"
@@ -65,7 +63,7 @@ func New(riotAPIKey string, pgConnStr string, opts ...AppOption) *App {
 		conn:       pool,
 		riotClient: riot.NewClient(riotAPIKey),
 		datasource: &internal.Datasource{},
-		address:    "localhost:4001",
+		address:    "0.0.0.0:4001",
 		logger:     slog.Default(),
 	}
 
@@ -86,20 +84,6 @@ func New(riotAPIKey string, pgConnStr string, opts ...AppOption) *App {
 		panic(err)
 	}
 	defer conn.Release()
-
-	// always migrate for now
-	m, err := migrate.NewMigrator(ctx, conn.Conn(), "public.schema_version")
-	if err != nil {
-		panic(err)
-	}
-
-	if err := m.LoadMigrations(os.DirFS("./migrations")); err != nil {
-		panic(fmt.Errorf("loading migrations: %w", err))
-	}
-
-	if err = m.Migrate(ctx); err != nil {
-		panic(err)
-	}
 
 	store := postgres.NewStore(app.conn)
 

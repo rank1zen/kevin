@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -30,6 +31,9 @@ type Server struct {
 
 	handler *Handler
 }
+
+//go:embed static
+var staticAssets embed.FS
 
 // New creates a [Server]. If handler is nil, the default [Handler] is used.
 func New(handler *Handler, opts ...FrontendOption) *Server {
@@ -61,7 +65,7 @@ func New(handler *Handler, opts ...FrontendOption) *Server {
 
 	main := http.NewServeMux()
 	main.Handle("/", loggedRouter)
-	main.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	main.Handle("GET /static/", http.FileServer(http.FS(staticAssets)))
 
 	frontend.router = main
 
