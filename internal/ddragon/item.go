@@ -1,16 +1,14 @@
 package ddragon
 
-type ItemID int
-
 type Item struct {
-	ID         ItemID
+	ID         int
 	Name       string
 	FullIcon   string
 	Sprite     string
 	X, Y, W, H int
 }
 
-var ItemsMap = map[ItemID]Item{
+var ItemsMap = map[int]Item{
 	1001:   {1001, "Boots", "1001.png", "item0.png", 0, 0, 48, 48},
 	1004:   {1004, "Faerie Charm", "1004.png", "item0.png", 48, 0, 48, 48},
 	1006:   {1006, "Rejuvenation Bead", "1006.png", "item0.png", 96, 0, 48, 48},

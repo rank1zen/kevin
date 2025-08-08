@@ -1,0 +1,38 @@
+package component
+
+import "context"
+
+// Header is a header bar for pages or panels.
+type Header struct {
+	StartChildren []Component
+
+	CenterChildren []Component
+
+	EndChildren []Component
+}
+
+templ (m Header) ToTempl(ctx context.Context) {
+	<div class="flex w-full h-13 gap-x-2 justify-between items-center px-2">
+		if m.StartChildren != nil {
+			<div class="flex gap-x-2 items-center">
+				for _, c := range m.StartChildren {
+					@c.ToTempl(ctx)
+				}
+			</div>
+		}
+		if m.CenterChildren != nil {
+			<div class="flex shrink min-w-0 gap-x-2 items-center">
+				for _, c := range m.CenterChildren {
+					@c.ToTempl(ctx)
+				}
+			</div>
+		}
+		if m.EndChildren != nil {
+			<div class="flex gap-x-2 items-center">
+				for _, c := range m.EndChildren {
+					@c.ToTempl(ctx)
+				}
+			</div>
+		}
+	</div>
+}

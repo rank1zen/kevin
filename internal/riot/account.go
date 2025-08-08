@@ -2,14 +2,25 @@ package riot
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"net/http"
+
+	"github.com/rank1zen/kevin/internal/riot/internal"
 )
 
+// AccountService is the ACCOUNT-V1 API.
+//
+// Riot API docs: https://developer.riotgames.com/apis#account-v1
+type AccountService service
+
+// PUUID is a 78 character global identifier for a Riot account.
+type PUUID string
+
+func (id PUUID) String() string {
+	return string(id)
+}
+
 type Account struct {
-	PUUID    string `json:"puuid"`
+	PUUID    PUUID  `json:"puuid"`
 	GameName string `json:"gameName"`
 	TagLine  string `json:"tagLine"`
 }
@@ -19,27 +30,25 @@ type Account struct {
 // Riot API docs: https://developer.riotgames.com/apis#account-v1/GET_getByPuuid
 //
 // GET /riot/account/v1/accounts/by-puuid/{puuid}
-func (c *Client) GetAccountByPuuid(ctx context.Context, region, puuid string) (*Account, error) {
-	u := regionHost(region)
-	path := fmt.Sprintf("/riot/account/v1/accounts/by-puuid/%s", puuid)
-	u = u.JoinPath(path)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
-	if err != nil {
-		return nil, err
+func (m *AccountService) GetAccountByPUUID(ctx context.Context, region Region, puuid string) (*Account, error) {
+	endpoint := fmt.Sprintf("/riot/account/v1/accounts/by-puuid/%s", puuid)
+
+	req := &internal.Request{
+		BaseURL:  region.continentHost(),
+		Endpoint: endpoint,
+		APIKey:   m.client.apiKey,
 	}
 
-	req.Header.Add("X-Riot-Token", c.apiKey)
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	} else if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
+	if m.client.baseURL != "" {
+		req.BaseURL = m.client.baseURL
 	}
 
-	defer resp.Body.Close()
 	var account Account
-	err = json.NewDecoder(resp.Body).Decode(&account)
-	return &account, err
+	if err := m.client.internals.DispatchRequest(ctx, req, &account); err != nil {
+		return nil, err
+	}
+
+	return &account, nil
 }
 
 // GetAccountByRiotID returns a account by riot id.
@@ -47,25 +56,23 @@ func (c *Client) GetAccountByPuuid(ctx context.Context, region, puuid string) (*
 // Riot API docs: https://developer.riotgames.com/apis#account-v1/GET_getByRiotId
 //
 // GET /riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}
-func (c *Client) GetAccountByRiotID(ctx context.Context, region, gameName, tagLine string) (*Account, error) {
-	u := regionHost(region)
-	path := fmt.Sprintf("/riot/account/v1/accounts/by-riot-id/%s/%s", gameName, tagLine)
-	u = u.JoinPath(path)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("X-Riot-Token", c.apiKey)
+func (m *AccountService) GetAccountByRiotID(ctx context.Context, region Region, gameName, tagLine string) (*Account, error) {
+	endpoint := fmt.Sprintf("/riot/account/v1/accounts/by-riot-id/%s/%s", gameName, tagLine)
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	} else if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
+	req := &internal.Request{
+		BaseURL:  region.continentHost(),
+		Endpoint: endpoint,
+		APIKey:   m.client.apiKey,
 	}
 
-	defer resp.Body.Close()
+	if m.client.baseURL != "" {
+		req.BaseURL = m.client.baseURL
+	}
+
 	var account Account
-	err = json.NewDecoder(resp.Body).Decode(&account)
-	return &account, err
+	if err := m.client.internals.DispatchRequest(ctx, req, &account); err != nil {
+		return nil, err
+	}
+
+	return &account, nil
 }

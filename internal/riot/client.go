@@ -1,39 +1,97 @@
+// riot provides access to endpoints.
+//
+// NOTE: everything is routed through a region. So for matches, the internals
+// access the continent but only returns per region.
 package riot
 
 import (
+	"context"
 	"net/http"
+
+	"github.com/rank1zen/kevin/internal/riot/internal"
 )
 
-// Client abstracts the logic pertaining to riot types and errors.
+// Client manages communication with the Riot API.
 type Client struct {
-	httpClient *http.Client
-	apiKey     string
+	internals *internal.Client
+
+	apiKey string
+
+	// baseURL will override the platform specific hosts, if provided.
+	baseURL string
+
+	common service
+
+	Account   *AccountService
+	League    *LeagueService
+	Match     *MatchService
+	Spectator *SpectatorService
+	Summoner  *SummonerService
+}
+
+func (c *Client) dispatchRequest(ctx context.Context, req *internal.Request, dst any) error {
+	if c.baseURL != "" {
+		req.BaseURL = c.baseURL
+	}
+
+	return c.internals.DispatchRequest(ctx, req, dst)
+}
+
+type service struct {
+	client *Client
+}
+
+// NewClient creates a new client. Will panic if there is an error in creation.
+//
+// NOTE: don't know about the concurrency stuff.
+func NewClient(apiKey string, opts ...ClientOption) *Client {
+	c := Client{
+		apiKey:    apiKey,
+		internals: &internal.Client{},
+	}
+
+	c.common.client = &c
+	c.Account = (*AccountService)(&c.common)
+	c.League = (*LeagueService)(&c.common)
+	c.Match = (*MatchService)(&c.common)
+	c.Spectator = (*SpectatorService)(&c.common)
+	c.Summoner = (*SummonerService)(&c.common)
+
+	for _, opt := range opts {
+		if err := opt(&c); err != nil {
+			panic("setting up riot client")
+		}
+	}
+
+	return &c
 }
 
 type ClientOption func(*Client) error
 
-func NewClient(opts ...ClientOption) *Client {
-	client := Client{
-		httpClient: http.DefaultClient,
-	}
-
-	for _, opt := range opts {
-		opt(&client)
-	}
-
-	return &client
-}
-
-func WithHttpClient(c *http.Client) ClientOption {
+func WithHTTPClient(c *http.Client) ClientOption {
 	return func(client *Client) error {
-		client.httpClient = c
+		client.internals.HTTP = c
 		return nil
 	}
 }
 
-func WithApiKey(apiKey string) ClientOption {
+func WithBaseURL(u string) ClientOption {
 	return func(client *Client) error {
-		client.apiKey = apiKey
+		client.baseURL = u
 		return nil
 	}
 }
+
+var (
+	ErrBadRequest           = internal.ErrBadRequest
+	ErrUnauthorized         = internal.ErrUnauthorized
+	ErrForbidden            = internal.ErrForbidden
+	ErrNotFound             = internal.ErrNotFound
+	ErrMethodNotAllowed     = internal.ErrMethodNotAllowed
+	ErrUnsupportedMediaType = internal.ErrUnsupportedMediaType
+	ErrRateLimitExceeded    = internal.ErrRateLimitExceeded
+	ErrInternalServerError  = internal.ErrInternalServerError
+	ErrBadGateway           = internal.ErrBadGateway
+	ErrServiceUnavailable   = internal.ErrServiceUnavailable
+	ErrGatewayTimeout       = internal.ErrGatewayTimeout
+)

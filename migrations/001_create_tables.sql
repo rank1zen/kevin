@@ -45,10 +45,8 @@ create type league_division as enum (
 
 create table Summoner (
         puuid       riot_puuid primary key,
-        platform    riot_platform not null,
         name        varchar(32) not null,
-        tagline     varchar(10) not null,
-        summoner_id varchar(56) not null
+        tagline     varchar(10) not null
 );
 
 create table RankStatus (
@@ -118,11 +116,11 @@ create table ItemEvent (
         type              item_event_type not null
 );
 
-create table SpellEvent (
-        level_up_type text,
+create table SkillEvent (
+        match_id          riot_match_id primary key,
         puuid             riot_puuid not null,
         in_game_timestamp interval not null,
-        spell_slot           int not null
+        spell_slot        int not null
 );
 
 ---- create above / drop below ----
@@ -134,7 +132,7 @@ drop table RankDetail;
 drop table RankStatus;
 drop table Summoner;
 drop table ItemEvent;
-drop table SpellEvent;
+drop table SkillEvent;
 
 drop type league_division;
 drop type league_tier;

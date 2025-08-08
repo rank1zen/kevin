@@ -1,0 +1,27 @@
+package shared
+
+import "github.com/rank1zen/kevin/internal/component"
+import "context"
+
+// NewLoadingModal is a generic modal used when loading data.
+func NewLoadingModal() component.ModalLayout {
+	header := component.Header{}
+
+	header.EndChildren = []component.Component{
+		component.ModalExitButton{},
+	}
+
+	layout := component.ModalLayout{}
+
+	layout.HeaderChildren = header
+
+	layout.Children = component.ComponentFunc(dasdashfsjahfajsk)
+
+	return layout
+}
+
+templ dasdashfsjahfajsk(ctx context.Context) {
+	<div class="flex items-center justify-center w-full flex-1">
+		@component.Spinner{}.ToTempl(ctx)
+	</div>
+}
