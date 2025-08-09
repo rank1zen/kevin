@@ -18,12 +18,14 @@ type Store struct {
 	conn *pgxpool.Pool
 }
 
-// TODO: postgres package should be responsible for creating connections to postgres
-func NewStore(conn *pgxpool.Pool) *Store {
+func NewStore(conn *pgxpool.Pool) (*Store, error) {
 	if conn == nil {
-		panic("nil connection given to store")
+		return nil, errors.New("postgres: conn cannot be nil")
 	}
-	return &Store{conn}
+
+	store := &Store{conn: conn}
+
+	return store, nil
 }
 
 func (s *Store) GetPUUID(ctx context.Context, name, tag string) (riot.PUUID, error) {
