@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -22,6 +23,12 @@ func main() {
 		PostgresConnection: os.Getenv("KEVIN_POSTGRES_CONNECTION"),
 	}
 
+	flag.BoolVar(&config.DevelopmentMode, "development-mode", false, "set mode to development")
+
+	flag.StringVar(&config.Address, "address", "0.0.0.0:4001", "set server address")
+
+	flag.Parse()
+
 	ctx := context.Background()
 
 	if err := config.Run(ctx); err != nil {
@@ -30,22 +37,6 @@ func main() {
 	}
 
 	os.Exit(0)
-}
-
-type ConfigEnv int
-
-const (
-	ConfigEnvProduction ConfigEnv = iota
-	ConfigEnvDevelopment
-)
-
-func (m ConfigEnv) String() string {
-	switch m {
-	case ConfigEnvDevelopment:
-		return "Developement"
-	default:
-		return "Production"
-	}
 }
 
 type Config struct {
@@ -58,7 +49,7 @@ type Config struct {
 
 	Address string
 
-	Env ConfigEnv
+	DevelopmentMode bool
 }
 
 func (c *Config) Run(ctx context.Context) error {
@@ -70,26 +61,17 @@ func (c *Config) Run(ctx context.Context) error {
 		return errors.New("postgres connection not provided")
 	}
 
-	var (
-		address = "0.0.0.0:4001"
-		env     = ConfigEnvProduction
-	)
-
+	address := "0.0.0.0:4001"
 	if c.Address != "" {
 		address = c.Address
 	}
 
-	if c.Env != 0 {
-		env = c.Env
-	}
-
 	var logHandlerOptions slog.HandlerOptions
-	switch env {
-	case ConfigEnvDevelopment:
+	if c.DevelopmentMode {
 		logHandlerOptions.Level = slog.LevelDebug
 	}
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &logHandlerOptions)).With("env", env.String())
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &logHandlerOptions)).With("dev", c.DevelopmentMode)
 
 	pool, err := connectPostgres(ctx, c.PostgresConnection)
 	if err != nil {
