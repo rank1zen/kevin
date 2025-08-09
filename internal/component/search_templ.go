@@ -18,7 +18,7 @@ type SummonerSearchBar struct {
 	Region riot.Region
 }
 
-func (m SummonerSearchBar) aaaa(ctx context.Context) templ.Component {
+func (m SummonerSearchBar) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -39,7 +39,15 @@ func (m SummonerSearchBar) aaaa(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"search-results\" class=\"p-2\"></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['summoner-search-bar']\" x-data=\"{ query: '', open: true }\" @focusin.window=\"\n\t\t\tif (! $refs.panel.contains($event.target)) {\n\t\t\t\topen = false;\n\t\t\t}\n\t\t\" class=\"relative flex-1 w-96\"><input type=\"hidden\" name=\"region\" value=\"NA1\"> <input type=\"search\" name=\"q\" placeholder=\"Search summoner...\" x-model=\"query\" @input=\"open = true\" hx-post=\"/search\" hx-trigger=\"input changed delay:250ms, keyup[key=='Enter']\" hx-include=\"[name='region']\" hx-target=\"#search-results\" class=\"transition h-9 rounded-lg bg-gray-900/5 dark:bg-gray-200/5 text-sm text-gray-900/90 dark:text-gray-100/90 w-full inset-ring-blue-500/50 px-3 focus:inset-ring-2 focus:outline-0\"><template x-if=\"true\"><div x-ref=\"panel\" x-show=\"open && query != ''\" @click.outside=\"\n\t\t\t\t\tif (open) {\n\t\t\t\t\t\topen = false;\n\t\t\t\t\t}\n\t\t\t\t\" class=\"absolute w-full mt-4 z-10\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = PanelWindow{Children: ComponentFunc(m.aaaa)}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></template></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -47,7 +55,7 @@ func (m SummonerSearchBar) aaaa(ctx context.Context) templ.Component {
 	})
 }
 
-func (m SummonerSearchBar) ToTempl(ctx context.Context) templ.Component {
+func (m SummonerSearchBar) aaaa(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -68,15 +76,15 @@ func (m SummonerSearchBar) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div x-id=\"['summoner-search-bar']\" x-data=\"{ open: false }\" @click.outside=\"open = false\" class=\"relative flex-1 w-96\"><input type=\"hidden\" name=\"region\" value=\"NA1\"> <input type=\"search\" name=\"q\" @input=\"open = true\" hx-post=\"/search\" hx-trigger=\"input changed delay:300ms, keyup[key=='Enter']\" hx-include=\"[name='region']\" hx-target=\"#search-results\" placeholder=\"Search summoner...\" class=\"transition h-9 rounded-lg bg-gray-900/5 dark:bg-gray-200/5 text-sm text-gray-900/90 dark:text-gray-100/90 w-full inset-ring-blue-500/50 px-3 focus:inset-ring-2 focus:outline-0\"><div x-ref=\"panel\" x-show=\"open\" x-cloak class=\"absolute w-full mt-4 z-10\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div id=\"search-results\" class=\"p-2 h-15 flex items-center justify-center\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PanelWindow{Children: ComponentFunc(m.aaaa)}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Spinner{}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -115,87 +123,87 @@ func (m SearchNotFoundCard) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<button type=\"button\" hx-post=\"/summoner/fetch\" hx-trigger=\"click\" hx-include=\"[name='region'], [name='name'], [name='tag']\" class=\"flex w-full rounded-lg items-center hover:bg-gray-900/5 dark:hover:bg-gray-200/5 cursor-pointer justify-between px-3 py-2 gap-x-3\"><div class=\"flex-1 min-w-0\"><div class=\"text-sm text-gray-900/90 dark:text-gray-200/90 text-left truncate\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<button type=\"button\" hx-post=\"/summoner/fetch\" hx-trigger=\"click\" hx-include=\"[name='region'], [name='name'], [name='tag']\" class=\"flex w-full rounded-lg items-center hover:bg-gray-900/5 dark:hover:bg-gray-200/5 cursor-pointer justify-between px-3 py-2 gap-x-3\"><div class=\"flex-1 min-w-0\"><div class=\"text-sm text-gray-900/90 dark:text-gray-200/90 text-left truncate\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(m.Name + "#" + m.Tag)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 72, Col: 26}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 99, Col: 26}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " is not found</div><div class=\"text-xs text-gray-500/90 text-left truncate\">Click to fetch</div></div><input type=\"hidden\" name=\"region\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " is not found</div><div class=\"text-xs text-gray-500/90 text-left truncate\">Click to fetch</div></div><input type=\"hidden\" name=\"region\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(m.Platform)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 78, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 105, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"> <input type=\"hidden\" name=\"name\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"> <input type=\"hidden\" name=\"name\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(m.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 79, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 106, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if m.Tag != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<input type=\"hidden\" name=\"tag\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<input type=\"hidden\" name=\"tag\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(m.Tag)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 81, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 108, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<input type=\"hidden\" name=\"tag\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<input type=\"hidden\" name=\"tag\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(m.Platform)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 83, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/search.templ`, Line: 110, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</button>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</button>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
