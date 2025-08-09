@@ -94,3 +94,12 @@ templ (m SearchNotFoundCard) ToTempl(ctx context.Context) {
 		}
 	</button>
 }
+
+// SearchErrorCard creates a NOTE: generic internal server error message card.
+type SearchErrorCard struct {}
+
+templ (m SearchErrorCard) ToTempl(ctx context.Context) {
+	<div class="flex items-center w-full h-15">
+		<span>Internal Server Error</span>
+	</div>
+}

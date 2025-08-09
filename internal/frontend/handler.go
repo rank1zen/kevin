@@ -255,7 +255,7 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 
 	storeSearchResults, err := ds.GetStore().SearchSummoner(ctx, q)
 	if err != nil {
-		return nil, err
+		return shared.SearchErrorCard{}, err
 	}
 
 	if len(storeSearchResults) == 0 {
