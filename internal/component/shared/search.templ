@@ -5,6 +5,7 @@ import (
 	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal"
 	"fmt"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 func NewSummonerSearchBar() component.Component {
@@ -119,18 +120,24 @@ templ (m SearchResult) ToTempl(ctx context.Context) {
 
 // SearchNotFoundCard is a button that will issue a post to fetch summoner.
 type SearchNotFoundCard struct {
-	Name string
+	Region riot.Region
 
-	// Tag is the tagline. If empty, Platform is used.
-	Tag string
+	Name, Tag string
 
-	Platform string
+	Path string
+
+	Data string
 }
-func NewSearchNotFoundCard(name, tag string) SearchNotFoundCard {
+
+func NewSearchNotFoundCard(provider RequestProvider, region riot.Region, name, tag string) SearchNotFoundCard {
+	path, data := provider.UpdateSummoner(region, name, tag)
+
 	c := SearchNotFoundCard{
+		Region:   region,
 		Name:     name,
 		Tag:      tag,
-		Platform: "NA1",
+		Path:     path,
+		Data:     string(data),
 	}
 
 	return c
@@ -139,26 +146,25 @@ func NewSearchNotFoundCard(name, tag string) SearchNotFoundCard {
 templ (m SearchNotFoundCard) ToTempl(ctx context.Context) {
 	<button
 		type="button"
-		hx-post="/summoner/fetch"
+
+		hx-post={ m.Path }
+
 		hx-trigger="click"
-		hx-include="[name='region'], [name='name'], [name='tag']"
-		class="flex w-full h-15 rounded-lg items-center hover:bg-gray-900/5 dark:hover:bg-gray-200/5 cursor-pointer justify-between px-3 gap-x-3"
+
+		hx-vals={ m.Data }
+
+		hx-ext="json-enc"
+
+		class="flex w-full h-15 rounded-lg transition items-center hover:bg-gray-900/5 dark:hover:bg-gray-100/5 cursor-pointer justify-between px-3 gap-x-3 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10 dark:active:bg-gray-100/10"
 	>
 		<div class="flex-1 min-w-0">
-			<div class="text-sm text-gray-900/90 dark:text-gray-200/90 text-left truncate">
+			<div class="text-sm text-gray-900/90 dark:text-gray-100/90 text-left truncate">
 				{ m.Name + "#" + m.Tag } is not found
 			</div>
 			<div class="text-xs text-gray-500/90 text-left truncate">
 				Click to fetch
 			</div>
 		</div>
-		<input type="hidden" name="region" value={ m.Platform }/>
-		<input type="hidden" name="name" value={ m.Name }/>
-		if m.Tag != "" {
-			<input type="hidden" name="tag" value={ m.Tag }/>
-		} else {
-			<input type="hidden" name="tag" value={ m.Platform }/>
-		}
 	</button>
 }
 

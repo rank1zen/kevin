@@ -54,19 +54,29 @@ func (h *Handler) CheckHealth(ctx context.Context) error {
 	return err
 }
 
+type UpdateSummonerRequest struct {
+	Region riot.Region `json:"region"`
+	Name string `json:"name"`
+	Tag string `json:"tag"`
+}
+
+func (r UpdateSummonerRequest) Validate() (problems map[string]string) {
+	return nil
+}
+
 // UpdateSummoner syncs a summoner and their rank with riot.
-func (h *Handler) UpdateSummoner(ctx context.Context, region riot.Region, name, tag string) error {
+func (h *Handler) UpdateSummoner(ctx context.Context, req UpdateSummonerRequest) error {
 	ds := h.Datasource
 	if ds == nil {
 		ds = &internal.Datasource{}
 	}
 
-	puuid, err := ds.GetPUUID(ctx, name, tag)
+	puuid, err := ds.GetPUUID(ctx, req.Name, req.Tag)
 	if err != nil {
 		return err
 	}
 
-	if err := ds.UpdateSummoner(ctx, region, puuid); err != nil {
+	if err := ds.UpdateSummoner(ctx, req.Region, puuid); err != nil {
 		return err
 	}
 
@@ -272,7 +282,7 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 			tag = string(region)
 		}
 
-		v := shared.NewSearchNotFoundCard(name, tag)
+		v := shared.NewSearchNotFoundCard(EndpointProvider{}, region, name, tag)
 
 		return v, nil
 	}
