@@ -272,7 +272,7 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 			tag = string(region)
 		}
 
-		v := shared.NewSearchResultNotFound(name, tag)
+		v := shared.NewSearchNotFoundCard(name, tag)
 
 		return v, nil
 	}

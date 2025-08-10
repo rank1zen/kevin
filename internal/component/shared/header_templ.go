@@ -31,7 +31,7 @@ func DefaultPageHeader() component.Header {
 				PanelChildren:  component.PanelWindow{Children: component.ComponentFunc(regionPanel)},
 				PanelOffset:    8,
 			},
-			component.SummonerSearchBar{},
+			NewSummonerSearchBar(),
 		},
 		EndChildren: []component.Component{
 			NewExtraMenu(),
