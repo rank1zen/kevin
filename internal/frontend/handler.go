@@ -253,10 +253,8 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 }
 
 // GetSearchResults returns a list of [SearchResultCard] for accounts that
-// match q. If no results were found, return [SearchNotFoundCard] instead.
-//
-// q should be of the form name#tag, if q has no tag, region is used as the
-// tag.
+// match q. If no results were found, return [SearchNotFoundCard] instead. If
+// no tag was provided in q, region will be used.
 func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (component.Component, error) {
 	ds := h.Datasource
 	if ds == nil {
@@ -269,16 +267,8 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 	}
 
 	if len(storeSearchResults) == 0 {
-		var name, tag string
-		if i := strings.Index(q, "#"); i != -1 {
-			name = q[:i]
-			if i+1 == len(q) {
-				tag = string(region)
-			} else {
-				tag = q[i+1:]
-			}
-		} else {
-			name = q
+		name, tag := GetNameTag(q)
+		if tag == "" {
 			tag = string(region)
 		}
 
@@ -328,6 +318,22 @@ func GetDay(offset int) time.Time {
 
 func ComputeFraction(wins, losses int) float32 {
 	return float32(wins) / float32(losses)
+}
+
+// GetNameTag extracts the name and tag from query, which should be of the form
+// name#tag.
+func GetNameTag(query string) (name, tag string) {
+	if i := strings.Index(query, "#"); i != -1 {
+		name = query[:i]
+		if i+1 == len(query) {
+			return name, ""
+		}
+
+		tag = query[i+1:]
+		return name, tag
+	}
+
+	return query, ""
 }
 
 func RoundToNearestInt(x float32) int {
