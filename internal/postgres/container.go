@@ -72,7 +72,12 @@ func (p *PGInstance) SetupStore(ctx context.Context, t testing.TB) *Store {
 		}
 	})
 
-	return NewStore(conn)
+	store, err := NewStore(conn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return store
 }
 
 func (p *PGInstance) migrateSchema(ctx context.Context) {
