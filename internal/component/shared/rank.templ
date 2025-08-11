@@ -150,7 +150,7 @@ var tierBGColor = map[riot.Tier]string{
 // generateTierTextColorClass generates a TW bg color class.
 func generateTierBGColorClass(rank *internal.Rank) string {
 	if rank == nil {
-		return "text-gray-600/50"
+		return "bg-gray-600/50"
 	}
 
 	return tierBGColor[rank.Tier]

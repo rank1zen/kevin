@@ -83,14 +83,7 @@ func NewSearchResultList(results []internal.SearchResult) component.List {
 	}
 
 	for _, r := range results {
-		card := SearchResult{
-			Name:   r.Name,
-			Tag:    r.Tagline,
-		}
-
-		if d := r.Rank.Detail; d != nil {
-			card.Rank.Rank = &d.Rank
-		}
+		card := NewSearchResult(r)
 
 		link := component.Link{Href: fmt.Sprintf("/%s-%s", r.Name, r.Tagline), Children: card}
 
@@ -101,19 +94,39 @@ func NewSearchResultList(results []internal.SearchResult) component.List {
 }
 
 // SearchResult displays a found search result.
+// TODO: rename to SearchResultCard
 type SearchResult struct {
 	Name, Tag string
 
 	Rank RankWidget
 }
 
+func NewSearchResult(result internal.SearchResult) SearchResult {
+	c := SearchResult{
+		Name: result.Name,
+		Tag:  result.Tagline,
+		Rank: RankWidget{
+			ShowTierName: true,
+			Size:         component.TextSizeXS,
+		},
+	}
+
+	if result.Rank.Detail != nil {
+		c.Rank.Rank = &result.Rank.Detail.Rank
+	}
+
+	return c
+}
+
 templ (m SearchResult) ToTempl(ctx context.Context) {
-	<div class="px-3 h-15">
-		<div class="text-sm font-medium text-gray-900/90 dark:text-gray-200/90 truncate">
-			{ m.Name +"#"+ m.Tag }
-		</div>
-		<div class="flex gap-x-1">
-			@m.Rank.ToTempl(ctx)
+	<div class="px-3 h-15 flex items-center">
+		<div>
+			<div class="text-sm font-medium text-gray-900/90 dark:text-gray-200/90 truncate">
+				{ m.Name +"#"+ m.Tag }
+			</div>
+			<div class="flex gap-x-1">
+				@m.Rank.ToTempl(ctx)
+			</div>
 		</div>
 	</div>
 }
@@ -155,7 +168,9 @@ templ (m SearchNotFoundCard) ToTempl(ctx context.Context) {
 
 		hx-ext="json-enc"
 
-		class="flex w-full h-15 rounded-lg transition items-center hover:bg-gray-900/5 dark:hover:bg-gray-100/5 cursor-pointer justify-between px-3 gap-x-3 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10 dark:active:bg-gray-100/10"
+		hx-disabled-elt="this"
+
+		class="flex w-full h-15 rounded-lg transition items-center enabled:hover:bg-gray-900/5 enabled:dark:hover:bg-gray-100/5 enabled:cursor-pointer justify-between px-3 gap-x-3 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 enabled:active:bg-gray-900/10 enabled:dark:active:bg-gray-100/10 disabled:bg-gray-900/5 disabled:dark:bg-gray-100/5"
 	>
 		<div class="flex-1 min-w-0">
 			<div class="text-sm text-gray-900/90 dark:text-gray-100/90 text-left truncate">
@@ -164,6 +179,9 @@ templ (m SearchNotFoundCard) ToTempl(ctx context.Context) {
 			<div class="text-xs text-gray-500/90 text-left truncate">
 				Click to fetch
 			</div>
+		</div>
+		<div class="htmx-indicator">
+			@component.Spinner{}.ToTempl(ctx)
 		</div>
 	</button>
 }
