@@ -201,26 +201,18 @@ func (f *Server) updateSummoner(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := fromCtx(ctx)
 
-	var (
-		region = r.FormValue("region")
-		name   = r.FormValue("name")
-		tag    = r.FormValue("tag")
-	)
+	decoded, _ := decode[UpdateSummonerRequest](r)
 
-	payload := slog.Group("payload", "region", region, "name", name, "tag", tag)
+	payload := slog.Group("payload", "region", decoded.Region, "name", decoded.Name, "tag", decoded.Tag)
 
-	logger.Debug("updating summoner", payload)
-
-	riotRegion:= convertStringToRiotRegion(region)
-
-	if err := f.handler.UpdateSummoner(ctx, riotRegion, name, tag); err != nil {
+	if err := f.handler.UpdateSummoner(ctx, decoded); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("service failed", "err", err, payload)
 		return
 	}
 
 	// Redirect to summoner page
-	w.Header().Set("HX-Location", fmt.Sprintf("/%s-%s", name, tag))
+	w.Header().Set("HX-Location", fmt.Sprintf("/%s-%s", decoded.Name, decoded.Tag))
 	w.WriteHeader(http.StatusOK)
 }
 

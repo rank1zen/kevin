@@ -1,0 +1,9 @@
+package shared
+
+import "github.com/rank1zen/kevin/internal/riot"
+
+type RequestProvider interface {
+	UpdateSummoner(region riot.Region, name, tag string) (path string, json []byte)
+}
+
+var _ templ.Component

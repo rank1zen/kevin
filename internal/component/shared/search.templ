@@ -5,7 +5,76 @@ import (
 	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal"
 	"fmt"
+	"github.com/rank1zen/kevin/internal/riot"
 )
+
+func NewSummonerSearchBar() component.Component {
+	return component.ComponentFunc(summonerSearchbar)
+}
+
+templ summonerSearchbar(ctx context.Context) {
+	<div
+		x-id="['summoner-search-bar']"
+
+		x-data="{ query: '', open: true }"
+
+		@focusin.window="
+			if (! $refs.panel.contains($event.target)) {
+				open = false;
+			}
+		"
+
+		class="relative flex-1 w-96"
+	>
+		<input
+			type="hidden"
+			name="region"
+			value="NA1"
+		/>
+		<input
+			type="search"
+
+			name="q"
+
+			placeholder="Search summoner..."
+
+			x-model="query"
+
+			@input="open = true"
+
+			hx-post="/search"
+
+			hx-trigger="input changed delay:250ms, keyup[key=='Enter']"
+
+			hx-include="[name='region']"
+
+			hx-target="#results"
+
+			class="transition h-9 rounded-lg bg-gray-900/5 dark:bg-gray-200/5 text-sm text-gray-900/90 dark:text-gray-100/90 w-full inset-ring-blue-500/50 px-3 focus:inset-ring-2 focus:outline-0"
+		/>
+		<template x-if="true">
+			<div
+				id="results"
+
+				x-ref="panel"
+
+				x-show="open && query != ''"
+
+				@click.outside="
+					if (open) {
+						open = false;
+					}
+				"
+
+				class="absolute w-full mt-4 z-10 bg-white dark:bg-black p-2 rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10"
+			>
+				<div class="h-15 flex items-center justify-center">
+					@component.Spinner{}.ToTempl(ctx)
+				</div>
+			</div>
+		</template>
+	</div>
+}
 
 func NewSearchResultList(results []internal.SearchResult) component.List {
 	c := component.List{
@@ -14,14 +83,7 @@ func NewSearchResultList(results []internal.SearchResult) component.List {
 	}
 
 	for _, r := range results {
-		card := SearchResult{
-			Name:   r.Name,
-			Tag:    r.Tagline,
-		}
-
-		if d := r.Rank.Detail; d != nil {
-			card.Rank.Rank = &d.Rank
-		}
+		card := NewSearchResult(r)
 
 		link := component.Link{Href: fmt.Sprintf("/%s-%s", r.Name, r.Tagline), Children: card}
 
@@ -31,66 +93,104 @@ func NewSearchResultList(results []internal.SearchResult) component.List {
 	return c
 }
 
-func NewSearchResultNotFound(name, tag string) component.Component {
-	c := component.SearchNotFoundCard{
-		Name:     name,
-		Tag:      tag,
-		Platform: "NA1",
-	}
-
-	return c
-}
-
 // SearchResult displays a found search result.
+// TODO: rename to SearchResultCard
 type SearchResult struct {
 	Name, Tag string
 
 	Rank RankWidget
 }
 
+func NewSearchResult(result internal.SearchResult) SearchResult {
+	c := SearchResult{
+		Name: result.Name,
+		Tag:  result.Tagline,
+		Rank: RankWidget{
+			ShowTierName: true,
+			Size:         component.TextSizeXS,
+		},
+	}
+
+	if result.Rank.Detail != nil {
+		c.Rank.Rank = &result.Rank.Detail.Rank
+	}
+
+	return c
+}
+
 templ (m SearchResult) ToTempl(ctx context.Context) {
-	<div class="px-3 py-2">
-		<div class="text-sm font-medium text-gray-900/90 dark:text-gray-200/90 truncate">
-			{ m.Name +"#"+ m.Tag }
-		</div>
-		<div class="flex gap-x-1">
-			@m.Rank.ToTempl(ctx)
+	<div class="px-3 h-15 flex items-center">
+		<div>
+			<div class="text-sm font-medium text-gray-900/90 dark:text-gray-200/90 truncate">
+				{ m.Name +"#"+ m.Tag }
+			</div>
+			<div class="flex gap-x-1">
+				@m.Rank.ToTempl(ctx)
+			</div>
 		</div>
 	</div>
 }
 
 // SearchNotFoundCard is a button that will issue a post to fetch summoner.
 type SearchNotFoundCard struct {
-	Name string
+	Region riot.Region
 
-	// Tag is the tagline. If empty, Platform is used.
-	Tag string
+	Name, Tag string
 
-	Platform string
+	Path string
+
+	Data string
+}
+
+func NewSearchNotFoundCard(provider RequestProvider, region riot.Region, name, tag string) SearchNotFoundCard {
+	path, data := provider.UpdateSummoner(region, name, tag)
+
+	c := SearchNotFoundCard{
+		Region:   region,
+		Name:     name,
+		Tag:      tag,
+		Path:     path,
+		Data:     string(data),
+	}
+
+	return c
 }
 
 templ (m SearchNotFoundCard) ToTempl(ctx context.Context) {
 	<button
 		type="button"
-		hx-post="/summoner/fetch"
+
+		hx-post={ m.Path }
+
 		hx-trigger="click"
-		hx-include="[name='region'], [name='name'], [name='tag']"
-		class="flex w-full rounded-lg items-center hover:bg-gray-900/5 dark:hover:bg-gray-200/5 cursor-pointer justify-between px-3 py-2 gap-x-3"
+
+		hx-vals={ m.Data }
+
+		hx-ext="json-enc"
+
+		hx-disabled-elt="this"
+
+		class="flex w-full h-15 rounded-lg transition items-center enabled:hover:bg-gray-900/5 enabled:dark:hover:bg-gray-100/5 enabled:cursor-pointer justify-between px-3 gap-x-3 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 enabled:active:bg-gray-900/10 enabled:dark:active:bg-gray-100/10 disabled:bg-gray-900/5 disabled:dark:bg-gray-100/5"
 	>
 		<div class="flex-1 min-w-0">
-			<div class="text-sm text-gray-900/90 dark:text-gray-200/90 text-left truncate">
+			<div class="text-sm text-gray-900/90 dark:text-gray-100/90 text-left truncate">
 				{ m.Name + "#" + m.Tag } is not found
 			</div>
 			<div class="text-xs text-gray-500/90 text-left truncate">
 				Click to fetch
 			</div>
 		</div>
-		<input type="hidden" name="region" value={ m.Platform }/>
-		<input type="hidden" name="name" value={ m.Name }/>
-		if m.Tag != "" {
-			<input type="hidden" name="tag" value={ m.Tag }/>
-		} else {
-			<input type="hidden" name="tag" value={ m.Platform }/>
-		}
+		<div class="htmx-indicator">
+			@component.Spinner{}.ToTempl(ctx)
+		</div>
 	</button>
+}
+
+// SearchErrorCard creates a NOTE: generic internal server error message card.
+type SearchErrorCard struct {}
+
+templ (m SearchErrorCard) ToTempl(ctx context.Context) {
+	<div class="flex items-center w-full h-15">
+		<span>Internal Server Error</span>
+	</div>
 }
