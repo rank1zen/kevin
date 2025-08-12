@@ -2,39 +2,54 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"time"
 
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+var (
+	ErrInvalidRankStatuID = errors.New("invalid rank status id")
+)
+
 type Tx interface {
 	Exec(ctx context.Context, sql string, args ...any) (commandTag pgconn.CommandTag, err error)
+
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
 type BatchTx interface {
 	Queue(query string, arguments ...any) *pgx.QueuedQuery
 }
 
-type RankDetail struct {
-	RankStatusID int    `db:"rank_status_id"`
-	Wins         int    `db:"wins"`
-	Losses       int    `db:"losses"`
-	Tier         string `db:"tier"`
-	Division     string `db:"division"`
-	LP           int    `db:"lp"`
+// RankStatus is always created when a rank request is made.
+type RankStatus struct {
+	PUUID string `db:"puuid"`
+
+	EffectiveDate time.Time `db:"effective_date"`
+
+	// IsRanked indicates that there exists a [RankDetail] for this status.
+	IsRanked bool `db:"is_ranked"`
 }
 
-type RankStatus struct {
-	RankStatusID  int       `db:"rank_status_id"`
-	PUUID         string    `db:"puuid"`
-	EffectiveDate time.Time `db:"effective_date"`
-	EndDate       time.Time `db:"end_date"`
-	IsCurrent     bool      `db:"is_current"`
-	IsRanked      bool      `db:"is_ranked"`
+type RankDetail struct {
+	RankStatusID int `db:"rank_status_id"`
+
+	Wins int `db:"wins"`
+
+	Losses int `db:"losses"`
+
+	Tier string `db:"tier"`
+
+	Division string `db:"division"`
+
+	LP int `db:"lp"`
 }
 
 func RankRecordFromPG(status RankStatus, detail *RankDetail) internal.RankRecordFrom {
@@ -43,9 +58,7 @@ func RankRecordFromPG(status RankStatus, detail *RankDetail) internal.RankRecord
 
 		r.EffectiveDate = status.EffectiveDate
 
-		r.EndDate = &status.EndDate
-
-		r.IsCurrent = status.IsCurrent
+		r.IsCurrent = false
 
 		if detail != nil {
 			r.Detail = &internal.ZRankDetail{
@@ -65,28 +78,17 @@ func RankRecordFromPG(status RankStatus, detail *RankDetail) internal.RankRecord
 
 type RankStore struct{ Tx Tx }
 
-type ListRankOption struct {
-	Start, End *time.Time
-
-	Offset, Limit uint
-
-	Recent bool
-}
-
-func (db *RankStore) CreateRankStatus(ctx context.Context, status RankStatus) error {
-	_, err := db.Tx.Exec(ctx, `
+// CreateRankStatus creates a rank status and returns created id.
+func (db *RankStore) CreateRankStatus(ctx context.Context, status RankStatus) (id int, err error) {
+	err = db.Tx.QueryRow(ctx, `
 		INSERT INTO RankStatus (
 			puuid,
 			effective_date,
-			end_date,
-			is_current,
 			is_ranked
 		)
 		VALUES (
 			@puuid,
 			@effective_date,
-			'infinity',
-			true,
 			@is_ranked
 		)
 		RETURNING
@@ -97,9 +99,9 @@ func (db *RankStore) CreateRankStatus(ctx context.Context, status RankStatus) er
 			"effective_date": status.EffectiveDate,
 			"is_ranked":      status.IsRanked,
 		},
-	)
+	).Scan(&id)
 
-	return err
+	return id, err
 }
 
 func (db *RankStore) CreateRankDetail(ctx context.Context, detail RankDetail) error {
@@ -131,7 +133,31 @@ func (db *RankStore) CreateRankDetail(ctx context.Context, detail RankDetail) er
 		},
 	)
 
-	return err
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.ForeignKeyViolation {
+				return ErrInvalidRankStatuID
+			}
+		}
+
+		return err
+
+	}
+
+	return nil
+}
+
+type ListRankOption struct {
+	// Start indicates an inclusive lower bound on the date.
+	Start *time.Time
+
+	// End indicates an exclusive upper bound on the date.
+	End *time.Time
+
+	Offset, Limit uint
+
+	Recent bool
 }
 
 func (db *RankStore) ListRankIDs(ctx context.Context, puuid riot.PUUID, option ListRankOption) ([]int, error) {
@@ -152,7 +178,7 @@ func (db *RankStore) ListRankIDs(ctx context.Context, puuid riot.PUUID, option L
 	if option.Start != nil {
 		sql = sql + `
 			AND
-				status.effective_date <= @start
+				status.effective_date >= @start
 		`
 		args["start"] = option.Start
 	}
@@ -160,7 +186,7 @@ func (db *RankStore) ListRankIDs(ctx context.Context, puuid riot.PUUID, option L
 	if option.End != nil {
 		sql = sql + `
 			AND
-				status.effective_date >= @end
+				status.effective_date < @end
 		`
 
 		args["end"] = option.End
@@ -179,6 +205,15 @@ func (db *RankStore) ListRankIDs(ctx context.Context, puuid riot.PUUID, option L
 	}
 
 	args["end"] = option.End
+
+	sql = sql + `
+		OFFSET
+			@offset
+		LIMIT
+			@limit
+	`
+	args["offset"] = option.Offset
+	args["limit"] = option.Limit
 
 	rows, err := db.Tx.Query(ctx, sql, args)
 	if err != nil {
