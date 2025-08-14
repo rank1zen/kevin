@@ -80,6 +80,23 @@ func (p *PGInstance) SetupStore(ctx context.Context, t testing.TB) *Store {
 	return store
 }
 
+func (p *PGInstance) SetupConn(ctx context.Context, t testing.TB) *pgxpool.Pool {
+	conn, err := pgxpool.New(ctx, p.pgURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		conn.Close()
+
+		if err := p.container.Restore(ctx); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	return conn
+}
+
 func (p *PGInstance) migrateSchema(ctx context.Context) {
 	conn, err := pgx.Connect(ctx, p.pgURL)
 	if err != nil {

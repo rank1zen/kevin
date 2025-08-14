@@ -91,3 +91,20 @@ func convertRunePageToList(runes internal.RunePage) [11]int {
 
 	return ids
 }
+
+func convertTeamPositionToString(position internal.TeamPosition) string {
+	switch position {
+	case internal.TeamPositionBottom:
+		return "Bottom"
+	case internal.TeamPositionSupport:
+		return "Support"
+	case internal.TeamPositionTop:
+		return "Top"
+	case internal.TeamPositionMiddle:
+		return "Middle"
+	case internal.TeamPositionJungle:
+		return "Jungle"
+	}
+
+	return ""
+}

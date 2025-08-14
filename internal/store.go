@@ -26,6 +26,76 @@ var (
 	ErrMatchNotFound = errors.New("match not found")
 )
 
+type Profile struct {
+	PUUID riot.PUUID
+
+	Name, Tagline string
+
+	Rank RankStatus
+}
+
+type ProfileDetail struct {
+	PUUID riot.PUUID
+
+	Name, Tagline string
+
+	Rank RankStatus
+}
+
+type MatchDetail struct {
+	// ID is a region+number, which forms an identifier. NOTE: should
+	// switch to new match ID type.
+	ID string
+
+	// Date is the end timestamp of the match.
+	Date time.Time
+
+	// Duration is the length of the match.
+	Duration time.Duration
+
+	// Version is the game version.
+	Version string
+
+	// WinnerID is the ID of the winning team. NOTE: should switch to new
+	// TeamID type.
+	WinnerID int
+
+	// Participants are the players in this match. There is no chosen
+	// order.
+	Participants [10]ParticipantDetail
+}
+
+// ParticipantDetail contains additional participant details for presentation.
+type ParticipantDetail struct {
+	Participant
+
+	// Name and Tag is the current riot id of the summoner.
+	Name, Tag string
+
+	// CurrentRank is the current rank of the summoner.
+	CurrentRank *RankRecord
+
+	RankBefore *RankRecord
+
+	RankAfter *RankRecord
+}
+
+// TODO: replace Store.
+type Store2 interface {
+	RecordProfile(ctx context.Context, summoner Profile) error
+
+	RecordMatch(ctx context.Context, match Match) error
+
+	GetProfileDetail(ctx context.Context, puuid riot.PUUID) (ProfileDetail, error)
+
+	GetMatchDetail(ctx context.Context, id riot.PUUID) (MatchDetail, error)
+
+	GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch, error)
+
+	// GetNewMatchIDs returns the ids of matches not in store.
+	GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error)
+}
+
 // Store manages persistent data.
 type Store interface {
 	// GetSummoner returns the summoner, if found in store, otherwise,
