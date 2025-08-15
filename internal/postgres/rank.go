@@ -52,6 +52,12 @@ type RankDetail struct {
 	LP int `db:"lp"`
 }
 
+type RankFull struct {
+	Status RankStatus
+	Detail *RankDetail
+}
+
+// Deprecated: get rid of.
 func RankRecordFromPG(status RankStatus, detail *RankDetail) internal.RankRecordFrom {
 	return func(r *internal.ZRankRecord) {
 		r.PUUID = riot.PUUID(status.PUUID)

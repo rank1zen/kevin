@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -10,13 +11,47 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+func CreateListRankOption(history []Match) [][2]ListRankOption {
+	opt := [][2]ListRankOption{}
+
+	for i, m := range history {
+		rankBefore := ListRankOption{
+			Offset: 0,
+			Limit:  100,
+			Recent: true,
+		}
+
+		rankAfter := ListRankOption{
+			Offset: 0,
+			Limit:  100,
+			Recent: true,
+		}
+
+		if i > 0 {
+			rankBefore.Start = &history[i-1].Date
+		}
+
+		rankBefore.End = &m.Date
+
+		if i < len(history)-1 {
+			rankAfter.End = &history[i+1].Date
+		}
+
+		rankAfter.Start = &m.Date
+
+		opt = append(opt, [2]ListRankOption{rankBefore, rankAfter})
+	}
+
+	return opt
+}
+
 // TODO: replace Store.
 type Store2 struct {
 	Pool *pgxpool.Pool
 }
 
-func NewStore2() internal.Store2 {
-	return &Store2{}
+func NewStore2(pool *pgxpool.Pool) internal.Store2 {
+	return &Store2{Pool: pool}
 }
 
 func (db *Store2) RecordProfile(ctx context.Context, summoner internal.Profile) error {
@@ -27,9 +62,20 @@ func (db *Store2) RecordProfile(ctx context.Context, summoner internal.Profile) 
 
 	defer tx.Rollback(ctx)
 
-	rank := RankStore{Tx: tx}
+	rankStore := RankStore{Tx: tx}
 
-	// create or update summoner
+	summonerStore := SummonerStore{Tx: tx}
+
+	summonerIn := Summoner{
+		PUUID:   summoner.PUUID,
+		Name:    summoner.Name,
+		Tagline: summoner.Tagline,
+	}
+
+	err = summonerStore.CreateSummoner(ctx, summonerIn)
+	if err != nil {
+		return err
+	}
 
 	rankStatus := RankStatus{
 		PUUID:         summoner.PUUID.String(),
@@ -41,7 +87,7 @@ func (db *Store2) RecordProfile(ctx context.Context, summoner internal.Profile) 
 		rankStatus.IsRanked = true
 	}
 
-	statusID, err := rank.CreateRankStatus(ctx, rankStatus)
+	statusID, err := rankStore.CreateRankStatus(ctx, rankStatus)
 	if err != nil {
 		return err
 	}
@@ -56,7 +102,7 @@ func (db *Store2) RecordProfile(ctx context.Context, summoner internal.Profile) 
 			LP:           summoner.Rank.Detail.Rank.LP,
 		}
 
-		if err := rank.CreateRankDetail(ctx, rankDetail); err != nil {
+		if err := rankStore.CreateRankDetail(ctx, rankDetail); err != nil {
 			return err
 		}
 	}
@@ -67,7 +113,21 @@ func (db *Store2) RecordProfile(ctx context.Context, summoner internal.Profile) 
 }
 
 func (db *Store2) GetProfileDetail(ctx context.Context, puuid riot.PUUID) (internal.ProfileDetail, error) {
-	panic("not implemented")
+	summonerStore := SummonerStore{Tx: db.Pool}
+
+	summoner, err := summonerStore.GetSummoner(ctx, puuid)
+	if err != nil {
+		return internal.ProfileDetail{}, err
+	}
+
+	detail := internal.ProfileDetail{
+		PUUID:   summoner.PUUID,
+		Name:    summoner.Name,
+		Tagline: summoner.Tagline,
+		Rank:    internal.RankStatus2{},
+	}
+
+	return detail, nil
 }
 
 func (db *Store2) RecordMatch(ctx context.Context, match internal.Match) error {
@@ -117,20 +177,284 @@ func (db *Store2) RecordMatch(ctx context.Context, match internal.Match) error {
 	return br.Close()
 }
 
-func (db *Store2) GetMatchDetail(ctx context.Context, id riot.PUUID) (internal.MatchDetail, error) {
-	panic("not implemented")
+func (db *Store2) GetMatchDetail(ctx context.Context, id string) (internal.MatchDetail, error) {
+	matchStore := MatchStore{Tx: db.Pool}
+
+	summonerStore := SummonerStore{Tx: db.Pool}
+
+	match, err := matchStore.GetMatch(ctx, id)
+	if err != nil {
+		return internal.MatchDetail{}, err
+	}
+
+	participants, err := matchStore.GetParticipants(ctx, id)
+	if err != nil {
+		return internal.MatchDetail{}, err
+	}
+
+	if len(participants) != 10 {
+		return internal.MatchDetail{}, err
+	}
+
+	detail := internal.MatchDetail{
+		ID:           id,
+		Date:         match.Date,
+		Duration:     match.Duration,
+		Version:      match.Version,
+		WinnerID:     match.WinnerID,
+		Participants: [10]internal.ParticipantDetail{},
+	}
+
+	for i := range 10 {
+		puuid := participants[i].PUUID
+		summoner, err := summonerStore.GetSummoner(ctx, internal.NewPUUIDFromString(puuid))
+		if err != nil {
+			return internal.MatchDetail{}, err
+		}
+
+		detail.Participants[i] = internal.NewParticipantDetail(ParticipantDetailFromPG(participants[i], summoner, nil, nil, nil))
+	}
+
+	return detail, nil
 }
 
-func (db *Store2) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerMatch, error) {
-	// list games played for puuid
-	// get participant for each game
-	// get match for each game
-	// list ranks for puuid between games
-	// get rank record for that id
+func (db *Store2) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerMatch2, error) {
+	matchStore := MatchStore{Tx: db.Pool}
 
-	panic("not implemented")
+	rankStore := RankStore{Tx: db.Pool}
+
+	ids, err := matchStore.ListMatchHistoryIDs(ctx, puuid, start, end)
+	if err != nil {
+		return nil, err
+	}
+
+	matchHistory := []internal.SummonerMatch2{}
+
+	var (
+		matchList       []Match       = make([]Match, len(ids))
+		participantList []Participant = make([]Participant, len(ids))
+		rankBeforeList  []*RankFull    = make([]*RankFull, len(ids))
+		rankAfterList   []*RankFull    = make([]*RankFull, len(ids))
+	)
+
+	for _, id := range ids {
+		match, err := matchStore.GetMatch(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		matchList = append(matchList, match)
+
+		participant, err := matchStore.GetParticipant(ctx, puuid, id)
+		if err != nil {
+			return nil, err
+		}
+
+		participantList = append(participantList, participant)
+	}
+
+	listRankOptions := CreateListRankOption(matchList)
+	for _, opt := range listRankOptions {
+		statusIDs, err := rankStore.ListRankIDs(ctx, puuid, opt[0])
+		if err != nil {
+			return nil, err
+		}
+
+		id := statusIDs[0]
+		rankStore.GetRankStatus(ctx, id)
+		status, err := rankStore.GetRankStatus(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		detail, err := rankStore.GetRankDetail(ctx, id)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				rankBeforeList = append(rankBeforeList, &RankFull{Detail: nil, Status: status})
+				continue
+			} else {
+				return nil, err
+			}
+		}
+
+		rankBeforeList = append(rankBeforeList, &RankFull{Detail: &detail, Status: status})
+	}
+
+	for i := range ids {
+		match := internal.NewSummonerMatch(WithPostgresSummonerMatch(matchList[i], participantList[i], rankBeforeList[i], rankAfterList[i]))
+		matchHistory = append(matchHistory, match)
+	}
+
+	return matchHistory, nil
 }
 
 func (db *Store2) GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error) {
 	panic("not implemented")
+}
+
+func ParticipantDetailFromPG(participant Participant, summoner Summoner, currentRank, rankBefore, rankAfter *RankFull) internal.ParticipantDetailOption {
+	return func(m *internal.ParticipantDetail) {
+		m.PUUID = internal.NewPUUIDFromString(participant.PUUID)
+
+		m.MatchID = participant.MatchID
+
+		m.TeamID = participant.TeamID
+
+		m.ChampionID = participant.ChampionID
+
+		m.ChampionLevel = participant.ChampionLevel
+
+		m.TeamPosition = convertStringToTeamPosition(participant.TeamPosition)
+
+		m.SummonerIDs = participant.SummonerIDs
+
+		m.Runes = convertListToRunePage(participant.Runes)
+
+		m.Items = participant.Items
+
+		m.Kills = participant.Kills
+
+		m.Deaths = participant.Deaths
+
+		m.Assists = participant.Assists
+
+		m.KillParticipation = participant.KillParticipation
+
+		m.CreepScore = participant.CreepScore
+
+		m.CreepScorePerMinute = participant.CreepScorePerMinute
+
+		m.DamageDealt = participant.DamageDealt
+
+		m.DamageTaken = participant.DamageTaken
+
+		m.DamageDeltaEnemy = participant.DamageDeltaEnemy
+
+		m.DamagePercentageTeam = participant.DamagePercentageTeam
+
+		m.GoldEarned = participant.GoldEarned
+
+		m.GoldDeltaEnemy = participant.GoldDeltaEnemy
+
+		m.GoldPercentageTeam = participant.GoldPercentageTeam
+
+		m.VisionScore = participant.VisionScore
+
+		m.PinkWardsBought = participant.PinkWardsBought
+
+		m.Name = summoner.Name
+
+		m.Tag = summoner.Tagline
+
+		m.RankAfter = nil
+		if rankAfter != nil {
+			rank := internal.NewRankStatus2(WithPostgresRankStatus2(rankAfter))
+			m.RankBefore = &rank
+		}
+
+		m.RankBefore = nil
+		if rankBefore != nil {
+			rank := internal.NewRankStatus2(WithPostgresRankStatus2(rankBefore))
+			m.RankBefore = &rank
+		}
+
+		m.CurrentRank = nil
+		if currentRank != nil {
+			rank := internal.NewRankStatus2(WithPostgresRankStatus2(currentRank))
+			m.RankBefore = &rank
+		}
+	}
+}
+
+func WithPostgresSummonerMatch(match Match, participant Participant, rankBefore, rankAfter *RankFull) internal.SummonerMatchOption {
+	return func(m *internal.SummonerMatch2) {
+		m.PUUID = internal.NewPUUIDFromString(participant.PUUID)
+
+		m.MatchID = match.ID
+
+		m.TeamID = participant.TeamID
+
+		m.ChampionID = participant.ChampionID
+
+		m.ChampionLevel = participant.ChampionLevel
+
+		m.TeamPosition = convertStringToTeamPosition(participant.TeamPosition)
+
+		m.SummonerIDs = participant.SummonerIDs
+
+		m.Runes = convertListToRunePage(participant.Runes)
+
+		m.Items = participant.Items
+
+		m.Kills = participant.Kills
+
+		m.Deaths = participant.Deaths
+
+		m.Assists = participant.Assists
+
+		m.KillParticipation = participant.KillParticipation
+
+		m.CreepScore = participant.CreepScore
+
+		m.CreepScorePerMinute = participant.CreepScorePerMinute
+
+		m.DamageDealt = participant.DamageDealt
+
+		m.DamageTaken = participant.DamageTaken
+
+		m.DamageDeltaEnemy = participant.DamageDeltaEnemy
+
+		m.DamagePercentageTeam = participant.DamagePercentageTeam
+
+		m.GoldEarned = participant.GoldEarned
+
+		m.GoldDeltaEnemy = participant.GoldDeltaEnemy
+
+		m.GoldPercentageTeam = participant.GoldPercentageTeam
+
+		m.VisionScore = participant.VisionScore
+
+		m.PinkWardsBought = participant.PinkWardsBought
+
+		m.Date = match.Date
+
+		m.Duration = match.Duration
+
+		m.Win = false
+		if participant.TeamID == match.WinnerID {
+			m.Win = true
+		}
+
+		m.RankBefore = nil
+		if rankBefore != nil {
+			rank := internal.NewRankStatus2(WithPostgresRankStatus2(rankBefore))
+			m.RankBefore = &rank
+		}
+
+		m.RankAfter = nil
+		if rankAfter != nil {
+			rank := internal.NewRankStatus2(WithPostgresRankStatus2(rankAfter))
+			m.RankAfter = &rank
+		}
+	}
+}
+
+func WithPostgresRankStatus2(rank *RankFull) internal.RankStatus2Option {
+	return func(m *internal.RankStatus2) {
+		m.PUUID = internal.NewPUUIDFromString(rank.Status.PUUID)
+		m.EffectiveDate = rank.Status.EffectiveDate
+
+		m.Detail = nil
+		if detail := rank.Detail; detail != nil {
+			m.Detail = &internal.ZRankDetail{
+				Wins:   detail.Wins,
+				Losses: detail.Losses,
+				Rank: internal.Rank{
+					Tier:     convertStringToRiotTier(detail.Tier),
+					Division: convertStringToRiotRank(detail.Division),
+					LP:       detail.LP,
+				},
+			}
+		}
+	}
 }

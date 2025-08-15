@@ -74,6 +74,24 @@ func convertStringToRiotRank(rank string) riot.Division {
 	}
 }
 
+func convertListToRunePage(runes [11]int) internal.RunePage {
+	page := internal.RunePage{
+		PrimaryTree:     runes[0],
+		PrimaryKeystone: runes[1],
+		PrimaryA:        runes[2],
+		PrimaryB:        runes[3],
+		PrimaryC:        runes[4],
+		SecondaryTree:   runes[5],
+		SecondaryA:      runes[6],
+		SecondaryB:      runes[7],
+		MiniOffense:     runes[8],
+		MiniFlex:        runes[9],
+		MiniDefense:     runes[10],
+	}
+
+	return page
+}
+
 func convertRunePageToList(runes internal.RunePage) [11]int {
 	ids := [11]int{
 		runes.PrimaryTree,
@@ -107,4 +125,21 @@ func convertTeamPositionToString(position internal.TeamPosition) string {
 	}
 
 	return ""
+}
+
+func convertStringToTeamPosition(s string) internal.TeamPosition {
+	switch s {
+	case "Bottom":
+		return internal.TeamPositionBottom
+	case "Support":
+		return internal.TeamPositionSupport
+	case "Middle":
+		return internal.TeamPositionMiddle
+	case "Top":
+		return internal.TeamPositionTop
+	case "Jungle":
+		return internal.TeamPositionJungle
+	}
+
+	return internal.TeamPositionTop
 }

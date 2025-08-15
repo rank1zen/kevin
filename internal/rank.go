@@ -18,6 +18,15 @@ type RankStatus2 struct {
 	Detail *ZRankDetail
 }
 
+func NewRankStatus2(option RankStatus2Option) RankStatus2 {
+	m := RankStatus2{}
+	option(&m)
+	return m
+}
+
+type RankStatus2Option func(*RankStatus2)
+
+// Deprecated: get rid of.
 type ZRankRecord struct {
 	PUUID riot.PUUID
 

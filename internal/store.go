@@ -39,7 +39,7 @@ type ProfileDetail struct {
 
 	Name, Tagline string
 
-	Rank RankStatus
+	Rank RankStatus2
 }
 
 type MatchDetail struct {
@@ -73,12 +73,46 @@ type ParticipantDetail struct {
 	Name, Tag string
 
 	// CurrentRank is the current rank of the summoner.
-	CurrentRank *RankRecord
+	CurrentRank *RankStatus2
 
-	RankBefore *RankRecord
+	RankBefore *RankStatus2
 
-	RankAfter *RankRecord
+	RankAfter *RankStatus2
 }
+
+type SummonerMatch2 struct {
+	Participant
+
+	Date time.Time
+
+	Duration time.Duration
+
+	Win bool
+
+	// RankBefore is the summoner's rank just before the match. A nil value
+	// indicates this no record was taken.
+	RankBefore *RankStatus2
+
+	// RankBefore is the summoner's rank just after the match. A nil value
+	// indicates this no record was taken.
+	RankAfter *RankStatus2
+}
+
+func NewParticipantDetail(option ParticipantDetailOption) ParticipantDetail {
+	detail := ParticipantDetail{}
+	option(&detail)
+	return detail
+}
+
+type ParticipantDetailOption func(*ParticipantDetail)
+
+func NewSummonerMatch(option SummonerMatchOption) SummonerMatch2 {
+	detail := SummonerMatch2{}
+	option(&detail)
+	return detail
+}
+
+type SummonerMatchOption func(*SummonerMatch2)
 
 // TODO: replace Store.
 type Store2 interface {
@@ -88,9 +122,9 @@ type Store2 interface {
 
 	GetProfileDetail(ctx context.Context, puuid riot.PUUID) (ProfileDetail, error)
 
-	GetMatchDetail(ctx context.Context, id riot.PUUID) (MatchDetail, error)
+	GetMatchDetail(ctx context.Context, id string) (MatchDetail, error)
 
-	GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch, error)
+	GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch2, error)
 
 	// GetNewMatchIDs returns the ids of matches not in store.
 	GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error)
