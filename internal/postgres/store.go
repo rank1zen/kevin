@@ -54,6 +54,71 @@ func NewStore2(pool *pgxpool.Pool) internal.Store2 {
 	return &Store2{Pool: pool}
 }
 
+func (db *Store2) GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerChampion, error) {
+	panic("not implemented")
+}
+
+func (db *Store2) SearchSummoner(ctx context.Context, q string) ([]internal.SearchResult2, error) {
+	summonerStore := SummonerStore{Tx: db.Pool}
+
+	rankStore := RankStore{Tx: db.Pool}
+
+	results, err := summonerStore.SearchSummoner(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	mostRecentStatusIDs := []*int{}
+	for _, result := range results {
+		ids, err := rankStore.ListRankIDs(ctx, result.PUUID, ListRankOption{Limit: 1, Recent: true})
+		if err != nil {
+			return nil, err
+		}
+
+		if len(ids) == 0 {
+			mostRecentStatusIDs = append(mostRecentStatusIDs, nil)
+		} else {
+			mostRecentStatusIDs = append(mostRecentStatusIDs, &ids[0])
+		}
+	}
+
+	statusList := []*RankStatus{}
+	detailList := []*RankDetail{}
+	for _, id := range mostRecentStatusIDs {
+		if id == nil {
+			statusList = append(statusList, nil)
+			detailList = append(detailList, nil)
+			continue
+		}
+
+		status, err := rankStore.GetRankStatus(ctx, *id)
+		if err != nil {
+			return nil, err
+		}
+
+		detail, err := rankStore.GetRankDetail(ctx, *id)
+		if err != nil {
+			return nil, err
+		}
+
+		statusList = append(statusList, &status)
+		detailList = append(detailList, &detail)
+	}
+
+	dada := []internal.SearchResult2{}
+	for i := range len(results) {
+		s := PostgresSearchResult2{
+			Summoner: results[i],
+			Status:   statusList[i],
+			Detail:   detailList[i],
+		}
+
+		dada = append(dada, s.Convert())
+	}
+
+	return dada, nil
+}
+
 func (db *Store2) RecordProfile(ctx context.Context, summoner internal.Profile) error {
 	tx, err := db.Pool.Begin(ctx)
 	if err != nil {
@@ -457,4 +522,42 @@ func WithPostgresRankStatus2(rank *RankFull) internal.RankStatus2Option {
 			}
 		}
 	}
+}
+
+type PostgresSearchResult2 struct {
+	Summoner Summoner
+
+	Status *RankStatus
+	Detail *RankDetail
+}
+
+func (m *PostgresSearchResult2) Convert() internal.SearchResult2 {
+	result := internal.SearchResult2{
+		PUUID:   m.Summoner.PUUID,
+		Name:    m.Summoner.Name,
+		Tagline: m.Summoner.Tagline,
+		Rank:    nil,
+	}
+
+	if m.Status != nil {
+		result.Rank = &internal.RankStatus2{
+			PUUID:         m.Summoner.PUUID,
+			EffectiveDate: m.Status.EffectiveDate,
+			Detail:        nil,
+		}
+
+		if m.Detail != nil {
+			result.Rank.Detail = &internal.ZRankDetail{
+				Wins:   m.Detail.Wins,
+				Losses: m.Detail.Losses,
+				Rank:   internal.Rank{
+					Tier:     riot.Tier(m.Detail.Tier),
+					Division: riot.Division(m.Detail.Division),
+					LP:       m.Detail.LP,
+				},
+			}
+		}
+	}
+
+	return result
 }

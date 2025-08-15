@@ -114,6 +114,23 @@ func NewSummonerMatch(option SummonerMatchOption) SummonerMatch2 {
 
 type SummonerMatchOption func(*SummonerMatch2)
 
+type DomainOption[T any] func(*T)
+
+func NewDomain[T any](option DomainOption[T]) T {
+	var t T
+	option(&t)
+	return t
+}
+
+type SearchResult2 struct {
+	PUUID riot.PUUID
+
+	Name, Tagline string
+
+	// Rank is the summoners most recent rank record in store.
+	Rank *RankStatus2
+}
+
 // TODO: replace Store.
 type Store2 interface {
 	RecordProfile(ctx context.Context, summoner Profile) error
@@ -126,8 +143,12 @@ type Store2 interface {
 
 	GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch2, error)
 
+	GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerChampion, error)
+
 	// GetNewMatchIDs returns the ids of matches not in store.
 	GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error)
+
+	SearchSummoner(ctx context.Context, q string) ([]SearchResult2, error)
 }
 
 // Store manages persistent data.

@@ -66,3 +66,41 @@ func (db *SummonerStore) GetSummoner(ctx context.Context, puuid riot.PUUID) (Sum
 
 	return summoner, nil
 }
+
+// TODO: switch to fuzzy match algorithm.
+func (db *SummonerStore) SearchSummoner(ctx context.Context, q string) ([]Summoner, error) {
+	rows, err := db.Tx.Query(ctx, `
+		WITH rankings AS (
+			SELECT
+				puuid,
+				name,
+				tagline,
+				to_tsvector(name) as txt,
+				websearch_to_tsquery($1) as query
+			FROM
+				Summoner
+		)
+		SELECT
+			puuid,
+			name,
+			tagline
+		FROM
+			rankings
+		WHERE
+			txt @@ query
+		ORDER BY
+			ts_rank(txt, query)
+		LIMIT 10;
+	`, q)
+
+	if err != nil {
+		return nil, err
+	}
+
+	summonerResults, err := pgx.CollectRows(rows, pgx.RowToStructByName[Summoner])
+	if err != nil {
+		return nil, err
+	}
+
+	return summonerResults, nil
+}
