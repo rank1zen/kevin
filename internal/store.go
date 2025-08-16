@@ -34,6 +34,23 @@ type Profile struct {
 	Rank RankStatus
 }
 
+type RiotToProfile struct {
+	Account riot.Account
+
+	Rank *riot.LeagueEntry
+}
+
+func (m RiotToProfile) Convert() Profile {
+	profile := Profile{
+		PUUID:   "",
+		Name:    "",
+		Tagline: "",
+		Rank:    RankStatus{},
+	}
+
+	return profile
+}
+
 type ProfileDetail struct {
 	PUUID riot.PUUID
 

@@ -56,8 +56,8 @@ func (h *Handler) CheckHealth(ctx context.Context) error {
 
 type UpdateSummonerRequest struct {
 	Region riot.Region `json:"region"`
-	Name string `json:"name"`
-	Tag string `json:"tag"`
+	Name   string      `json:"name"`
+	Tag    string      `json:"tag"`
 }
 
 func (r UpdateSummonerRequest) Validate() (problems map[string]string) {
@@ -66,17 +66,7 @@ func (r UpdateSummonerRequest) Validate() (problems map[string]string) {
 
 // UpdateSummoner syncs a summoner and their rank with riot.
 func (h *Handler) UpdateSummoner(ctx context.Context, req UpdateSummonerRequest) error {
-	ds := h.Datasource
-	if ds == nil {
-		ds = &internal.Datasource{}
-	}
-
-	puuid, err := ds.GetPUUID(ctx, req.Name, req.Tag)
-	if err != nil {
-		return err
-	}
-
-	if err := ds.UpdateSummoner(ctx, req.Region, puuid); err != nil {
+	if err := h.Datasource.UpdateProfileByRiotID(ctx, req.Region, req.Name, req.Tag); err != nil {
 		return err
 	}
 
@@ -97,12 +87,7 @@ func (r LiveMatchRequest) Validate() (problems map[string]string) {
 // GetLiveMatch returns a live match view depending on whether the summoner is
 // on game.
 func (h *Handler) GetLiveMatch(ctx context.Context, req LiveMatchRequest) (component.Component, error) {
-	ds := h.Datasource
-	if ds == nil {
-		ds = &internal.Datasource{}
-	}
-
-	match, err := ds.GetLiveMatch(ctx, req.Region, req.PUUID)
+	match, err := h.Datasource.GetLiveMatch(ctx, req.Region, req.PUUID)
 	if err != nil {
 		if errors.Is(err, internal.ErrNoLiveMatch) {
 			v := profile.NewLiveMatchNotFound()
@@ -127,53 +112,8 @@ func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (componen
 // store, otherwise, it will complete a update for summoner, then return the
 // page. If no summoner with name#tag exists, return a does not exist page.
 func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (component.Component, error) {
-	ds := h.Datasource
-	if ds == nil {
-		ds = &internal.Datasource{}
-	}
-
-	puuid, err := ds.GetPUUID(ctx, name, tag)
-	if err != nil {
-		if errors.Is(err, internal.ErrSummonerDoesNotExist) {
-			v := component.Page{
-				Title: "Not found",
-			}
-
-			return v, nil
-		}
-
-		return nil, fmt.Errorf("get puuid: %w", err)
-	}
-
-	summoner, err := ds.GetStore().GetSummoner(ctx, puuid)
-	if err != nil {
-		if errors.Is(err, internal.ErrSummonerNotFound) {
-			fromCtx(ctx).Info("first time visit", "puuid", puuid)
-
-			if err := ds.UpdateSummoner(ctx, region, puuid); err != nil {
-				return nil, fmt.Errorf("getting puuid: %w", err)
-			}
-		}
-	}
-
-	summoner, err = ds.GetStore().GetSummoner(ctx, puuid)
-	if err != nil {
-		return nil, fmt.Errorf("get summoner: %w", err)
-	}
-
-	rank, err := ds.GetStore().GetRank(ctx, puuid, time.Now(), true)
-	if err != nil {
-		return nil, fmt.Errorf("get rank: %w", err)
-	}
-
-	var v component.Component
-	if rank.Detail == nil {
-		v = profile.NewPage(EndpointProvider{}, region, summoner, nil)
-	} else {
-		v = profile.NewPage(EndpointProvider{}, region, summoner, &rank.Detail.Rank)
-	}
-
-	return v, nil
+	_, _ = h.Datasource.GetProfileDetailByRiotID(ctx, region, name, tag)
+	panic("not implemented")
 }
 
 // TODO: rename to SummonerChampionsRequest
@@ -198,20 +138,10 @@ func (r ZGetSummonerChampionsRequest) Validate() (problems map[string]string) {
 // GetSummonerChampions returns The method will fetch all
 // games played in the specified interval.
 func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerChampionsRequest) (component.Component, error) {
-	ds := h.Datasource
-	if ds == nil {
-		ds = &internal.Datasource{}
-	}
-
 	start := req.Week
 	end := start.Add(7 * 24 * time.Hour)
 
-	err := ds.ZUpdateMatchHistory(ctx, req.Region, req.PUUID, start, end)
-	if err != nil {
-		return nil, fmt.Errorf("updating matchlist failed: %w", err)
-	}
-
-	storeChampions, err := ds.GetStore().GetChampions(ctx, req.PUUID, start, end)
+	storeChampions, err := h.Datasource.GetSummonerChampions(ctx, req.Region, req.PUUID, start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -233,11 +163,7 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 	// TODO: consider daylight savings
 	end := req.Date.Add(24 * time.Hour)
 
-	if err := ds.ZUpdateMatchHistory(ctx, req.Region, req.PUUID, req.Date, end); err != nil {
-		return nil, err
-	}
-
-	storeMatches, err := ds.GetStore().GetZMatches(ctx, req.PUUID, req.Date, end)
+	storeMatches, err := h.Datasource.GetMatchHistory(ctx, req.Region, req.PUUID, req.Date, end)
 	if err != nil {
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
@@ -247,21 +173,14 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 		return v, nil
 	}
 
-	v := profile.NewMatchHistoryList(storeMatches)
-
-	return v, nil
+	panic("not implemented")
 }
 
 // GetSearchResults returns a list of [SearchResultCard] for accounts that
 // match q. If no results were found, return [SearchNotFoundCard] instead. If
 // no tag was provided in q, region will be used.
 func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (component.Component, error) {
-	ds := h.Datasource
-	if ds == nil {
-		ds = &internal.Datasource{}
-	}
-
-	storeSearchResults, err := ds.GetStore().SearchSummoner(ctx, q)
+	storeSearchResults, err := h.Datasource.Search(ctx, region, q)
 	if err != nil {
 		return shared.SearchErrorCard{}, err
 	}
@@ -277,25 +196,22 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 		return v, nil
 	}
 
-	v := shared.NewSearchResultList(storeSearchResults)
-
-	return v, nil
+	panic("not implemented")
 }
 
 type GetMatchDetailsRequest struct {
+	Region  riot.Region `json:"region"`
 	MatchID string
 }
 
 // GetMatchDetails returns [MatchDetail].
 func (h *Handler) GetMatchDetails(ctx context.Context, req GetMatchDetailsRequest) (component.Component, error) {
-	match, err := h.Datasource.GetStore().GetMatch(ctx, riot.PUUID(req.MatchID))
+	_, err := h.Datasource.GetMatchDetail(ctx, req.Region, req.MatchID)
 	if err != nil {
 		return nil, err
 	}
 
-	v := profile.NewMatchDetail(match)
-
-	return v, nil
+	panic("not implemented")
 }
 
 // GetCurrentWeek returns the start of the day, 7 days ago. Currently returns
