@@ -30,10 +30,10 @@ type Datasource struct {
 
 	riot *riot.Client
 
-	store Store2
+	store Store
 }
 
-func NewDatasource(client *riot.Client, store Store2) *Datasource {
+func NewDatasource(client *riot.Client, store Store) *Datasource {
 	return &Datasource{client, store}
 }
 
@@ -41,7 +41,7 @@ func (ds *Datasource) GetMatchDetail(ctx context.Context, region riot.Region, ma
 	panic("not implemented")
 }
 
-func (ds *Datasource) Search(ctx context.Context, region riot.Region, q string) ([]SearchResult2, error) {
+func (ds *Datasource) Search(ctx context.Context, region riot.Region, q string) ([]SearchResult, error) {
 	results, err := ds.store.SearchSummoner(ctx, q)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (ds *Datasource) GetSummonerChampions(ctx context.Context, region riot.Regi
 }
 
 // NOTE: it always fetches the riot api (for now), so it is always accurate.
-func (ds *Datasource) GetMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch2, error) {
+func (ds *Datasource) GetMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch, error) {
 	options := soloQMatchFilter(start, end)
 	ids, err := ds.riot.Match.GetMatchList(ctx, region, string(puuid), options)
 	if err != nil {
@@ -80,12 +80,14 @@ func (ds *Datasource) GetMatchHistory(ctx context.Context, region riot.Region, p
 
 	// TODO: put these in batch
 	for _, id := range newIDs {
-		match, err := ds.riot.Match.GetMatch(ctx, region, id)
+		riotMatch, err := ds.riot.Match.GetMatch(ctx, region, id)
 		if err != nil {
 			return nil, err
 		}
 
-		err = ds.store.RecordMatch(ctx, NewMatch(WithRiotMatch(match)))
+		match := RiotToMatchMapper{Match: *riotMatch}.Map()
+
+		err = ds.store.RecordMatch(ctx, match)
 		if err != nil {
 			return nil, err
 		}
@@ -172,7 +174,7 @@ func (ds *Datasource) GetProfileDetail(ctx context.Context, region riot.Region, 
 
 	soloq := findSoloQLeagueEntry(entries)
 
-	s := RiotToProfile{
+	s := RiotToProfileMapper{
 		Account: *account,
 		Rank:    soloq,
 	}
@@ -203,7 +205,7 @@ func (ds *Datasource) GetProfileDetailByRiotID(ctx context.Context, region riot.
 
 	soloq := findSoloQLeagueEntry(entries)
 
-	s := RiotToProfile{
+	s := RiotToProfileMapper{
 		Account: *account,
 		Rank:    soloq,
 	}
@@ -234,7 +236,7 @@ func (ds *Datasource) UpdateProfile(ctx context.Context, region riot.Region, puu
 
 	soloq := findSoloQLeagueEntry(entries)
 
-	s := RiotToProfile{
+	s := RiotToProfileMapper{
 		Account: *account,
 		Rank:    soloq,
 	}
@@ -260,7 +262,7 @@ func (ds *Datasource) UpdateProfileByRiotID(ctx context.Context, region riot.Reg
 
 	soloq := findSoloQLeagueEntry(entries)
 
-	s := RiotToProfile{
+	s := RiotToProfileMapper{
 		Account: *account,
 		Rank:    soloq,
 	}

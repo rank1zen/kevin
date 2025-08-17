@@ -45,20 +45,20 @@ func CreateListRankOption(history []Match) [][2]ListRankOption {
 	return opt
 }
 
-// TODO: replace Store.
-type Store2 struct {
+// Store manages connections with a postgres database.
+type Store struct {
 	Pool *pgxpool.Pool
 }
 
-func NewStore2(pool *pgxpool.Pool) internal.Store2 {
-	return &Store2{Pool: pool}
+func NewStore(pool *pgxpool.Pool) internal.Store {
+	return &Store{Pool: pool}
 }
 
-func (db *Store2) GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerChampion, error) {
+func (db *Store) GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerChampion, error) {
 	panic("not implemented")
 }
 
-func (db *Store2) SearchSummoner(ctx context.Context, q string) ([]internal.SearchResult2, error) {
+func (db *Store) SearchSummoner(ctx context.Context, q string) ([]internal.SearchResult, error) {
 	summonerStore := SummonerStore{Tx: db.Pool}
 
 	rankStore := RankStore{Tx: db.Pool}
@@ -105,7 +105,7 @@ func (db *Store2) SearchSummoner(ctx context.Context, q string) ([]internal.Sear
 		detailList = append(detailList, &detail)
 	}
 
-	dada := []internal.SearchResult2{}
+	dada := []internal.SearchResult{}
 	for i := range len(results) {
 		s := PostgresSearchResult2{
 			Summoner: results[i],
@@ -119,7 +119,7 @@ func (db *Store2) SearchSummoner(ctx context.Context, q string) ([]internal.Sear
 	return dada, nil
 }
 
-func (db *Store2) RecordProfile(ctx context.Context, summoner internal.Profile) error {
+func (db *Store) RecordProfile(ctx context.Context, summoner internal.Profile) error {
 	tx, err := db.Pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -177,7 +177,7 @@ func (db *Store2) RecordProfile(ctx context.Context, summoner internal.Profile) 
 	return nil
 }
 
-func (db *Store2) GetProfileDetail(ctx context.Context, puuid riot.PUUID) (internal.ProfileDetail, error) {
+func (db *Store) GetProfileDetail(ctx context.Context, puuid riot.PUUID) (internal.ProfileDetail, error) {
 	summonerStore := SummonerStore{Tx: db.Pool}
 
 	summoner, err := summonerStore.GetSummoner(ctx, puuid)
@@ -189,13 +189,13 @@ func (db *Store2) GetProfileDetail(ctx context.Context, puuid riot.PUUID) (inter
 		PUUID:   summoner.PUUID,
 		Name:    summoner.Name,
 		Tagline: summoner.Tagline,
-		Rank:    internal.RankStatus2{},
+		Rank:    internal.RankStatus{},
 	}
 
 	return detail, nil
 }
 
-func (db *Store2) RecordMatch(ctx context.Context, match internal.Match) error {
+func (db *Store) RecordMatch(ctx context.Context, match internal.Match) error {
 	matchStore := MatchStore{Tx: db.Pool}
 
 	batch := pgx.Batch{}
@@ -242,7 +242,7 @@ func (db *Store2) RecordMatch(ctx context.Context, match internal.Match) error {
 	return br.Close()
 }
 
-func (db *Store2) GetMatchDetail(ctx context.Context, id string) (internal.MatchDetail, error) {
+func (db *Store) GetMatchDetail(ctx context.Context, id string) (internal.MatchDetail, error) {
 	matchStore := MatchStore{Tx: db.Pool}
 
 	summonerStore := SummonerStore{Tx: db.Pool}
@@ -283,7 +283,7 @@ func (db *Store2) GetMatchDetail(ctx context.Context, id string) (internal.Match
 	return detail, nil
 }
 
-func (db *Store2) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerMatch2, error) {
+func (db *Store) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerMatch, error) {
 	matchStore := MatchStore{Tx: db.Pool}
 
 	rankStore := RankStore{Tx: db.Pool}
@@ -293,7 +293,7 @@ func (db *Store2) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, 
 		return nil, err
 	}
 
-	matchHistory := []internal.SummonerMatch2{}
+	matchHistory := []internal.SummonerMatch{}
 
 	var (
 		matchList       []Match       = make([]Match, len(ids))
@@ -353,7 +353,7 @@ func (db *Store2) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, 
 	return matchHistory, nil
 }
 
-func (db *Store2) GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error) {
+func (db *Store) GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error) {
 	panic("not implemented")
 }
 
@@ -413,26 +413,26 @@ func ParticipantDetailFromPG(participant Participant, summoner Summoner, current
 
 		m.RankAfter = nil
 		if rankAfter != nil {
-			rank := internal.NewRankStatus2(WithPostgresRankStatus2(rankAfter))
+			rank := internal.NewRankStatus(WithPostgresRankStatus2(rankAfter))
 			m.RankBefore = &rank
 		}
 
 		m.RankBefore = nil
 		if rankBefore != nil {
-			rank := internal.NewRankStatus2(WithPostgresRankStatus2(rankBefore))
+			rank := internal.NewRankStatus(WithPostgresRankStatus2(rankBefore))
 			m.RankBefore = &rank
 		}
 
 		m.CurrentRank = nil
 		if currentRank != nil {
-			rank := internal.NewRankStatus2(WithPostgresRankStatus2(currentRank))
+			rank := internal.NewRankStatus(WithPostgresRankStatus2(currentRank))
 			m.RankBefore = &rank
 		}
 	}
 }
 
 func WithPostgresSummonerMatch(match Match, participant Participant, rankBefore, rankAfter *RankFull) internal.SummonerMatchOption {
-	return func(m *internal.SummonerMatch2) {
+	return func(m *internal.SummonerMatch) {
 		m.PUUID = internal.NewPUUIDFromString(participant.PUUID)
 
 		m.MatchID = match.ID
@@ -492,26 +492,26 @@ func WithPostgresSummonerMatch(match Match, participant Participant, rankBefore,
 
 		m.RankBefore = nil
 		if rankBefore != nil {
-			rank := internal.NewRankStatus2(WithPostgresRankStatus2(rankBefore))
+			rank := internal.NewRankStatus(WithPostgresRankStatus2(rankBefore))
 			m.RankBefore = &rank
 		}
 
 		m.RankAfter = nil
 		if rankAfter != nil {
-			rank := internal.NewRankStatus2(WithPostgresRankStatus2(rankAfter))
+			rank := internal.NewRankStatus(WithPostgresRankStatus2(rankAfter))
 			m.RankAfter = &rank
 		}
 	}
 }
 
-func WithPostgresRankStatus2(rank *RankFull) internal.RankStatus2Option {
-	return func(m *internal.RankStatus2) {
+func WithPostgresRankStatus2(rank *RankFull) internal.RankStatusOption {
+	return func(m *internal.RankStatus) {
 		m.PUUID = internal.NewPUUIDFromString(rank.Status.PUUID)
 		m.EffectiveDate = rank.Status.EffectiveDate
 
 		m.Detail = nil
 		if detail := rank.Detail; detail != nil {
-			m.Detail = &internal.ZRankDetail{
+			m.Detail = &internal.RankDetail{
 				Wins:   detail.Wins,
 				Losses: detail.Losses,
 				Rank: internal.Rank{
@@ -531,8 +531,8 @@ type PostgresSearchResult2 struct {
 	Detail *RankDetail
 }
 
-func (m *PostgresSearchResult2) Convert() internal.SearchResult2 {
-	result := internal.SearchResult2{
+func (m *PostgresSearchResult2) Convert() internal.SearchResult {
+	result := internal.SearchResult{
 		PUUID:   m.Summoner.PUUID,
 		Name:    m.Summoner.Name,
 		Tagline: m.Summoner.Tagline,
@@ -540,14 +540,14 @@ func (m *PostgresSearchResult2) Convert() internal.SearchResult2 {
 	}
 
 	if m.Status != nil {
-		result.Rank = &internal.RankStatus2{
+		result.Rank = &internal.RankStatus{
 			PUUID:         m.Summoner.PUUID,
 			EffectiveDate: m.Status.EffectiveDate,
 			Detail:        nil,
 		}
 
 		if m.Detail != nil {
-			result.Rank.Detail = &internal.ZRankDetail{
+			result.Rank.Detail = &internal.RankDetail{
 				Wins:   m.Detail.Wins,
 				Losses: m.Detail.Losses,
 				Rank:   internal.Rank{

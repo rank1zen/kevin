@@ -8,25 +8,12 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
 var (
 	ErrInvalidRankStatuID = errors.New("invalid rank status id")
 )
-
-type Tx interface {
-	Exec(ctx context.Context, sql string, args ...any) (commandTag pgconn.CommandTag, err error)
-
-	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
-
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-}
-
-type BatchTx interface {
-	Queue(query string, arguments ...any) *pgx.QueuedQuery
-}
 
 // RankStatus is always created when a rank request is made.
 type RankStatus struct {
@@ -55,31 +42,6 @@ type RankDetail struct {
 type RankFull struct {
 	Status RankStatus
 	Detail *RankDetail
-}
-
-// Deprecated: get rid of.
-func RankRecordFromPG(status RankStatus, detail *RankDetail) internal.RankRecordFrom {
-	return func(r *internal.ZRankRecord) {
-		r.PUUID = riot.PUUID(status.PUUID)
-
-		r.EffectiveDate = status.EffectiveDate
-
-		r.IsCurrent = false
-
-		if detail != nil {
-			r.Detail = &internal.ZRankDetail{
-				Wins:   detail.Wins,
-				Losses: detail.Losses,
-				Rank: internal.Rank{
-					Tier:     convertStringToRiotTier(detail.Tier),
-					Division: convertStringToRiotRank(detail.Division),
-					LP:       detail.LP,
-				},
-			}
-		} else {
-			r.Detail = nil
-		}
-	}
 }
 
 type RankStore struct{ Tx Tx }

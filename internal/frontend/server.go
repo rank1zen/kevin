@@ -220,11 +220,11 @@ func (f *Server) serveChampions(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := fromCtx(ctx)
 
-	decoded, err := decode[ZGetSummonerChampionsRequest](r)
+	decoded, err := decode[GetSummonerChampionsRequest](r)
 
 	payload := slog.Group("payload", "region", decoded.Region, "puuid", decoded.PUUID, "week", decoded.Week)
 
-	component, err := f.handler.ZGetSummonerChampions(ctx, decoded)
+	component, err := f.handler.GetSummonerChampions(ctx, decoded)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)

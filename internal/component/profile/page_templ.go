@@ -18,7 +18,7 @@ import (
 )
 
 // NewPage creates a profile page.
-func NewPage(ep EndpointProvider, region riot.Region, summoner internal.Summoner, rank *internal.Rank) component.Page {
+func NewPage(ep EndpointProvider, region riot.Region, summoner internal.ProfileDetail, rank *internal.Rank) component.Page {
 	page := component.Page{
 		Title:          fmt.Sprintf("%s#%s - Kevin", summoner.Name, summoner.Tagline),
 		HeaderChildren: shared.DefaultPageHeader(),
@@ -35,7 +35,7 @@ type PageBody struct {
 	Matches []component.Section
 }
 
-func NewPageBody(ep EndpointProvider, region riot.Region, summoner internal.Summoner, rank *internal.Rank) PageBody {
+func NewPageBody(ep EndpointProvider, region riot.Region, summoner internal.ProfileDetail, rank *internal.Rank) PageBody {
 	body := PageBody{
 		TitleBar: NewPageTitleBar(ep, region, summoner, rank),
 		Matches:  []component.Section{},
@@ -108,7 +108,7 @@ type PageTitleBar struct {
 	Champions, LiveMatch component.Modal
 }
 
-func NewPageTitleBar(ep EndpointProvider, region riot.Region, summoner internal.Summoner, rank *internal.Rank) PageTitleBar {
+func NewPageTitleBar(ep EndpointProvider, region riot.Region, summoner internal.ProfileDetail, rank *internal.Rank) PageTitleBar {
 	livePath, liveData := ep.GetLiveMatch(region, summoner.PUUID)
 	champPath, champData := ep.GetChampionList(region, summoner.PUUID)
 

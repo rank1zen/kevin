@@ -116,14 +116,13 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	panic("not implemented")
 }
 
-// TODO: rename to SummonerChampionsRequest
-type ZGetSummonerChampionsRequest struct {
+type GetSummonerChampionsRequest struct {
 	Region riot.Region `json:"region"`
 	PUUID  riot.PUUID  `json:"puuid"`
 	Week   time.Time   `json:"week"`
 }
 
-func (r ZGetSummonerChampionsRequest) Validate() (problems map[string]string) {
+func (r GetSummonerChampionsRequest) Validate() (problems map[string]string) {
 	problems = make(map[string]string)
 
 	validatePUUID(problems, r.PUUID)
@@ -137,7 +136,7 @@ func (r ZGetSummonerChampionsRequest) Validate() (problems map[string]string) {
 
 // GetSummonerChampions returns The method will fetch all
 // games played in the specified interval.
-func (h *Handler) ZGetSummonerChampions(ctx context.Context, req ZGetSummonerChampionsRequest) (component.Component, error) {
+func (h *Handler) GetSummonerChampions(ctx context.Context, req GetSummonerChampionsRequest) (component.Component, error) {
 	start := req.Week
 	end := start.Add(7 * 24 * time.Hour)
 
