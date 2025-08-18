@@ -24,6 +24,8 @@ var (
 	// ErrMatchNotFound is returned by Store.GetMatch when a match is not
 	// found in store.
 	ErrMatchNotFound = errors.New("match not found")
+
+	ErrMatchMissingParticipants = errors.New("match missing participants")
 )
 
 // Store manages persistent data.
@@ -36,8 +38,12 @@ type Store interface {
 
 	GetMatchDetail(ctx context.Context, id string) (MatchDetail, error)
 
+	// GetMatchHistory returns matches a summoner has played in the given
+	// time range.
 	GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch, error)
 
+	// GetChampions returns averaged stats for each champion played in the
+	// given time range.
 	GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerChampion, error)
 
 	// GetNewMatchIDs returns the ids of matches not in store.
@@ -327,6 +333,14 @@ func NewPUUIDFromString(s string) riot.PUUID {
 	}
 
 	return riot.PUUID(s)
+}
+
+func NewPUUID(s string) (riot.PUUID, error) {
+	if len(s) != 78 {
+		return "", errors.New("puuid string not of len 78")
+	}
+
+	return riot.PUUID(s), nil
 }
 
 var teamPositions = map[string]TeamPosition{

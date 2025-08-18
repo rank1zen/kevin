@@ -41,6 +41,7 @@ func (ds *Datasource) GetMatchDetail(ctx context.Context, region riot.Region, ma
 	panic("not implemented")
 }
 
+// TODO: rename to SearchProfile
 func (ds *Datasource) Search(ctx context.Context, region riot.Region, q string) ([]SearchResult, error) {
 	results, err := ds.store.SearchSummoner(ctx, q)
 	if err != nil {
@@ -109,7 +110,9 @@ func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puui
 		return LiveMatch{}, err
 	}
 
-	return NewLiveMatch(WithRiotLiveMatch(*riotGame)), nil
+	mapper := RiotToLiveMatchMapper{Match: *riotGame}
+
+	return mapper.Map(), nil
 }
 
 // GetRiotName returns the Riot ID (name#tag) associated with puuid.

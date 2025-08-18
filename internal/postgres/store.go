@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -11,6 +12,7 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+// Should be unexported
 func CreateListRankOption(history []Match) [][2]ListRankOption {
 	opt := [][2]ListRankOption{}
 
@@ -243,22 +245,28 @@ func (db *Store) RecordMatch(ctx context.Context, match internal.Match) error {
 }
 
 func (db *Store) GetMatchDetail(ctx context.Context, id string) (internal.MatchDetail, error) {
+	m := internal.MatchDetail{}
+
 	matchStore := MatchStore{Tx: db.Pool}
 
 	summonerStore := SummonerStore{Tx: db.Pool}
 
 	match, err := matchStore.GetMatch(ctx, id)
 	if err != nil {
-		return internal.MatchDetail{}, err
+		if errors.Is(err, pgx.ErrNoRows) {
+			return m, fmt.Errorf("%w: %w", internal.ErrMatchNotFound, err)
+		}
+
+		return m, fmt.Errorf("%w: %w", internal.ErrUnknownStoreError, err)
 	}
 
 	participants, err := matchStore.GetParticipants(ctx, id)
 	if err != nil {
-		return internal.MatchDetail{}, err
+		return m, fmt.Errorf("%w: %w", internal.ErrUnknownStoreError, err)
 	}
 
 	if len(participants) != 10 {
-		return internal.MatchDetail{}, err
+		return m, internal.ErrMatchMissingParticipants
 	}
 
 	detail := internal.MatchDetail{
@@ -274,7 +282,12 @@ func (db *Store) GetMatchDetail(ctx context.Context, id string) (internal.MatchD
 		puuid := participants[i].PUUID
 		summoner, err := summonerStore.GetSummoner(ctx, internal.NewPUUIDFromString(puuid))
 		if err != nil {
-			return internal.MatchDetail{}, err
+			if !errors.Is(err, pgx.ErrNoRows) {
+				return m, err
+			}
+
+			detail.Participants[i] = internal.NewParticipantDetail(ParticipantDetailFromPG(participants[i], Summoner{PUUID: internal.NewPUUIDFromString(puuid)}, nil, nil, nil))
+			continue
 		}
 
 		detail.Participants[i] = internal.NewParticipantDetail(ParticipantDetailFromPG(participants[i], summoner, nil, nil, nil))
@@ -283,7 +296,9 @@ func (db *Store) GetMatchDetail(ctx context.Context, id string) (internal.MatchD
 	return detail, nil
 }
 
-func (db *Store) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerMatch, error) {
+func (db *Store) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, end time.Time) (matches []internal.SummonerMatch, err error) {
+	defer errWrap(&err, "GetMatchHistory")
+
 	matchStore := MatchStore{Tx: db.Pool}
 
 	rankStore := RankStore{Tx: db.Pool}
@@ -296,10 +311,10 @@ func (db *Store) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, e
 	matchHistory := []internal.SummonerMatch{}
 
 	var (
-		matchList       []Match       = make([]Match, len(ids))
-		participantList []Participant = make([]Participant, len(ids))
-		rankBeforeList  []*RankFull    = make([]*RankFull, len(ids))
-		rankAfterList   []*RankFull    = make([]*RankFull, len(ids))
+		matchList       []Match       = []Match{}
+		participantList []Participant = []Participant{}
+		rankBeforeList  []*RankFull   = []*RankFull{}
+		rankAfterList   []*RankFull   = []*RankFull{}
 	)
 
 	for _, id := range ids {
@@ -325,24 +340,34 @@ func (db *Store) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, e
 			return nil, err
 		}
 
-		id := statusIDs[0]
-		rankStore.GetRankStatus(ctx, id)
-		status, err := rankStore.GetRankStatus(ctx, id)
+		id := chooseStatusID(statusIDs)
+		if id != nil {
+			status, detail, err := db.getRank(ctx, *id)
+			if err != nil {
+				return nil, err
+			}
+
+			rankBeforeList = append(rankBeforeList, &RankFull{Status: status, Detail: detail})
+		} else {
+			rankBeforeList = append(rankBeforeList, nil)
+		}
+
+		statusIDs, err = rankStore.ListRankIDs(ctx, puuid, opt[1])
 		if err != nil {
 			return nil, err
 		}
 
-		detail, err := rankStore.GetRankDetail(ctx, id)
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				rankBeforeList = append(rankBeforeList, &RankFull{Detail: nil, Status: status})
-				continue
-			} else {
+		id = chooseStatusID(statusIDs)
+		if id != nil {
+			status, detail, err := db.getRank(ctx, *id)
+			if err != nil {
 				return nil, err
 			}
-		}
 
-		rankBeforeList = append(rankBeforeList, &RankFull{Detail: &detail, Status: status})
+			rankAfterList = append(rankAfterList, &RankFull{Status: status, Detail: detail})
+		} else {
+			rankAfterList = append(rankAfterList, nil)
+		}
 	}
 
 	for i := range ids {
@@ -431,6 +456,7 @@ func ParticipantDetailFromPG(participant Participant, summoner Summoner, current
 	}
 }
 
+// Deprecated: not using.
 func WithPostgresSummonerMatch(match Match, participant Participant, rankBefore, rankAfter *RankFull) internal.SummonerMatchOption {
 	return func(m *internal.SummonerMatch) {
 		m.PUUID = internal.NewPUUIDFromString(participant.PUUID)
@@ -504,6 +530,7 @@ func WithPostgresSummonerMatch(match Match, participant Participant, rankBefore,
 	}
 }
 
+// Deprecated: not using.
 func WithPostgresRankStatus2(rank *RankFull) internal.RankStatusOption {
 	return func(m *internal.RankStatus) {
 		m.PUUID = internal.NewPUUIDFromString(rank.Status.PUUID)
@@ -550,7 +577,7 @@ func (m *PostgresSearchResult2) Convert() internal.SearchResult {
 			result.Rank.Detail = &internal.RankDetail{
 				Wins:   m.Detail.Wins,
 				Losses: m.Detail.Losses,
-				Rank:   internal.Rank{
+				Rank: internal.Rank{
 					Tier:     riot.Tier(m.Detail.Tier),
 					Division: riot.Division(m.Detail.Division),
 					LP:       m.Detail.LP,
@@ -560,4 +587,32 @@ func (m *PostgresSearchResult2) Convert() internal.SearchResult {
 	}
 
 	return result
+}
+
+// chooseStatusID chooses some id that is suitable.
+func chooseStatusID(statusIDs []int) *int {
+	if len(statusIDs) == 0 {
+		return nil
+	}
+	return &statusIDs[0]
+}
+
+func (db *Store) getRank(ctx context.Context, statusID int) (RankStatus, *RankDetail, error) {
+	rankStore := RankStore{Tx: db.Pool}
+
+	status, err := rankStore.GetRankStatus(ctx, statusID)
+	if err != nil {
+		return RankStatus{}, nil, err
+	}
+
+	detail, err := rankStore.GetRankDetail(ctx, statusID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return status, nil, nil
+		}
+
+		return RankStatus{}, nil, err
+	}
+
+	return status, &detail, err
 }

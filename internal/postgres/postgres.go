@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -17,4 +18,10 @@ type Tx interface {
 
 type BatchTx interface {
 	Queue(query string, arguments ...any) *pgx.QueuedQuery
+}
+
+func errWrap(parent *error, format string, args ...any) {
+	if *parent != nil {
+		*parent = fmt.Errorf("%s: %w", fmt.Sprintf(format, args...), *parent)
+	}
 }

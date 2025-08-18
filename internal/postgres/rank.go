@@ -201,14 +201,13 @@ func (db *RankStore) ListRankIDs(ctx context.Context, puuid riot.PUUID, option L
 	return ids, nil
 }
 
-func (db *RankStore) GetRankStatus(ctx context.Context, id int) (RankStatus, error) {
+func (db *RankStore) GetRankStatus(ctx context.Context, id int) (status RankStatus, err error) {
+	defer errWrap(&err, "GetRankStatus")
+
 	rows, err := db.Tx.Query(ctx, `
 		SELECT
-			rank_status_id,
 			puuid,
 			effective_date,
-			end_date,
-			is_current,
 			is_ranked
 		FROM
 			RankStatus

@@ -263,7 +263,7 @@ func (db *MatchStore) CreateParticipantInBatch(tx BatchTx, participant Participa
 			$21,
 			$22,
 			$23,
-			$24,
+			$24
 		);
 	`,
 		participant.MatchID,
