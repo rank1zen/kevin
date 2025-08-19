@@ -43,7 +43,9 @@ func (db *SummonerStore) CreateSummoner(ctx context.Context, summoner Summoner) 
 	return err
 }
 
-func (db *SummonerStore) GetSummoner(ctx context.Context, puuid riot.PUUID) (Summoner, error) {
+func (db *SummonerStore) GetSummoner(ctx context.Context, puuid riot.PUUID) (_ Summoner, err error) {
+	defer errWrap(&err, "SummonerStore.GetSummoner(ctx, %v)", puuid)
+
 	rows, err := db.Tx.Query(ctx, `
 		SELECT
 			puuid,

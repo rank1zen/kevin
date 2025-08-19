@@ -11,14 +11,32 @@ type RiotToProfileMapper struct {
 	Account riot.Account
 
 	Rank *riot.LeagueEntry
+
+	EffectiveDate time.Time
 }
 
 func (m RiotToProfileMapper) Convert() Profile {
 	profile := Profile{
-		PUUID:   "",
-		Name:    "",
-		Tagline: "",
-		Rank:    RankStatus{},
+		PUUID:   m.Account.PUUID,
+		Name:    m.Account.GameName,
+		Tagline: m.Account.TagLine,
+		Rank:    RankStatus{
+			PUUID:         m.Account.PUUID,
+			EffectiveDate: m.EffectiveDate,
+			Detail:        nil,
+		},
+	}
+
+	if m.Rank != nil {
+		profile.Rank.Detail = &RankDetail{
+			Wins:   m.Rank.Wins,
+			Losses: m.Rank.Losses,
+			Rank:   Rank{
+				Tier:     m.Rank.Tier,
+				Division: m.Rank.Division,
+				LP:       m.Rank.LeaguePoints,
+			},
+		}
 	}
 
 	return profile
@@ -160,7 +178,7 @@ func computeCreepScore(p riot.MatchParticipant) int {
 
 func computeCreepScorePerMinute(p riot.MatchParticipant, duration time.Duration) float32 {
 	cs := p.TotalMinionsKilled + p.NeutralMinionsKilled
-	return float32(cs*60) / float32(duration)
+	return float32(cs) / float32(duration.Minutes())
 }
 
 func computeKillParticipation(p riot.MatchParticipant, teamKills int) float32 {

@@ -15,7 +15,7 @@ var DefaultPGInstance *postgres.PGInstance
 func TestMain(t *testing.M) {
 	ctx := context.Background()
 
-	DefaultPGInstance = postgres.NewPGInstance(context.Background())
+	DefaultPGInstance = postgres.NewPGInstance(context.Background(), "../../migrations")
 
 	code := t.Run()
 

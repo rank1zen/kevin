@@ -182,3 +182,34 @@ func TestRiotToLiveParticipantMapper(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
 	}
 }
+
+func TestRiotToProfileMapper(t *testing.T) {
+	riotAccount := sample.Account(t)
+	riotLeagueList := sample.LeagueList(t)
+
+	mapper := internal.RiotToProfileMapper{
+		Account:       riotAccount,
+		Rank:          &riotLeagueList[0],
+		EffectiveDate: time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	actual := mapper.Convert()
+
+	for _, tc := range []struct {
+		Name             string
+		Expected, Actual any
+	}{
+		{
+			Name:     "expects correct puuid",
+			Expected: T1OKGOODYESNA1PUUID,
+			Actual:   actual.PUUID,
+		},
+		{
+			Name:     "expects correct effective date",
+			Expected: time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC),
+			Actual:   actual.Rank.EffectiveDate,
+		},
+	} {
+		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
+	}
+}

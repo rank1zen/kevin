@@ -174,27 +174,44 @@ func (db *Store) RecordProfile(ctx context.Context, summoner internal.Profile) e
 		}
 	}
 
-	tx.Commit(ctx)
-
-	return nil
+	return tx.Commit(ctx)
 }
 
-func (db *Store) GetProfileDetail(ctx context.Context, puuid riot.PUUID) (internal.ProfileDetail, error) {
-	summonerStore := SummonerStore{Tx: db.Pool}
+func (db *Store) GetProfileDetail(ctx context.Context, puuid riot.PUUID) (m internal.ProfileDetail, err error) {
+	defer errWrap(&err, "GetProfileDetail(ctx, %v)", puuid)
+
+	var (
+		summonerStore = SummonerStore{Tx: db.Pool}
+	)
 
 	summoner, err := summonerStore.GetSummoner(ctx, puuid)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			err := fmt.Errorf("%w: %w", internal.ErrSummonerNotFound, err)
+			return m, err
+		}
+
 		return internal.ProfileDetail{}, err
 	}
 
-	detail := internal.ProfileDetail{
+	status, detail, err := db.getMostRecentRank(ctx, puuid)
+	if err != nil {
+		return m, err
+	}
+
+	mapper := PostgresToRankStatus{
+		Status: status,
+		Detail: detail,
+	}
+
+	profile := internal.ProfileDetail{
 		PUUID:   summoner.PUUID,
 		Name:    summoner.Name,
 		Tagline: summoner.Tagline,
-		Rank:    internal.RankStatus{},
+		Rank:    mapper.Map(),
 	}
 
-	return detail, nil
+	return profile, nil
 }
 
 func (db *Store) RecordMatch(ctx context.Context, match internal.Match) error {
@@ -244,7 +261,9 @@ func (db *Store) RecordMatch(ctx context.Context, match internal.Match) error {
 	return br.Close()
 }
 
-func (db *Store) GetMatchDetail(ctx context.Context, id string) (internal.MatchDetail, error) {
+func (db *Store) GetMatchDetail(ctx context.Context, id string) (_ internal.MatchDetail, err error) {
+	defer errWrap(&err, "GetMatchDetail(ctx, %s)", id)
+
 	m := internal.MatchDetail{}
 
 	matchStore := MatchStore{Tx: db.Pool}
@@ -254,7 +273,7 @@ func (db *Store) GetMatchDetail(ctx context.Context, id string) (internal.MatchD
 	match, err := matchStore.GetMatch(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return m, fmt.Errorf("%w: %w", internal.ErrMatchNotFound, err)
+			return m, internal.ErrMatchNotFound
 		}
 
 		return m, fmt.Errorf("%w: %w", internal.ErrUnknownStoreError, err)
@@ -597,6 +616,7 @@ func chooseStatusID(statusIDs []int) *int {
 	return &statusIDs[0]
 }
 
+// getRank returns both status and detail. It will error if both are not found.
 func (db *Store) getRank(ctx context.Context, statusID int) (RankStatus, *RankDetail, error) {
 	rankStore := RankStore{Tx: db.Pool}
 
@@ -615,4 +635,23 @@ func (db *Store) getRank(ctx context.Context, statusID int) (RankStatus, *RankDe
 	}
 
 	return status, &detail, err
+}
+
+func (db *Store) getMostRecentRank(ctx context.Context, puuid riot.PUUID) (m RankStatus, n *RankDetail, err error) {
+	defer errWrap(&err, "getMostRecentRank(ctx, %q)", puuid)
+
+	rankStore := RankStore{Tx: db.Pool}
+
+	ids, err := rankStore.ListRankIDs(ctx, puuid, ListRankOption{Limit:  1, Recent: true})
+	if err != nil {
+		return m, n, err
+	}
+
+	if len(ids) != 1 {
+		return m, n, errors.New("ListRankIDS did not return exactly one id")
+	}
+
+	id := ids[0]
+
+	return db.getRank(ctx, id)
 }

@@ -25,8 +25,11 @@ func TestDatasource_GetMatchDetail(t *testing.T) {
 
 	datasource := internal.NewDatasource(riotClient, store)
 
+
 	match, err := datasource.GetMatchDetail(ctx, riot.RegionNA1, "NA1_5346312088")
 	if assert.NoError(t, err) {
+		T1 := findT1(t, match)
+
 		for _, tc := range []struct {
 			Name             string
 			Expected, Actual any
@@ -37,9 +40,9 @@ func TestDatasource_GetMatchDetail(t *testing.T) {
 				Actual:   match.Version,
 			},
 			{
-				Name:     "expects correct participant gold percentage",
-				Expected: float32(6856.0 / 41017),
-				Actual:   match.Participants[0].SummonerIDs,
+				Name:     "expects correct summoner spells",
+				Expected: [2]int{4,12},
+				Actual:   T1.SummonerIDs,
 			},
 		} {
 			t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })

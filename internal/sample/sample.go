@@ -4,6 +4,7 @@ package sample
 import (
 	"embed"
 	"encoding/json"
+	"testing"
 
 	"github.com/rank1zen/kevin/internal/riot"
 )
@@ -61,6 +62,7 @@ func Match5347748140() riot.Match {
 	return riotMatch
 }
 
+// TODO: rename to LiveMatch
 func WithSampleLiveMatch() riot.LiveMatch {
 	file, err := content.Open("samples/live_match.json")
 	if err != nil {
@@ -74,4 +76,29 @@ func WithSampleLiveMatch() riot.LiveMatch {
 	}
 
 	return riotMatch
+}
+
+func Account(tb testing.TB) riot.Account {
+	var m riot.Account
+	readAndDecode("samples/account.json", &m)
+	return m
+}
+
+func LeagueList(tb testing.TB) riot.LeagueList {
+	var league riot.LeagueList
+	readAndDecode("samples/league_list.json", &league)
+	return league
+}
+
+func readAndDecode(name string, dst any) error {
+	file, err := content.Open(name)
+	if err != nil {
+		return err
+	}
+	err = json.NewDecoder(file).Decode(dst)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

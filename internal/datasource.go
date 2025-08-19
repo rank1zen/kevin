@@ -37,8 +37,38 @@ func NewDatasource(client *riot.Client, store Store) *Datasource {
 	return &Datasource{client, store}
 }
 
+// GetMatchDetail will fetch riot if the match is not in store.
 func (ds *Datasource) GetMatchDetail(ctx context.Context, region riot.Region, matchID string) (MatchDetail, error) {
-	panic("not implemented")
+	z := MatchDetail{}
+
+	detail, err := ds.store.GetMatchDetail(ctx, matchID)
+	if err != nil {
+		if errors.Is(err, ErrMatchNotFound) {
+			riotMatch, err := ds.riot.Match.GetMatch(ctx, region, matchID)
+			if err != nil {
+				return z, err
+			}
+
+			mapper := RiotToMatchMapper{
+				Match: *riotMatch,
+			}
+
+			match := mapper.Map()
+			err = ds.store.RecordMatch(ctx, match)
+			if err != nil {
+				return z, err
+			}
+		} else {
+			return z, err
+		}
+	}
+
+	detail, err = ds.store.GetMatchDetail(ctx, matchID)
+	if err != nil {
+		return z, err
+	}
+
+	return detail, nil
 }
 
 // TODO: rename to SearchProfile

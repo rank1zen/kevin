@@ -23,6 +23,7 @@ var (
 
 	// ErrMatchNotFound is returned by Store.GetMatch when a match is not
 	// found in store.
+	// TODO: rename to ErrMatchNotInStore.
 	ErrMatchNotFound = errors.New("match not found")
 
 	ErrMatchMissingParticipants = errors.New("match missing participants")
@@ -36,6 +37,8 @@ type Store interface {
 
 	GetProfileDetail(ctx context.Context, puuid riot.PUUID) (ProfileDetail, error)
 
+	// GetMatchDetail returns match details. It returns [ErrMatchNotFound]
+	// if the match with id is not found in store.
 	GetMatchDetail(ctx context.Context, id string) (MatchDetail, error)
 
 	// GetMatchHistory returns matches a summoner has played in the given

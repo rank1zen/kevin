@@ -1,0 +1,16 @@
+[
+    {
+        "leagueId": "807b2a09-35d9-3706-a907-cd74702aa621",
+        "queueType": "RANKED_SOLO_5x5",
+        "tier": "MASTER",
+        "rank": "I",
+        "puuid": "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
+        "leaguePoints": 487,
+        "wins": 263,
+        "losses": 247,
+        "veteran": true,
+        "inactive": false,
+        "freshBlood": false,
+        "hotStreak": false
+    }
+]

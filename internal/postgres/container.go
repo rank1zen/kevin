@@ -22,7 +22,7 @@ type PGInstance struct {
 
 // NewPGInstance sets up a postgres server in a docker container. It will use
 // the current schema version.
-func NewPGInstance(ctx context.Context) *PGInstance {
+func NewPGInstance(ctx context.Context, migrationsPath string) *PGInstance {
 	const (
 		pgDBName   = "postgres_test"
 		pgUser     = "kevin"
@@ -49,7 +49,7 @@ func NewPGInstance(ctx context.Context) *PGInstance {
 		pgURL,
 	}
 
-	pgInstance.migrateSchema(ctx)
+	pgInstance.migrateSchema(ctx, migrationsPath)
 
 	if err := pgInstance.container.Snapshot(ctx, pg.WithSnapshotName("test-snapshot")); err != nil {
 		log.Fatalf("creating snapshot: %s", err)
@@ -95,7 +95,7 @@ func (p *PGInstance) SetupConn(ctx context.Context, t testing.TB) *pgxpool.Pool 
 	return conn
 }
 
-func (p *PGInstance) migrateSchema(ctx context.Context) {
+func (p *PGInstance) migrateSchema(ctx context.Context, migrationsPath string) {
 	conn, err := pgx.Connect(ctx, p.pgURL)
 	if err != nil {
 		log.Fatal(err)
@@ -108,7 +108,7 @@ func (p *PGInstance) migrateSchema(ctx context.Context) {
 		log.Fatal(err)
 	}
 
-	m.LoadMigrations(os.DirFS("../../migrations"))
+	m.LoadMigrations(os.DirFS(migrationsPath))
 
 	if err = m.Migrate(ctx); err != nil {
 		log.Fatal(err)
