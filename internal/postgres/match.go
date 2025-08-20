@@ -545,3 +545,49 @@ func (db *MatchStore) ListMatchHistoryIDs(ctx context.Context, puuid riot.PUUID,
 
 	return ids, nil
 }
+
+func (db * MatchStore) GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error) {
+	rows, err := db.Tx.Query(ctx, `
+		SELECT
+			match_id
+		FROM
+			Match
+		WHERE
+			match_id = any(@ids)
+		ORDER BY
+			date DESC;
+	`,
+		pgx.NamedArgs{
+			"ids": ids,
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	collect := func(row pgx.CollectableRow) (m string, err error) {
+		err = row.Scan(&m)
+		return m, err
+	}
+
+	oldIDs, err := pgx.CollectRows(rows, collect)
+	if err != nil {
+		return nil, err
+	}
+
+	newIDs = []string{}
+	for _, id := range ids {
+		found := false
+		for _, oldID := range oldIDs {
+			if id == oldID {
+				found = true
+			}
+		}
+		if !found {
+			newIDs = append(newIDs, id)
+		}
+	}
+
+	return newIDs, nil
+}

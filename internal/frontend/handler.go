@@ -112,8 +112,13 @@ func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (componen
 // store, otherwise, it will complete a update for summoner, then return the
 // page. If no summoner with name#tag exists, return a does not exist page.
 func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (component.Component, error) {
-	_, _ = h.Datasource.GetProfileDetailByRiotID(ctx, region, name, tag)
-	panic("not implemented")
+	detail, err := h.Datasource.GetProfileDetailByRiotID(ctx, region, name, tag)
+	if err != nil {
+		return nil, err
+	}
+
+	c := profile.NewPage(EndpointProvider{}, region, detail)
+	return c, nil
 }
 
 type GetSummonerChampionsRequest struct {
@@ -172,7 +177,9 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 		return v, nil
 	}
 
-	panic("not implemented")
+
+	c := profile.NewMatchHistoryList(storeMatches)
+	return c, nil
 }
 
 // GetSearchResults returns a list of [SearchResultCard] for accounts that
@@ -195,7 +202,8 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 		return v, nil
 	}
 
-	panic("not implemented")
+	c := shared.NewSearchResultList(storeSearchResults)
+	return c, nil
 }
 
 type GetMatchDetailsRequest struct {

@@ -57,7 +57,11 @@ func NewStore(pool *pgxpool.Pool) internal.Store {
 }
 
 func (db *Store) GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerChampion, error) {
-	panic("not implemented")
+	var (
+		matchStore = MatchStore{Tx: db.Pool}
+	)
+
+	return matchStore.GetSummonerChampions(ctx, puuid, start, end)
 }
 
 func (db *Store) SearchSummoner(ctx context.Context, q string) ([]internal.SearchResult, error) {
@@ -398,7 +402,8 @@ func (db *Store) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, e
 }
 
 func (db *Store) GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error) {
-	panic("not implemented")
+	matchStore := MatchStore{Tx: db.Pool}
+	return matchStore.GetNewMatchIDs(ctx, ids)
 }
 
 func ParticipantDetailFromPG(participant Participant, summoner Summoner, currentRank, rankBefore, rankAfter *RankFull) internal.ParticipantDetailOption {

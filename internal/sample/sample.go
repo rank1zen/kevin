@@ -47,8 +47,29 @@ func Match5346312088() riot.Match {
 	return riotMatch
 }
 
+// Match5347748140 returns a real sample match.
+//
+// https://op.gg/lol/summoners/na/T1%2520OK%2520GOOD%2520YES-NA1/matches/9xQlqPbXBXbMZQtwXvbiMGPble8RkK2PzGcWqN9Omxs%3D/1755294399000
 func Match5347748140() riot.Match {
 	matchFile, err := content.Open("samples/NA1_5347748140.json")
+	if err != nil {
+		panic(err)
+	}
+
+	var riotMatch riot.Match
+	err = json.NewDecoder(matchFile).Decode(&riotMatch)
+	if err != nil {
+		panic(err)
+	}
+
+	return riotMatch
+}
+
+// Match5347728946 returns a real sample match.
+//
+// https://op.gg/lol/summoners/na/T1%2520OK%2520GOOD%2520YES-NA1/matches/9xQlqPbXBXaTsYued4U7PbfUbl9m5HnwP-tADeDp-7c%3D/1755292251000
+func Match5347728946() riot.Match {
+	matchFile, err := content.Open("samples/NA1_5347728946.json")
 	if err != nil {
 		panic(err)
 	}

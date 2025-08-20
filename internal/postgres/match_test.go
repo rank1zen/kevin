@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/postgres"
+	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -231,5 +233,86 @@ func TestMatchStore_CreateParticipant(t *testing.T) {
 	if assert.NoError(t, err) {
 		_, err := store.GetParticipant(ctx, T1OKGOODYESNA1PUUID, "NA1_5346312088")
 		assert.NoError(t, err)
+	}
+}
+
+func TestMatchStore_GetSummonerChampions(t *testing.T) {
+	ctx := context.Background()
+
+	pool := DefaultPGInstance.SetupConn(ctx, t)
+
+	store := postgres.NewStore(pool)
+
+	for _, m := range []riot.Match{
+		sample.Match5347748140(),
+		sample.Match5347728946(),
+		sample.Match5346312088(),
+	} {
+		mapper := internal.RiotToMatchMapper{
+			Match: m,
+		}
+
+		match := mapper.Map()
+		err := store.RecordMatch(ctx, match)
+		require.NoError(t, err)
+	}
+
+	matchStore := postgres.MatchStore{Tx: pool}
+
+	actual, err := matchStore.GetSummonerChampions(ctx, T1OKGOODYESNA1PUUID, time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, time.September, 1, 0, 0, 0, 0, time.UTC))
+	require.NoError(t, err)
+
+	order := []internal.Champion{}
+	for _, champion := range actual {
+		order = append(order, champion.Champion)
+	}
+
+	for _, tc := range []struct {
+		Name             string
+		Expected, Actual any
+	}{
+		{
+			Name:     "expects 2 champions played",
+			Expected: 2,
+			Actual:   len(actual),
+		},
+		{
+			Name:     "expects correct order",
+			Expected: []internal.Champion{ddragon.ChampionUrgotID,ddragon.ChampionIllaoiID},
+			Actual:   order,
+		},
+	} {
+		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
+	}
+
+	require.Len(t, actual, 2)
+	urgot := actual[0]
+
+	for _, tc := range []struct {
+		Name             string
+		Expected, Actual any
+	}{
+		{
+			Name:     "expects 2 games played",
+			Expected: 2,
+			Actual:   urgot.GamesPlayed,
+		},
+		{
+			Name:     "expects 1 win",
+			Expected: 1,
+			Actual:   urgot.Wins,
+		},
+		{
+			Name:     "expects 9.5 kills per game",
+			Expected: float32(19) / 2,
+			Actual:   urgot.AverageKillsPerGame,
+		},
+		{
+			Name:     "expects 0 pink wards bought per game",
+			Expected: float32(0),
+			Actual:   urgot.AveragePinkWardsBoughtPerGame,
+		},
+	} {
+		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
 	}
 }

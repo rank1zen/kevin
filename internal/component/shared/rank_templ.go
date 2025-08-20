@@ -16,31 +16,6 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-func NewRankWidget(rank *internal.Rank) RankWidget {
-	w := RankWidget{}
-
-	return w
-}
-
-func NewRankDeltaWidget(before, after *internal.Rank, win bool) RankDeltaWidget {
-	c := RankDeltaWidget{}
-
-	c.Win = win
-
-	if after != nil {
-		c.RankChange = &RankWidget{
-			Rank: after,
-		}
-
-		if before != nil {
-			c.LPChange = new(int)
-			*c.LPChange = (after.LP) - (before.LP)
-		}
-	}
-
-	return c
-}
-
 // RankWidget displays summoner rank.
 type RankWidget struct {
 	// Rank is the summoner's rank at an instance. A nil value indicates
@@ -52,6 +27,16 @@ type RankWidget struct {
 	// Size is the height of the widget, following [TextSize]. [TextSizeXS]
 	// and [TextSizeSM] are supported.
 	Size component.TextSize
+}
+
+func NewRankWidget(rank *internal.Rank) RankWidget {
+	w := RankWidget{
+		Rank:         rank,
+		ShowTierName: true,
+		Size:         component.TextSizeSM,
+	}
+
+	return w
 }
 
 func (m RankWidget) ToTempl(ctx context.Context) templ.Component {
@@ -101,7 +86,7 @@ func (m RankWidget) ToTempl(ctx context.Context) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(generateRankLabel(m.Rank, m.ShowTierName))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 54, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 38, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -137,7 +122,7 @@ func (m RankWidget) ToTempl(ctx context.Context) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(generateRankLabel(m.Rank, m.ShowTierName))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 60, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 44, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -163,6 +148,25 @@ type RankDeltaWidget struct {
 	LPChange *int
 
 	Win bool
+}
+
+func NewRankDeltaWidget(before, after *internal.Rank, win bool) RankDeltaWidget {
+	c := RankDeltaWidget{}
+
+	c.Win = win
+
+	if after != nil {
+		c.RankChange = &RankWidget{
+			Rank: after,
+		}
+
+		if before != nil {
+			c.LPChange = new(int)
+			*c.LPChange = (after.LP) - (before.LP)
+		}
+	}
+
+	return c
 }
 
 func (m RankDeltaWidget) ToTempl(ctx context.Context) templ.Component {
@@ -214,7 +218,7 @@ func (m RankDeltaWidget) ToTempl(ctx context.Context) templ.Component {
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("WIN %+d", m.LPChange))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 94, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 97, Col: 42}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -224,7 +228,7 @@ func (m RankDeltaWidget) ToTempl(ctx context.Context) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("WIN +??"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 96, Col: 30}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 99, Col: 30}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -244,7 +248,7 @@ func (m RankDeltaWidget) ToTempl(ctx context.Context) templ.Component {
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("LOSS %+d", m.LPChange))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 104, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 107, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -254,7 +258,7 @@ func (m RankDeltaWidget) ToTempl(ctx context.Context) templ.Component {
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("LOSS +??"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 106, Col: 31}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rank.templ`, Line: 109, Col: 31}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {

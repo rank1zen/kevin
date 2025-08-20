@@ -8,32 +8,6 @@ import (
 	"github.com/rank1zen/kevin/internal/component"
 )
 
-func NewRankWidget(rank *internal.Rank) RankWidget {
-	w := RankWidget{
-	}
-
-	return w
-}
-
-func NewRankDeltaWidget(before, after *internal.Rank, win bool) RankDeltaWidget {
-	c := RankDeltaWidget{}
-
-	c.Win = win
-
-	if after != nil {
-		c.RankChange = &RankWidget{
-			Rank: after,
-		}
-
-		if before != nil {
-			c.LPChange = new(int)
-			*c.LPChange = (after.LP) - (before.LP)
-		}
-	}
-
-	return c
-}
-
 // RankWidget displays summoner rank.
 type RankWidget struct {
 	// Rank is the summoner's rank at an instance. A nil value indicates
@@ -45,6 +19,16 @@ type RankWidget struct {
 	// Size is the height of the widget, following [TextSize]. [TextSizeXS]
 	// and [TextSizeSM] are supported.
 	Size component.TextSize
+}
+
+func NewRankWidget(rank *internal.Rank) RankWidget {
+	w := RankWidget{
+		Rank: rank,
+		ShowTierName: true,
+		Size: component.TextSizeSM,
+	}
+
+	return w
 }
 
 templ (m RankWidget) ToTempl(ctx context.Context) {
@@ -74,6 +58,25 @@ type RankDeltaWidget struct {
 	LPChange *int
 
 	Win bool
+}
+
+func NewRankDeltaWidget(before, after *internal.Rank, win bool) RankDeltaWidget {
+	c := RankDeltaWidget{}
+
+	c.Win = win
+
+	if after != nil {
+		c.RankChange = &RankWidget{
+			Rank: after,
+		}
+
+		if before != nil {
+			c.LPChange = new(int)
+			*c.LPChange = (after.LP) - (before.LP)
+		}
+	}
+
+	return c
 }
 
 templ (m RankDeltaWidget) ToTempl(ctx context.Context) {
