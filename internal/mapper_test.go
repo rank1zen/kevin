@@ -1,17 +1,25 @@
 package internal_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewMatch(t *testing.T) {
-	actual := internal.NewMatch(sample.WithSampleMatch())
+func TestRiotToMatchMapper(t *testing.T) {
+	riotMatch := sample.WithSampleMatch()
+
+	mapper := internal.RiotToMatchMapper{
+		Match: riotMatch,
+	}
+
+	actual := mapper.Map()
 
 	for _, tc := range []struct {
 		Name             string
@@ -45,17 +53,32 @@ func TestNewMatch(t *testing.T) {
 	} {
 		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
 	}
+}
 
-	var t1 *internal.Participant
+func TestRiotToParticipantMapper(t *testing.T) {
+	riotMatch := sample.WithSampleMatch()
 
-	for _, p := range actual.Participants {
-		if p.PUUID == sample.SummonerT1OKGOODYESNA1.PUUID {
-			t1 = &p
+	var riotParticipant *riot.MatchParticipant
+	for _, p := range riotMatch.Info.Participants {
+		if p.PUUID == T1OKGOODYESNA1PUUID.String() {
+			riotParticipant = p
 		}
 	}
 
-	require.NotNil(t, t1)
-	require.Equal(t, actual.ID, t1.MatchID)
+	require.NotNil(t, riotParticipant)
+
+	mapper := internal.RiotToParticipantMapper{
+		Participant:       *riotParticipant,
+		MatchID:           riotMatch.Metadata.MatchID,
+		MatchDuration:     1131 * time.Second,
+		TeamKills:         27,
+		TeamGold:          41017,
+		TeamDamage:        56169,
+		CounterpartGold:   1,
+		CounterpartDamage: 1,
+	}
+
+	actual := mapper.Map()
 
 	for _, tc := range []struct {
 		Name             string
@@ -64,45 +87,51 @@ func TestNewMatch(t *testing.T) {
 		{
 			Name:     "expects correct participant champion",
 			Expected: 63,
-			Actual:   t1.ChampionID,
+			Actual:   actual.ChampionID,
 		},
 		{
 			Name:     "expects correct participant kills",
 			Expected: 2,
-			Actual:   t1.Kills,
+			Actual:   actual.Kills,
 		},
 		{
 			Name:     "expects correct participant kill participation",
 			Expected: float32(10.0 / 27.0),
-			Actual:   t1.KillParticipation,
+			Actual:   actual.KillParticipation,
 		},
 		{
 			Name:     "expects correct participant cs per minute",
 			Expected: float32(131.0 * 60 / 1131),
-			Actual:   t1.CreepScorePerMinute,
+			Actual:   actual.CreepScorePerMinute,
 		},
 		{
 			Name:     "expects correct participant damage percentage",
 			Expected: float32(12629.0 / 56169),
-			Actual:   t1.DamagePercentageTeam,
+			Actual:   actual.DamagePercentageTeam,
 		},
 		{
 			Name:     "expects correct participant gold percentage",
 			Expected: float32(6856.0 / 41017),
-			Actual:   t1.GoldPercentageTeam,
+			Actual:   actual.GoldPercentageTeam,
 		},
 		{
 			Name:     "expects correct participant position",
 			Expected: internal.TeamPositionMiddle,
-			Actual:   t1.TeamPosition,
+			Actual:   actual.TeamPosition,
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
 	}
 }
 
-func TestNewLiveMatch(t *testing.T) {
-	actual := internal.NewLiveMatch(sample.WithSampleLiveMatch())
+func TestRiotToLiveMatchMapper(t *testing.T) {
+	riotLiveMatch := sample.WithSampleLiveMatch()
+
+	mapper := internal.RiotToLiveMatchMapper{
+		Match: riotLiveMatch,
+	}
+
+	actual := mapper.Map()
 
 	for _, tc := range []struct {
 		Name             string
@@ -121,9 +150,19 @@ func TestNewLiveMatch(t *testing.T) {
 	} {
 		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
 	}
+}
 
-	t1 := actual.Participants[0]
-	require.Equal(t, actual.ID, t1.MatchID)
+func TestRiotToLiveParticipantMapper(t *testing.T) {
+	riotLiveMatch := sample.WithSampleLiveMatch()
+
+	riotLiveParticipant := riotLiveMatch.Participants[0]
+
+	mapper := internal.RiotToLiveMatchParticipantMapper{
+		Participant: riotLiveParticipant,
+		MatchID:     fmt.Sprintf("%s_%d", riotLiveMatch.PlatformID, riotLiveMatch.GameID),
+	}
+
+	actual := mapper.Map()
 
 	for _, tc := range []struct {
 		Name             string
@@ -132,12 +171,43 @@ func TestNewLiveMatch(t *testing.T) {
 		{
 			Name:     "expects correct participant champion",
 			Expected: 517,
-			Actual:   t1.ChampionID,
+			Actual:   actual.ChampionID,
 		},
 		{
 			Name:     "expects correct participant team id",
 			Expected: 100,
-			Actual:   t1.TeamID,
+			Actual:   actual.TeamID,
+		},
+	} {
+		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
+	}
+}
+
+func TestRiotToProfileMapper(t *testing.T) {
+	riotAccount := sample.Account(t)
+	riotLeagueList := sample.LeagueList(t)
+
+	mapper := internal.RiotToProfileMapper{
+		Account:       riotAccount,
+		Rank:          &riotLeagueList[0],
+		EffectiveDate: time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	actual := mapper.Convert()
+
+	for _, tc := range []struct {
+		Name             string
+		Expected, Actual any
+	}{
+		{
+			Name:     "expects correct puuid",
+			Expected: T1OKGOODYESNA1PUUID,
+			Actual:   actual.PUUID,
+		},
+		{
+			Name:     "expects correct effective date",
+			Expected: time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC),
+			Actual:   actual.Rank.EffectiveDate,
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })

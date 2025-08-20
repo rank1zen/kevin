@@ -39,7 +39,7 @@ func (ep EndpointProvider) GetLiveMatch(region riot.Region, puuid riot.PUUID) (s
 func (ep EndpointProvider) GetChampionList(region riot.Region, puuid riot.PUUID) (string, []byte) {
 	path := "/summoner/champions"
 
-	req := ZGetSummonerChampionsRequest{
+	req := GetSummonerChampionsRequest{
 		Region: region,
 		PUUID:  puuid,
 		Week:   GetCurrentWeek(),

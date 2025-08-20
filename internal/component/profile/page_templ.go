@@ -18,11 +18,11 @@ import (
 )
 
 // NewPage creates a profile page.
-func NewPage(ep EndpointProvider, region riot.Region, summoner internal.Summoner, rank *internal.Rank) component.Page {
+func NewPage(ep EndpointProvider, region riot.Region, summoner internal.ProfileDetail) component.Page {
 	page := component.Page{
 		Title:          fmt.Sprintf("%s#%s - Kevin", summoner.Name, summoner.Tagline),
 		HeaderChildren: shared.DefaultPageHeader(),
-		Children:       NewPageBody(ep, region, summoner, rank),
+		Children:       NewPageBody(ep, region, summoner),
 	}
 
 	return page
@@ -35,9 +35,9 @@ type PageBody struct {
 	Matches []component.Section
 }
 
-func NewPageBody(ep EndpointProvider, region riot.Region, summoner internal.Summoner, rank *internal.Rank) PageBody {
+func NewPageBody(ep EndpointProvider, region riot.Region, summoner internal.ProfileDetail) PageBody {
 	body := PageBody{
-		TitleBar: NewPageTitleBar(ep, region, summoner, rank),
+		TitleBar: NewPageTitleBar(ep, region, summoner),
 		Matches:  []component.Section{},
 	}
 
@@ -108,7 +108,7 @@ type PageTitleBar struct {
 	Champions, LiveMatch component.Modal
 }
 
-func NewPageTitleBar(ep EndpointProvider, region riot.Region, summoner internal.Summoner, rank *internal.Rank) PageTitleBar {
+func NewPageTitleBar(ep EndpointProvider, region riot.Region, summoner internal.ProfileDetail) PageTitleBar {
 	livePath, liveData := ep.GetLiveMatch(region, summoner.PUUID)
 	champPath, champData := ep.GetChampionList(region, summoner.PUUID)
 
@@ -116,7 +116,7 @@ func NewPageTitleBar(ep EndpointProvider, region riot.Region, summoner internal.
 		Name: summoner.Name,
 		Tag:  summoner.Tagline,
 		Rank: shared.RankWidget{
-			Rank:         rank,
+			Rank:         nil,
 			ShowTierName: true,
 		},
 		Champions: component.Modal{
@@ -139,6 +139,10 @@ func NewPageTitleBar(ep EndpointProvider, region riot.Region, summoner internal.
 				Children: shared.NewLoadingModal(),
 			},
 		},
+	}
+
+	if summoner.Rank.Detail != nil {
+		bar.Rank.Rank = &summoner.Rank.Detail.Rank
 	}
 
 	return bar
@@ -172,7 +176,7 @@ func (m PageTitleBar) ToTempl(ctx context.Context) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s#%s", m.Name, m.Tag))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/page.templ`, Line: 109, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/page.templ`, Line: 113, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

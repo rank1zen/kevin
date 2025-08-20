@@ -20,7 +20,11 @@ var (
 
 // Datasource manages interaction between the riot API and an internal store.
 //
-// Region parameters specify the region to search.
+// Region parameters specify the region to search. TODO: region parameters not
+// implemented.
+//
+// TODO: Datasource should be able to decide when to call the riot API, and
+// when to use cache.
 type Datasource struct {
 	// probably want to cache something
 
@@ -33,27 +37,66 @@ func NewDatasource(client *riot.Client, store Store) *Datasource {
 	return &Datasource{client, store}
 }
 
-func (ds *Datasource) GetStore() Store {
-	return ds.store
-}
+// GetMatchDetail will fetch riot if the match is not in store.
+func (ds *Datasource) GetMatchDetail(ctx context.Context, region riot.Region, matchID string) (MatchDetail, error) {
+	z := MatchDetail{}
 
-// ZUpdateMatchHistory fetches every match played from start to end.
-func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, start, end time.Time) error {
-	options := riot.MatchListOptions{
-		StartTime: new(int64),
-		EndTime:   new(int64),
-		Queue:     new(int),
-		Start:     0,
-		Count:     100,
+	detail, err := ds.store.GetMatchDetail(ctx, matchID)
+	if err != nil {
+		if errors.Is(err, ErrMatchNotFound) {
+			riotMatch, err := ds.riot.Match.GetMatch(ctx, region, matchID)
+			if err != nil {
+				return z, err
+			}
+
+			mapper := RiotToMatchMapper{
+				Match: *riotMatch,
+			}
+
+			match := mapper.Map()
+			err = ds.store.RecordMatch(ctx, match)
+			if err != nil {
+				return z, err
+			}
+		} else {
+			return z, err
+		}
 	}
 
-	*options.Queue = 420
-	*options.StartTime = start.Unix()
-	*options.EndTime = end.Unix()
+	detail, err = ds.store.GetMatchDetail(ctx, matchID)
+	if err != nil {
+		return z, err
+	}
 
+	return detail, nil
+}
+
+// TODO: rename to SearchProfile
+func (ds *Datasource) Search(ctx context.Context, region riot.Region, q string) ([]SearchResult, error) {
+	results, err := ds.store.SearchSummoner(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// NOTE: never fetches riot.
+func (ds *Datasource) GetSummonerChampions(ctx context.Context, region riot.Region, puuid riot.PUUID, start, end time.Time) ([]SummonerChampion, error) {
+	champions, err := ds.store.GetChampions(ctx, puuid, start, end)
+	if err != nil {
+		return nil, err
+	}
+
+	return champions, nil
+}
+
+// NOTE: it always fetches the riot api (for now), so it is always accurate.
+func (ds *Datasource) GetMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch, error) {
+	options := soloQMatchFilter(start, end)
 	ids, err := ds.riot.Match.GetMatchList(ctx, region, string(puuid), options)
 	if err != nil {
-		return fmt.Errorf("fetching ids: %w", err)
+		return nil, fmt.Errorf("fetching ids: %w", err)
 	}
 
 	matchIDs := []string{}
@@ -63,16 +106,30 @@ func (ds *Datasource) ZUpdateMatchHistory(ctx context.Context, region riot.Regio
 
 	newIDs, err := ds.store.GetNewMatchIDs(ctx, matchIDs)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	// TODO: put these in batch
 	for _, id := range newIDs {
-		if err := ds.recordMatch(ctx, region, id); err != nil {
-			return err
+		riotMatch, err := ds.riot.Match.GetMatch(ctx, region, id)
+		if err != nil {
+			return nil, err
+		}
+
+		match := RiotToMatchMapper{Match: *riotMatch}.Map()
+
+		err = ds.store.RecordMatch(ctx, match)
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	return nil
+	final, err := ds.store.GetMatchHistory(ctx, puuid, start, end)
+	if err != nil {
+		return nil, err
+	}
+
+	return final, nil
 }
 
 // GetLiveMatch fetches riot for the a live match. If summoner is not in
@@ -83,7 +140,9 @@ func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puui
 		return LiveMatch{}, err
 	}
 
-	return NewLiveMatch(WithRiotLiveMatch(*riotGame)), nil
+	mapper := RiotToLiveMatchMapper{Match: *riotGame}
+
+	return mapper.Map(), nil
 }
 
 // GetRiotName returns the Riot ID (name#tag) associated with puuid.
@@ -116,57 +175,6 @@ func (ds *Datasource) GetPUUID(ctx context.Context, name, tag string) (riot.PUUI
 	return riot.PUUID(account.PUUID), nil
 }
 
-// UpdateMatchHistory syncs the matchlist of summoner with puuid from start to
-// start + count.
-//
-// Deprecated: We switched to using date instead of index for match list.
-func (ds *Datasource) UpdateMatchHistory(ctx context.Context, region riot.Region, puuid riot.PUUID, start, count int) error {
-	options := riot.MatchListOptions{
-		Queue: new(int),
-		Start: start,
-		Count: count,
-	}
-
-	*options.Queue = 420
-
-	ids, err := ds.riot.Match.GetMatchList(ctx, region, string(puuid), options)
-	if err != nil {
-		return fmt.Errorf("fetching ids: %w", err)
-	}
-
-	matchIDs := []string{}
-	for _, id := range ids {
-		matchIDs = append(matchIDs, id)
-	}
-
-	newIDs, err := ds.store.GetNewMatchIDs(ctx, matchIDs)
-	if err != nil {
-		return err
-	}
-
-	for _, id := range newIDs {
-		if err := ds.recordMatch(ctx, region, id); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (ds *Datasource) recordMatch(ctx context.Context, region riot.Region, id string) error {
-	riotMatch, err := ds.riot.Match.GetMatch(ctx, region, id)
-	if err != nil {
-		return fmt.Errorf("fetching match: %w", err)
-	}
-
-	err = ds.store.RecordMatch(ctx, NewMatch(WithRiotMatch(riotMatch)))
-	if err != nil {
-		return fmt.Errorf("saving match: %w", err)
-	}
-
-	return nil
-}
-
 // ListNewMatches returns the 100 most recent matches that are not in store.
 func (ds *Datasource) ListNewMatches(ctx context.Context, region riot.Region, puuid riot.PUUID) ([]string, error) {
 	ids, err := ds.riot.Match.GetMatchList(ctx, region, string(puuid), riot.MatchListOptions{Count: 100})
@@ -183,48 +191,121 @@ func (ds *Datasource) ListNewMatches(ctx context.Context, region riot.Region, pu
 	return newIDs, err
 }
 
-// UpdateSummoner syncs a summoner-rank with riot.
-func (ds *Datasource) UpdateSummoner(ctx context.Context, region riot.Region, puuid riot.PUUID) error {
-	name, tag, err := ds.GetRiotName(ctx, puuid)
+// GetProfileDetail returns a profile.
+//
+// NOTE: it always fetches the riot api (for now), so it is always accurate.
+func (ds *Datasource) GetProfileDetail(ctx context.Context, region riot.Region, puuid riot.PUUID) (ProfileDetail, error) {
+	account, err := ds.riot.Account.GetAccountByPUUID(ctx, region, puuid.String())
 	if err != nil {
-		return err
+		return ProfileDetail{}, err
 	}
 
-	entries, err := ds.riot.League.GetLeagueEntriesByPUUID(ctx, region, string(puuid))
+	entries, err := ds.riot.League.GetLeagueEntriesByPUUID(ctx, region, puuid.String())
 	if err != nil {
-		return fmt.Errorf("fetching summoner id: %w", err)
+		return ProfileDetail{}, err
 	}
 
 	soloq := findSoloQLeagueEntry(entries)
 
-	var rank *RankDetail
-	if soloq != nil {
-		rd := NewRankDetail(WithRiotLeagueEntry(*soloq))
-		rank = &rd
+	s := RiotToProfileMapper{
+		Account: *account,
+		Rank:    soloq,
 	}
 
-	err = ds.store.RecordSummoner(ctx,
-		Summoner{
-			PUUID:   puuid,
-			Name:    name,
-			Tagline: tag,
-		},
-		RankStatus{
-			PUUID:         puuid,
-			EffectiveDate: time.Now(),
-			Detail:        rank,
-		},
-	)
+	err = ds.store.RecordProfile(ctx, s.Convert())
 	if err != nil {
-		return fmt.Errorf("saving summoner: %w", err)
+		return ProfileDetail{}, err
+	}
+
+	profile, err := ds.store.GetProfileDetail(ctx, puuid)
+	if err != nil {
+		return ProfileDetail{}, err
+	}
+
+	return profile, nil
+}
+
+func (ds *Datasource) GetProfileDetailByRiotID(ctx context.Context, region riot.Region, name, tag string) (ProfileDetail, error) {
+	account, err := ds.riot.Account.GetAccountByRiotID(ctx, region, name, tag)
+	if err != nil {
+		return ProfileDetail{}, err
+	}
+
+	entries, err := ds.riot.League.GetLeagueEntriesByPUUID(ctx, region, account.PUUID.String())
+	if err != nil {
+		return ProfileDetail{}, err
+	}
+
+	soloq := findSoloQLeagueEntry(entries)
+
+	s := RiotToProfileMapper{
+		Account: *account,
+		Rank:    soloq,
+	}
+
+	err = ds.store.RecordProfile(ctx, s.Convert())
+	if err != nil {
+		return ProfileDetail{}, err
+	}
+
+	profile, err := ds.store.GetProfileDetail(ctx, account.PUUID)
+	if err != nil {
+		return ProfileDetail{}, err
+	}
+
+	return profile, nil
+}
+
+func (ds *Datasource) UpdateProfile(ctx context.Context, region riot.Region, puuid riot.PUUID) error {
+	account, err := ds.riot.Account.GetAccountByPUUID(ctx, region, puuid.String())
+	if err != nil {
+		return err
+	}
+
+	entries, err := ds.riot.League.GetLeagueEntriesByPUUID(ctx, region, puuid.String())
+	if err != nil {
+		return err
+	}
+
+	soloq := findSoloQLeagueEntry(entries)
+
+	s := RiotToProfileMapper{
+		Account: *account,
+		Rank:    soloq,
+	}
+
+	err = ds.store.RecordProfile(ctx, s.Convert())
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
-// GetRank returns the up-to-date rank for a summoner.
-func (ds *Datasource) GetRank(ctx context.Context, puuid riot.PUUID) (*RankDetail, error) {
-	return nil, nil
+func (ds *Datasource) UpdateProfileByRiotID(ctx context.Context, region riot.Region, name, tag string) error {
+	account, err := ds.riot.Account.GetAccountByRiotID(ctx, region, name, tag)
+	if err != nil {
+		return err
+	}
+
+	entries, err := ds.riot.League.GetLeagueEntriesByPUUID(ctx, region, account.PUUID.String())
+	if err != nil {
+		return err
+	}
+
+	soloq := findSoloQLeagueEntry(entries)
+
+	s := RiotToProfileMapper{
+		Account: *account,
+		Rank:    soloq,
+	}
+
+	err = ds.store.RecordProfile(ctx, s.Convert())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func findSoloQLeagueEntry(entries riot.LeagueList) (soloq *riot.LeagueEntry) {
@@ -235,4 +316,21 @@ func findSoloQLeagueEntry(entries riot.LeagueList) (soloq *riot.LeagueEntry) {
 	}
 
 	return nil
+}
+
+func soloQMatchFilter(start, end time.Time) riot.MatchListOptions {
+	options := riot.MatchListOptions{
+		StartTime: new(int64),
+		EndTime:   new(int64),
+		Queue:     new(int),
+		Type:      nil,
+		Start:     0,
+		Count:     100,
+	}
+
+	*options.Queue = 420
+	*options.StartTime = start.Unix()
+	*options.EndTime = end.Unix()
+
+	return options
 }

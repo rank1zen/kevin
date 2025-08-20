@@ -80,10 +80,7 @@ func (c *Config) Run(ctx context.Context) error {
 
 	defer pool.Close()
 
-	store, err := postgres.NewStore(pool)
-	if err != nil {
-		return err
-	}
+	store := postgres.NewStore(pool)
 
 	client := riot.NewClient(c.RiotAPIKey)
 

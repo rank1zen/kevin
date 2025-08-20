@@ -4,23 +4,9 @@ package sample
 import (
 	"embed"
 	"encoding/json"
+	"testing"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
-)
-
-var (
-	SummonerOrrangeNA1 = internal.Summoner{
-		PUUID:   "0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q",
-		Name:    "orrange",
-		Tagline: "NA1",
-	}
-
-	SummonerT1OKGOODYESNA1 = internal.Summoner{
-		PUUID:   "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
-		Name:    "T1 OK GOOD YES",
-		Tagline: "NA1",
-	}
 )
 
 //go:embed samples
@@ -28,7 +14,7 @@ var content embed.FS
 
 // WithSampleMatch instantiates some valid [internal.Match], usually used for
 // testing.
-func WithSampleMatch() internal.MatchOption {
+func WithSampleMatch() riot.Match {
 	matchFile, err := content.Open("samples/NA1_5304757838.json")
 	if err != nil {
 		panic(err)
@@ -40,21 +26,65 @@ func WithSampleMatch() internal.MatchOption {
 		panic(err)
 	}
 
-	return internal.WithRiotMatch(&riotMatch)
+	return riotMatch
 }
 
-func WithMatchID(id string) internal.MatchOption {
-	return func(m *internal.Match) error {
-		m.ID = id
-		for i := range m.Participants {
-			m.Participants[i].MatchID = id
-		}
-
-		return nil
+// Match5346312088 returns a real sample match.
+//
+// https://op.gg/lol/summoners/na/T1%2520OK%2520GOOD%2520YES-NA1/matches/9xQlqPbXBXYkNDjORlI3_vOXw2r6bzl277RNnqi7xqk%3D/1755120925000
+func Match5346312088() riot.Match {
+	matchFile, err := content.Open("samples/NA1_5346312088.json")
+	if err != nil {
+		panic(err)
 	}
+
+	var riotMatch riot.Match
+	err = json.NewDecoder(matchFile).Decode(&riotMatch)
+	if err != nil {
+		panic(err)
+	}
+
+	return riotMatch
 }
 
-func WithSampleLiveMatch() internal.LiveMatchOption {
+// Match5347748140 returns a real sample match.
+//
+// https://op.gg/lol/summoners/na/T1%2520OK%2520GOOD%2520YES-NA1/matches/9xQlqPbXBXbMZQtwXvbiMGPble8RkK2PzGcWqN9Omxs%3D/1755294399000
+func Match5347748140() riot.Match {
+	matchFile, err := content.Open("samples/NA1_5347748140.json")
+	if err != nil {
+		panic(err)
+	}
+
+	var riotMatch riot.Match
+	err = json.NewDecoder(matchFile).Decode(&riotMatch)
+	if err != nil {
+		panic(err)
+	}
+
+	return riotMatch
+}
+
+// Match5347728946 returns a real sample match.
+//
+// https://op.gg/lol/summoners/na/T1%2520OK%2520GOOD%2520YES-NA1/matches/9xQlqPbXBXaTsYued4U7PbfUbl9m5HnwP-tADeDp-7c%3D/1755292251000
+func Match5347728946() riot.Match {
+	matchFile, err := content.Open("samples/NA1_5347728946.json")
+	if err != nil {
+		panic(err)
+	}
+
+	var riotMatch riot.Match
+	err = json.NewDecoder(matchFile).Decode(&riotMatch)
+	if err != nil {
+		panic(err)
+	}
+
+	return riotMatch
+}
+
+// TODO: rename to LiveMatch
+func WithSampleLiveMatch() riot.LiveMatch {
 	file, err := content.Open("samples/live_match.json")
 	if err != nil {
 		panic(err)
@@ -66,5 +96,30 @@ func WithSampleLiveMatch() internal.LiveMatchOption {
 		panic(err)
 	}
 
-	return internal.WithRiotLiveMatch(riotMatch)
+	return riotMatch
+}
+
+func Account(tb testing.TB) riot.Account {
+	var m riot.Account
+	readAndDecode("samples/account.json", &m)
+	return m
+}
+
+func LeagueList(tb testing.TB) riot.LeagueList {
+	var league riot.LeagueList
+	readAndDecode("samples/league_list.json", &league)
+	return league
+}
+
+func readAndDecode(name string, dst any) error {
+	file, err := content.Open(name)
+	if err != nil {
+		return err
+	}
+	err = json.NewDecoder(file).Decode(dst)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
