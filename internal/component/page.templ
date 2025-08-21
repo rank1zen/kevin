@@ -15,12 +15,17 @@ type Page struct {
 	// body.
 	Children Component
 
-	// TODO: add footer field.
+	// FooterChildren is goes in the footer.
+	FooterChildren Component
 }
 
 templ (m Page) ToTempl(ctx context.Context) {
 	<!doctype html>
-	<html lang="en">
+	<html
+		lang="en"
+		x-data="{ darkMode: false }"
+		:class="darkMode && 'dark'"
+	>
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -37,7 +42,7 @@ templ (m Page) ToTempl(ctx context.Context) {
 			}
 		</head>
 		<body>
-			<div class="flex flex-col h-screen">
+			<div class="flex flex-col h-screen bg-white dark:bg-black">
 				if m.HeaderChildren != nil {
 					<div class="sticky top-0 w-full z-10 bg-white dark:bg-gray-950 border-b border-gray-900/10 dark:border-gray-100/10">
 						@m.HeaderChildren.ToTempl(ctx)
@@ -48,11 +53,11 @@ templ (m Page) ToTempl(ctx context.Context) {
 						@m.Children.ToTempl(ctx)
 					}
 				</div>
-				<div class="flex items-center w-full justify-center">
-					<div>
-						Some example footer content
-					</div>
-				</div>
+				if m.FooterChildren != nil {
+					<footer class="w-full">
+						@m.FooterChildren.ToTempl(ctx)
+					</footer>
+				}
 			</div>
 		</body>
 	</html>

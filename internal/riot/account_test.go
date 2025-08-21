@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -42,12 +41,12 @@ func TestAccountServiceGetAccountByRiotID(t *testing.T) {
 	}{
 		{
 			Name:     "expects correct puuid for orrange",
-			Expected: sample.SummonerOrrangeNA1.PUUID,
+			Expected: OrrangePUUID,
 			Actual:   res.PUUID,
 		},
 		{
 			Name:     "expects correct name for orrange",
-			Expected: sample.SummonerOrrangeNA1.Name,
+			Expected: OrrangePUUID,
 			Actual:   res.GameName,
 		},
 	} {
