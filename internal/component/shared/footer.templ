@@ -1,0 +1,17 @@
+package shared
+
+import "github.com/rank1zen/kevin/internal/component"
+import "context"
+
+// NewPageFooter is the default footer for all pages.
+func NewPageFooter() component.Component {
+	return component.ComponentFunc(pageFooter)
+}
+
+templ pageFooter(ctx context.Context) {
+	<div class="pt-8 pb-4">
+		<div class="px-4 text-center text-gray-900/90 dark:text-gray-100/90">
+			Copyright © 2025 RANK1ZEN
+		</div>
+	</div>
+}

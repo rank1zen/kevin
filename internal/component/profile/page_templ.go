@@ -23,6 +23,7 @@ func NewPage(ep EndpointProvider, region riot.Region, summoner internal.ProfileD
 		Title:          fmt.Sprintf("%s#%s - Kevin", summoner.Name, summoner.Tagline),
 		HeaderChildren: shared.DefaultPageHeader(),
 		Children:       NewPageBody(ep, region, summoner),
+		FooterChildren: shared.NewPageFooter(),
 	}
 
 	return page
@@ -176,7 +177,7 @@ func (m PageTitleBar) ToTempl(ctx context.Context) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s#%s", m.Name, m.Tag))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/page.templ`, Line: 113, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/profile/page.templ`, Line: 114, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

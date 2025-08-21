@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,7 +32,7 @@ func TestLeagueGetLeagueEntriesByPUUID(t *testing.T) {
 
 	defer server.Close()
 
-	entries, err := client.League.GetLeagueEntriesByPUUID(ctx, riot.RegionNA1, sample.SummonerOrrangeNA1.PUUID.String())
+	entries, err := client.League.GetLeagueEntriesByPUUID(ctx, riot.RegionNA1, OrrangePUUID.String())
 
 	require.NoError(t, err)
 

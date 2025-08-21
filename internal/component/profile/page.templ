@@ -15,6 +15,7 @@ func NewPage(ep EndpointProvider, region riot.Region, summoner internal.ProfileD
 		Title:          fmt.Sprintf("%s#%s - Kevin", summoner.Name, summoner.Tagline),
 		HeaderChildren: shared.DefaultPageHeader(),
 		Children:       NewPageBody(ep, region, summoner),
+		FooterChildren: shared.NewPageFooter(),
 	}
 
 	return page

@@ -6,5 +6,6 @@ func NewHomePage() component.Page {
 	return component.Page{
 		Title: "Kevin",
 		HeaderChildren: DefaultPageHeader(),
+		FooterChildren: NewPageFooter(),
 	}
 }

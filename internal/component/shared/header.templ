@@ -26,7 +26,8 @@ func DefaultPageHeader() component.Header {
 			NewSummonerSearchBar(),
 		},
 		EndChildren: []component.Component{
-			NewExtraMenu(),
+			NewGithubLink(),
+			NewDarkModeButton(),
 		},
 	}
 }
@@ -43,7 +44,7 @@ func NewLoadingHeader() component.Header {
 
 templ regionButton(ctx context.Context) {
 	<div class="flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end">
-		<span class="text-sm font-bold">
+		<span class="text-sm font-bold text-gray-900/90 dark:text-gray-100/90">
 			NA1
 		</span>
 		@component.DownSmallIcon.ToTempl(ctx)
@@ -108,4 +109,38 @@ func NewExtraMenu() component.Popover {
 	}
 
 	return popover
+}
+
+func NewDarkModeButton() component.Component {
+	return component.ComponentFunc(newDarkModeButton)
+}
+
+func NewGithubLink() component.Component {
+	link := component.Link{
+		Href:     "https://github.com/rank1zen/kevin",
+		Children: component.Button{Icon: GithubIcon},
+	}
+
+	return link
+}
+
+templ newDarkModeButton(ctx context.Context) {
+	<button
+		type="button"
+
+		@click="darkMode = !darkMode"
+
+		class="size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0"
+	>
+		@DarkModeIcon.ToTempl(ctx)
+	</button>
+}
+
+templ newGithubLink(ctx context.Context) {
+	<a
+		href="https://github.com/rank1zen/kevin"
+		class="size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0"
+	>
+		@GithubIcon.ToTempl(ctx)
+	</a>
 }

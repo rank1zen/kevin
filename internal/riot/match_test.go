@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -60,7 +59,7 @@ func TestMatchGetMatchList(t *testing.T) {
 	*options.EndTime = 1751687999
 	*options.Queue = 420
 
-	matches, err := client.Match.GetMatchList(ctx, riot.RegionNA1, sample.SummonerOrrangeNA1.PUUID.String(), options)
+	matches, err := client.Match.GetMatchList(ctx, riot.RegionNA1, OrrangePUUID.String(), options)
 	require.NoError(t, err)
 
 	assert.Len(t, matches, 20)
