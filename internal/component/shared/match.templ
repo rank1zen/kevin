@@ -1,0 +1,31 @@
+package shared
+
+import "context"
+import "time"
+import "fmt"
+
+type MatchDateDurationWidget struct {
+	Date time.Time
+
+	Duration time.Duration
+}
+
+func NewMatchDateDurationWidget(date time.Time, duration time.Duration) MatchDateDurationWidget {
+	c := MatchDateDurationWidget{
+		Date:     date,
+		Duration: duration,
+	}
+
+	return c
+}
+
+templ (m MatchDateDurationWidget) ToTempl(ctx context.Context) {
+	<div class="h-9">
+		<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+			{ m.Date.Format("3:04 PM Monday, Jan 2") }
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+			{ fmt.Sprintf("%v", m.Duration) }
+		</div>
+	</div>
+}

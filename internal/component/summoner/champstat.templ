@@ -1,0 +1,136 @@
+package summoner
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/shared"
+)
+
+type Champstat component.Component
+
+templ ChampstatSkeleton(ctx context.Context) {
+	<div class="h-15 w-xs">Loading...</div>
+}
+
+// SummonerChampionCard displays average champion stats over a set of games.
+type ChampionCard struct {
+	ChampionWidget shared.Champion
+
+	ChampionName string
+
+	Wins, Losses int
+
+	LPDelta *int
+}
+
+templ (m ChampionCard) ToTempl(ctx context.Context) {
+	<div class="flex p-2 gap-x-2 justify-between items-center">
+		<div class="flex gap-x-2">
+			@m.ChampionWidget.ToTempl(ctx)
+			<span class="text-sm font-medium text-gray-900/90 dark:text-gray-500/90">
+				{ m.ChampionName }
+			</span>
+		</div>
+		<div class="flex gap-x-2">
+			<span class="text-sm font-medium text-gray-900/90 dark:text-gray-100/90">
+				{ fmt.Sprintf("%d-%d", m.Wins, m.Losses) }
+			</span>
+		</div>
+		<div class="flex gap-x-2">
+			if m.LPDelta == nil {
+				<span class="text-xs text-white px-1 rounded bg-gray-500/80">
+					+??
+				</span>
+			} else if *m.LPDelta > 0 {
+				<span class="text-xs text-white px-1 rounded bg-green-500/80">
+					{ fmt.Sprintf("%+d", *m.LPDelta) }
+				</span>
+			} else if *m.LPDelta < 0 {
+				<span class="text-xs text-white px-1 rounded bg-red-500/80">
+					{ fmt.Sprintf("%+d", *m.LPDelta) }
+				</span>
+			} else {
+				<span class="text-xs text-white px-1 rounded bg-gray-500/80">
+					{ fmt.Sprintf("%+d", *m.LPDelta) }
+				</span>
+			}
+		</div>
+	</div>
+}
+
+type LPDeltaTag struct {
+	// LPDelta is the LP delta after some matches. A nil value indicates the LP delta is unknown.
+	LPDelta *int
+}
+
+templ (m LPDeltaTag) ToTempl(ctx context.Context) {
+	<span class="text-xs text-white px-1 rounded">
+		if m.LPDelta != nil {
+			{ fmt.Sprintf("%+d", *m.LPDelta) }
+		} else {
+			+??
+		}
+	</span>
+}
+
+type WinLossWidget struct {
+	Wins, Losses int
+
+	ChampionName string
+}
+
+templ (m WinLossWidget) ToTempl(ctx context.Context) {
+	<div class="h-9">
+		<div class="flex text-sm font-semibold">
+			<div class="flex-1 text-green-500/90">
+				{ fmt.Sprintf("%d", m.Wins) }
+			</div>
+			<div class="flex-1 text-red-500/90">
+				{ fmt.Sprintf("%d", m.Losses) }
+			</div>
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ m.ChampionName }
+		</div>
+	</div>
+}
+
+type SummonerChampionWidget struct {
+	ChampionName string
+
+	GamesPlayed int
+}
+
+templ (m SummonerChampionWidget) ToTempl(ctx context.Context) {
+	<div class="h-9 w-13">
+		<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
+			{ m.ChampionName }
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%d Games", m.GamesPlayed) }
+		</div>
+	</div>
+}
+
+type WinRateWidget struct {
+	Wins, Losses int
+
+	WinRate float32
+}
+
+templ (m WinRateWidget) ToTempl(ctx context.Context) {
+	<div class="h-9 w-13">
+		<div class="flex text-sm font-semibold">
+			<div class="flex-1 text-green-500/90">
+				{ fmt.Sprintf("%d", m.Wins) }
+			</div>
+			<div class="flex-1 text-red-500/90">
+				{ fmt.Sprintf("%d", m.Losses) }
+			</div>
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%.0f%%", m.WinRate*100) }
+		</div>
+	</div>
+}

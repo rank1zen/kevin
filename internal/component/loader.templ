@@ -30,7 +30,7 @@ type Loader struct {
 func (m Loader) generateHXTrigger() string {
 	switch m.Type {
 	case LoaderTypeOnReveal:
-		return "revealed"
+		return "click"
 	default:
 		return "load once"
 	}

@@ -22,7 +22,7 @@ func NewChampionSprite(championID int, size component.TextSize) component.Sprite
 		extra = 3
 	}
 
-	truePixelSize = pixelSize + 2 * extra
+	truePixelSize = pixelSize + 2*extra
 	bgHeight = truePixelSize * 3
 	bgWidth = truePixelSize * 10
 	if champion.Sprite == "champion5.png" {
@@ -36,8 +36,8 @@ func NewChampionSprite(championID int, size component.TextSize) component.Sprite
 		BGWidth:   bgWidth,
 		Height:    pixelSize,
 		Width:     pixelSize,
-		X:         x * truePixelSize + extra,
-		Y:         y * truePixelSize + extra,
+		X:         x*truePixelSize + extra,
+		Y:         y*truePixelSize + extra,
 		Round:     component.RoundSizeLG,
 	}
 

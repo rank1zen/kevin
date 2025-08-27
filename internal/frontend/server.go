@@ -18,7 +18,7 @@ import (
 var (
 	ErrInvalidRegion = errors.New("invalid region")
 	ErrInvalidRiotID = errors.New("invalid riot id")
-	ErrInvalidPUUID = errors.New("invalid puuid")
+	ErrInvalidPUUID  = errors.New("invalid puuid")
 )
 
 // Server serves [templ.Component].
@@ -60,6 +60,8 @@ func New(handler *Handler, opts ...FrontendOption) *Server {
 	router.HandleFunc("POST /summoner/live", frontend.serveLiveMatch)
 
 	router.HandleFunc("POST /summoner/champions", frontend.serveChampions)
+
+	router.HandleFunc("POST /match", frontend.serveMatchDetail)
 
 	loggedRouter := frontend.addLoggingMiddleware(router)
 
@@ -126,7 +128,7 @@ func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	name, tag, err := ParseRiotID(riotID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		logger.Debug("failed to resolve riot id", "err", err , payload)
+		logger.Debug("failed to resolve riot id", "err", err, payload)
 		return
 	}
 
@@ -141,7 +143,7 @@ func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed service", "err", err , payload)
+		logger.Debug("failed service", "err", err, payload)
 		return
 	}
 
@@ -258,6 +260,29 @@ func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	component.ToTempl(ctx).Render(ctx, w)
 }
 
+func (f *Server) serveMatchDetail(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req, err := decode[MatchDetailRequest](r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		slog.Debug("bad request", "err", err)
+		return
+	}
+
+	payload := slog.Group("payload", "region", req.Region, "match_id", req.MatchID)
+
+	component, err := f.handler.GetMatchDetail(ctx, req)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		slog.Debug("failed service", "err", err, payload)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	component.ToTempl(ctx).Render(ctx, w)
+}
+
 func (f *Server) addLoggingMiddleware(handler http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ts := time.Now()
@@ -307,7 +332,7 @@ func ParseRiotID(riotID string) (name, tag string, err error) {
 		return "", "", ErrInvalidRiotID
 	}
 
-	if index == len(riotID) - 1 {
+	if index == len(riotID)-1 {
 		return "", "", ErrInvalidRiotID
 	}
 
