@@ -67,7 +67,7 @@ jobs:
 
       - name: Check tailwind output is up-to-date
         run: |
-          nix-shell -p tailwindcss_4 --run 'tailwind -i ./internal/frontend/static/input.css -o ./internal/frontend/static/output.css -m'
+          nix-shell -p tailwindcss_4 --run 'tailwindcss -i ./internal/frontend/static/input.css -o ./internal/frontend/static/output.css -m'
           git diff --exit-code
 
       - name: Check tailwind classes are sorted
