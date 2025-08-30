@@ -44,7 +44,7 @@ func (m Drawer) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['drawer-button']\" x-data=\"{ open: false }\" @keydown.escape.window=\"open = false\" class=\"relative\"><button type=\"button\" x-ref=\"button\" @click=\"open = true\" class=\"relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20\" :class=\"open && 'bg-gray-900/5 dark:bg-gray-100/5'\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['drawer-button']\" x-data=\"{ open: false }\" @keydown.escape.window=\"open = false\" class=\"relative\"><button type=\"button\" x-ref=\"button\" @click=\"open = true\" class=\"relative cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 active:bg-gray-900/20\" :class=\"open && 'bg-gray-900/5 dark:bg-gray-100/5'\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -59,7 +59,7 @@ func (m Drawer) ToTempl(ctx context.Context) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button><template x-if=\"true\"><div role=\"dialog\" x-ref=\"panel\" x-show=\"open\" x-trap.inert.noscroll=\"open\" aria-modal=\"true\" @click.stop :id=\"$id('drawer-button')\" x-transition.opacity class=\"fixed inset-0 flex justify-end z-30 bg-gray-900/20\"><div x-show=\"open\" x-transition class=\"bg-gray-50 dark:bg-gray-950 shadow w-lg md:rounded-l-2xl h-screen overflow-y-auto\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button><template x-if=\"true\"><div role=\"dialog\" x-ref=\"panel\" x-show=\"open\" x-trap.inert.noscroll=\"open\" aria-modal=\"true\" @click.stop :id=\"$id('drawer-button')\" x-transition.opacity class=\"fixed inset-0 flex justify-end z-30 bg-gray-900/20\"><div x-show=\"open\" x-transition class=\"bg-gray-50 shadow w-lg h-screen overflow-y-auto md:rounded-l-2xl dark:bg-gray-950\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -47,12 +47,12 @@ func (m List) ToTempl(ctx context.Context) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if m.Style == ListStyleRaised {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<ol class=\"bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10 rounded-2xl\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<ol class=\"bg-white border border-gray-900/10 shadow-sm shadow-gray-900/10 rounded-2xl dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, c := range m.Items {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<li class=\"block bg-white dark:bg-gray-950 border-b border-gray-900/10 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<li class=\"block bg-white border-b border-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -75,7 +75,7 @@ func (m List) ToTempl(ctx context.Context) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for _, c := range m.Items {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<li class=\"block bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 rounded-2xl mb-2 last:mb-0\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<li class=\"block bg-white border border-gray-900/10 rounded-2xl mb-2 dark:bg-black dark:border-gray-100/10 last:mb-0\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

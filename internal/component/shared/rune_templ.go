@@ -143,7 +143,7 @@ func (m RuneWidget) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex flex-none items-center h-9 bg-gray-900/5 dark:bg-gray-100/5 rounded-lg\"><div class=\"size-9\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex flex-none items-center h-9 bg-gray-900/5 rounded-lg dark:bg-gray-100/5\"><div class=\"size-9\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -249,7 +249,7 @@ func (m RuneRow) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"flex flex-none gap-x-4 items-center bg-gray-900/5 dark:bg-gray-100/5 rounded-lg\"><div class=\"h-9 flex items-center gap-x-1\"><div class=\"size-9\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"flex flex-none gap-x-4 items-center bg-gray-900/5 rounded-lg dark:bg-gray-100/5\"><div class=\"h-9 flex items-center gap-x-1\"><div class=\"size-9\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

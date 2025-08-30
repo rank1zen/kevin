@@ -63,7 +63,7 @@ func (m KDAWidget) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"h-9 w-18\"><div class=\"flex flex-none items-center font-semibold text-sm\"><div class=\"flex-1 text-gray-900/90 dark:text-gray-100/90 text-left\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"h-9 w-18\"><div class=\"flex flex-none items-center font-semibold text-sm\"><div class=\"flex-1 text-gray-900/90 text-left dark:text-gray-100/90\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -76,7 +76,7 @@ func (m KDAWidget) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"text-gray-900/5 dark:text-gray-100/5 mx-1\">/</div><div class=\"flex-1 text-red-500/90 text-center\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"text-gray-900/5 mx-1 dark:text-gray-100/5\">/</div><div class=\"flex-1 text-red-500/90 text-center\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -89,7 +89,7 @@ func (m KDAWidget) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"text-gray-900/5 dark:text-gray-100/5 mx-1\">/</div><div class=\"flex-1 text-gray-900/90 dark:text-gray-100/90 text-right\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"text-gray-900/5 mx-1 dark:text-gray-100/5\">/</div><div class=\"flex-1 text-gray-900/90 text-right dark:text-gray-100/90\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
