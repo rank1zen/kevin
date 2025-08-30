@@ -57,9 +57,7 @@ func NewStore(pool *pgxpool.Pool) internal.Store {
 }
 
 func (db *Store) GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]internal.SummonerChampion, error) {
-	var (
-		matchStore = MatchStore{Tx: db.Pool}
-	)
+	matchStore := MatchStore{Tx: db.Pool}
 
 	return matchStore.GetSummonerChampions(ctx, puuid, start, end)
 }
@@ -131,7 +129,9 @@ func (db *Store) RecordProfile(ctx context.Context, summoner internal.Profile) e
 		return err
 	}
 
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	rankStore := RankStore{Tx: tx}
 
@@ -184,9 +184,7 @@ func (db *Store) RecordProfile(ctx context.Context, summoner internal.Profile) e
 func (db *Store) GetProfileDetail(ctx context.Context, puuid riot.PUUID) (m internal.ProfileDetail, err error) {
 	defer errWrap(&err, "GetProfileDetail(ctx, %v)", puuid)
 
-	var (
-		summonerStore = SummonerStore{Tx: db.Pool}
-	)
+	summonerStore := SummonerStore{Tx: db.Pool}
 
 	summoner, err := summonerStore.GetSummoner(ctx, puuid)
 	if err != nil {
@@ -334,10 +332,10 @@ func (db *Store) GetMatchHistory(ctx context.Context, puuid riot.PUUID, start, e
 	matchHistory := []internal.SummonerMatch{}
 
 	var (
-		matchList       []Match       = []Match{}
-		participantList []Participant = []Participant{}
-		rankBeforeList  []*RankFull   = []*RankFull{}
-		rankAfterList   []*RankFull   = []*RankFull{}
+		matchList       = []Match{}
+		participantList = []Participant{}
+		rankBeforeList  = []*RankFull{}
+		rankAfterList   = []*RankFull{}
 	)
 
 	for _, id := range ids {
@@ -647,7 +645,7 @@ func (db *Store) getMostRecentRank(ctx context.Context, puuid riot.PUUID) (m Ran
 
 	rankStore := RankStore{Tx: db.Pool}
 
-	ids, err := rankStore.ListRankIDs(ctx, puuid, ListRankOption{Limit:  1, Recent: true})
+	ids, err := rankStore.ListRankIDs(ctx, puuid, ListRankOption{Limit: 1, Recent: true})
 	if err != nil {
 		return m, n, err
 	}

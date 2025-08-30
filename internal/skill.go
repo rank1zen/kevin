@@ -17,7 +17,7 @@ type SkillProgression [18]*int
 
 func NewSkillProgression(opts ...SkillProgressionOption) (m SkillProgression) {
 	for _, f := range opts {
-		f(&m)
+		_ = f(&m)
 	}
 	return m
 }

@@ -101,13 +101,17 @@ func WithSampleLiveMatch() riot.LiveMatch {
 
 func Account(tb testing.TB) riot.Account {
 	var m riot.Account
-	readAndDecode("samples/account.json", &m)
+	if err := readAndDecode("samples/account.json", &m); err != nil {
+		panic(err)
+	}
 	return m
 }
 
 func LeagueList(tb testing.TB) riot.LeagueList {
 	var league riot.LeagueList
-	readAndDecode("samples/league_list.json", &league)
+	if err := readAndDecode("samples/league_list.json", &league); err != nil {
+		panic(err)
+	}
 	return league
 }
 

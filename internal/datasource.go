@@ -41,7 +41,7 @@ func NewDatasource(client *riot.Client, store Store) *Datasource {
 func (ds *Datasource) GetMatchDetail(ctx context.Context, region riot.Region, matchID string) (MatchDetail, error) {
 	z := MatchDetail{}
 
-	detail, err := ds.store.GetMatchDetail(ctx, matchID)
+	_, err := ds.store.GetMatchDetail(ctx, matchID)
 	if err != nil {
 		if errors.Is(err, ErrMatchNotFound) {
 			riotMatch, err := ds.riot.Match.GetMatch(ctx, region, matchID)
@@ -63,7 +63,7 @@ func (ds *Datasource) GetMatchDetail(ctx context.Context, region riot.Region, ma
 		}
 	}
 
-	detail, err = ds.store.GetMatchDetail(ctx, matchID)
+	detail, err := ds.store.GetMatchDetail(ctx, matchID)
 	if err != nil {
 		return z, err
 	}

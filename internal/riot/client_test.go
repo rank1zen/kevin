@@ -33,7 +33,7 @@ func MakeTestClient(t *testing.T, code int, filename string, validators ...func(
 				w.WriteHeader(code)
 				_, _ = io.Copy(w, f)
 
-				r.Body.Close()
+				_ = r.Body.Close()
 			},
 		),
 	)

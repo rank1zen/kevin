@@ -10,9 +10,6 @@ import (
 
 type MatchService service
 
-// MatchID is a globally unique match identifier.
-type MatchID struct{Region; int64}
-
 // MatchListOptions are parameters to send in a [MatchService.GetMatchList]
 // request.
 type MatchListOptions struct {

@@ -37,12 +37,14 @@ func NewPGInstance(ctx context.Context, migrationsPath string) *PGInstance {
 		pg.BasicWaitStrategies(),
 		pg.WithSQLDriver("pgx"),
 	)
-
 	if err != nil {
 		log.Fatalf("running postgres container: %s", err)
 	}
 
 	pgURL, err := container.ConnectionString(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	pgInstance := &PGInstance{
 		container,
@@ -101,14 +103,18 @@ func (p *PGInstance) migrateSchema(ctx context.Context, migrationsPath string) {
 		log.Fatal(err)
 	}
 
-	defer conn.Close(ctx)
+	defer func() {
+		_ = conn.Close(ctx)
+	}()
 
 	m, err := migrate.NewMigrator(ctx, conn, "public.schema_version")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	m.LoadMigrations(os.DirFS(migrationsPath))
+	if err := m.LoadMigrations(os.DirFS(migrationsPath)); err != nil {
+		log.Fatal(err)
+	}
 
 	if err = m.Migrate(ctx); err != nil {
 		log.Fatal(err)
