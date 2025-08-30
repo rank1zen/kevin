@@ -46,7 +46,7 @@ type RunePageOption func(*RunePage) error
 
 func NewRunePage(opts ...RunePageOption) (runes RunePage) {
 	for _, f := range opts {
-		f(&runes)
+		_ = f(&runes)
 	}
 	return runes
 }

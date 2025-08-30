@@ -5,7 +5,6 @@
 package riot
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/riot/internal"
@@ -27,14 +26,6 @@ type Client struct {
 	Match     *MatchService
 	Spectator *SpectatorService
 	Summoner  *SummonerService
-}
-
-func (c *Client) dispatchRequest(ctx context.Context, req *internal.Request, dst any) error {
-	if c.baseURL != "" {
-		req.BaseURL = c.baseURL
-	}
-
-	return c.internals.DispatchRequest(ctx, req, dst)
 }
 
 type service struct {

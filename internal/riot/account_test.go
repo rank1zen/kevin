@@ -46,7 +46,7 @@ func TestAccountServiceGetAccountByRiotID(t *testing.T) {
 		},
 		{
 			Name:     "expects correct name for orrange",
-			Expected: OrrangePUUID,
+			Expected: "orrange",
 			Actual:   res.GameName,
 		},
 	} {
