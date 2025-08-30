@@ -76,7 +76,7 @@ func (m Page) ToTempl(ctx context.Context) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if m.HeaderChildren != nil {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<header class=\"sticky top-0 w-full z-90 bg-white dark:bg-black border-b border-gray-900/10 dark:border-gray-100/10\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<header class=\"sticky top-0 w-full z-90 bg-white border-b border-gray-900/10 dark:bg-black dark:border-gray-100/10\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

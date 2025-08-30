@@ -41,7 +41,7 @@ func (m Side) ToTempl(ctx context.Context) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		for _, c := range m {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"pb-4 border-b mt-5 first:mt-0 last:pb-0 last:border-none border-gray-900/10 dark:border-gray-100/10\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"pb-4 border-b mt-5 border-gray-900/10 dark:border-gray-100/10 first:mt-0 last:pb-0 last:border-none\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

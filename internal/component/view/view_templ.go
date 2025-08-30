@@ -69,7 +69,7 @@ func (m LiveMatchModal) ToTempl(ctx context.Context) templ.Component {
 				redSide = append(redSide, card)
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex sticky top-0 z-10 bg-gray-50 dark:bg-gray-950 items-center px-2 h-13 justify-between gap-x-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex sticky top-0 z-10 bg-gray-50 items-center px-2 h-13 justify-between gap-x-2 dark:bg-gray-950\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

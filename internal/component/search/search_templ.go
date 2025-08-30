@@ -43,7 +43,7 @@ func (m ResultCard) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"px-3 h-15 flex items-center\"><div><div class=\"text-sm font-medium text-gray-900/90 dark:text-gray-200/90 truncate\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"px-3 h-15 flex items-center\"><div><div class=\"text-sm font-medium text-gray-900/90 truncate dark:text-gray-200/90\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -130,7 +130,7 @@ func (m NotFoundCard) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" hx-ext=\"json-enc\" hx-disabled-elt=\"this\" class=\"flex w-full h-15 rounded-lg transition items-center enabled:hover:bg-gray-900/5 enabled:dark:hover:bg-gray-100/5 enabled:cursor-pointer justify-between px-3 gap-x-3 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 enabled:active:bg-gray-900/10 enabled:dark:active:bg-gray-100/10 disabled:bg-gray-900/5 disabled:dark:bg-gray-100/5\"><div class=\"flex-1 min-w-0\"><div class=\"text-sm text-gray-900/90 dark:text-gray-100/90 text-left truncate\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" hx-ext=\"json-enc\" hx-disabled-elt=\"this\" class=\"flex w-full h-15 rounded-lg transition items-center enabled:hover:bg-gray-900/5 enabled:dark:hover:bg-gray-100/5 enabled:cursor-pointer justify-between px-3 gap-x-3 enabled:active:bg-gray-900/10 enabled:dark:active:bg-gray-100/10 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 disabled:bg-gray-900/5 disabled:dark:bg-gray-100/5\"><div class=\"flex-1 min-w-0\"><div class=\"text-sm text-gray-900/90 text-left truncate dark:text-gray-100/90\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
