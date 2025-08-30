@@ -93,7 +93,8 @@ func (c *Config) Run(ctx context.Context) error {
 	defer cancel()
 
 	go func() {
-		http.ListenAndServe(address, server)
+		err := http.ListenAndServe(address, server)
+		logger.Error("error starting server", "err", err)
 	}()
 
 	logger.Info("start server", "addr", address)

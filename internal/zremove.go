@@ -20,7 +20,7 @@ type ParticipantOption func(*Participant) error
 func NewParticipant(opts ...ParticipantOption) Participant {
 	var p Participant
 	for _, f := range opts {
-		f(&p)
+		_ = f(&p)
 	}
 
 	return p

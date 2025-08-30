@@ -15,7 +15,6 @@ type Client struct {
 	// HTTP handles http client details. A nil value indicates a zero
 	// [http.Client] is used.
 	HTTP *http.Client
-
 }
 
 // DispatchRequest executes the request and decodes the json response in dst.
@@ -27,13 +26,18 @@ func (c *Client) DispatchRequest(ctx context.Context, req *Request, dst any) err
 	}
 
 	httpReq, err := req.MakeHTTPRequest(ctx)
+	if err != nil {
+		return err
+	}
 
 	res, err := c.HTTP.Do(httpReq)
 	if err != nil {
 		return fmt.Errorf("http request: %w", err)
 	}
 
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
 	if err := GetError(res.StatusCode); err != nil {
 		return fmt.Errorf("http response for host %s: %w", req.BaseURL, err)

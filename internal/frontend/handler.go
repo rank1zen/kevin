@@ -169,11 +169,6 @@ func (h *Handler) GetSummonerChampions(ctx context.Context, req GetSummonerChamp
 // + 24 hours. The method will fetch riot first to ensure all matches played on
 // date are in store.
 func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) (component.Component, error) {
-	ds := h.Datasource
-	if ds == nil {
-		ds = &internal.Datasource{}
-	}
-
 	// TODO: consider daylight savings
 	end := req.Date.Add(24 * time.Hour)
 

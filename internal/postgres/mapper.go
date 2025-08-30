@@ -21,7 +21,7 @@ func (mapper PostgresToSummonerMatchMapper) Map() internal.SummonerMatch {
 	p := mapper.Participant
 	m := mapper.Match
 
-	win := false
+	var win bool
 	if p.TeamID == m.WinnerID {
 		win = true
 	}
@@ -98,7 +98,7 @@ func (mapper PostgresToRankStatus) Map() internal.RankStatus {
 		result.Detail = &internal.RankDetail{
 			Wins:   detail.Wins,
 			Losses: detail.Losses,
-			Rank:   internal.Rank{
+			Rank: internal.Rank{
 				Tier:     convertStringToRiotTier(detail.Tier),
 				Division: convertStringToRiotRank(detail.Division),
 				LP:       detail.LP,
@@ -107,33 +107,6 @@ func (mapper PostgresToRankStatus) Map() internal.RankStatus {
 	}
 
 	return result
-}
-
-func convertRiotTierToString(tier riot.Tier) string {
-	switch tier {
-	case riot.TierIron:
-		return "Iron"
-	case riot.TierBronze:
-		return "Bronze"
-	case riot.TierSilver:
-		return "Silver"
-	case riot.TierGold:
-		return "Gold"
-	case riot.TierPlatinum:
-		return "Platinum"
-	case riot.TierEmerald:
-		return "Emerald"
-	case riot.TierDiamond:
-		return "Diamond"
-	case riot.TierMaster:
-		return "Master"
-	case riot.TierGrandmaster:
-		return "Grandmaster"
-	case riot.TierChallenger:
-		return "Challenger"
-	default:
-		panic("bro.")
-	}
 }
 
 func convertStringToRiotTier(tier string) riot.Tier {
