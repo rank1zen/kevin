@@ -47,7 +47,7 @@ func NewSummonerChampionList(champions []internal.SummonerChampion) component.Mo
 //
 // TODO: add LP gain for all matches.
 type SummonerChampionCard struct {
-	ChampionWidget shared.Champion
+	ChampionWidget shared.ChampionWidget
 
 	SummonerChampion SummonerChampionWidget
 

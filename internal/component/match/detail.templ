@@ -1,0 +1,60 @@
+package match
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal/component"
+	"time"
+)
+
+type Detail struct {
+	DateDurationWidget DateDurationWidget
+
+	Tabs component.TabList
+
+	Panels component.TabPanelList
+}
+
+templ (m Detail) ToTempl(ctx context.Context) {
+	<div class="flex py-3 px-4 gap-x-2 items-center justify-between">
+		@m.Tabs.ToTempl(ctx)
+		@m.DateDurationWidget.ToTempl(ctx)
+	</div>
+	@m.Panels.ToTempl(ctx)
+}
+
+type DateDurationWidget struct {
+	Date time.Time
+
+	Duration time.Duration
+
+	AlignRight bool
+}
+
+templ (m DateDurationWidget) ToTempl(ctx context.Context) {
+	if m.AlignRight {
+		<div class="h-9 flex-1 min-w-0 text-right">
+			<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+				{ m.Date.Format("3:04 PM Monday, Jan 2") }
+			</div>
+			<div class="text-xs text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+				{ fmt.Sprintf("%v", m.Duration) }
+			</div>
+		</div>
+	} else {
+		<div class="h-9 flex-1 min-w-0">
+			<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+				{ m.Date.Format("3:04 PM Monday, Jan 2") }
+			</div>
+			<div class="text-xs text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+				{ fmt.Sprintf("%v", m.Duration) }
+			</div>
+		</div>
+	}
+}
+
+templ DetailSkeleton(ctx context.Context) {
+	<div class="h-26 flex items-center justify-center">
+		@component.Spinner{}.ToTempl(ctx)
+	</div>
+}

@@ -71,7 +71,7 @@ func regionButton(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end\"><span class=\"text-sm font-bold\">NA1</span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90\">NA1</span>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

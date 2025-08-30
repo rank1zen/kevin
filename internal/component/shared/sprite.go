@@ -16,13 +16,13 @@ func NewChampionSprite(championID int, size component.TextSize) component.Sprite
 
 	if size == component.TextSizeLG {
 		pixelSize = 28
-		extra = 0 // TODO: figure out what this should be.
+		extra = 2 // TODO: figure out what this should be.
 	} else {
 		pixelSize = 36
 		extra = 3
 	}
 
-	truePixelSize = pixelSize + 2 * extra
+	truePixelSize = pixelSize + 2*extra
 	bgHeight = truePixelSize * 3
 	bgWidth = truePixelSize * 10
 	if champion.Sprite == "champion5.png" {
@@ -36,8 +36,8 @@ func NewChampionSprite(championID int, size component.TextSize) component.Sprite
 		BGWidth:   bgWidth,
 		Height:    pixelSize,
 		Width:     pixelSize,
-		X:         x * truePixelSize + extra,
-		Y:         y * truePixelSize + extra,
+		X:         x*truePixelSize + extra,
+		Y:         y*truePixelSize + extra,
 		Round:     component.RoundSizeLG,
 	}
 

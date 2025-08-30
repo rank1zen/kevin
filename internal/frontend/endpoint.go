@@ -7,7 +7,7 @@ import (
 )
 
 // TODO: rename to request provider
-type EndpointProvider struct {}
+type EndpointProvider struct{}
 
 func (ep EndpointProvider) GetMatchHistory(region riot.Region, puuid riot.PUUID, index int) (string, []byte) {
 	path := "/summoner/matchlist"
@@ -57,6 +57,19 @@ func (ep EndpointProvider) UpdateSummoner(region riot.Region, name, tag string) 
 		Region: region,
 		Name:   name,
 		Tag:    tag,
+	}
+
+	bytes, _ := json.Marshal(req)
+
+	return path, bytes
+}
+
+func (ep EndpointProvider) GetMatchDetail(region riot.Region, matchID string) (string, []byte) {
+	path := "/match"
+
+	req := MatchDetailRequest{
+		Region:  region,
+		MatchID: matchID,
 	}
 
 	bytes, _ := json.Marshal(req)
