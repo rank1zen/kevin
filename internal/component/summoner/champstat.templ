@@ -1,0 +1,69 @@
+package summoner
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal/component"
+)
+
+templ ChampstatListSkeleton(ctx context.Context) {
+	<div class="h-15 w-xs">Loading...</div>
+}
+
+// Champstat displays average champion stats over a set of games.
+type Champstat struct {
+	ChampionIcon component.Sprite
+
+	ChampionName string
+
+	Wins, Losses int
+
+	LPDelta *int
+}
+
+templ (m Champstat) ToTempl(ctx context.Context) {
+	<div class="flex gap-x-2 items-center">
+		<div class="flex items-center gap-x-2 w-1/3">
+			@m.ChampionIcon.ToTempl(ctx)
+			<span class="text-sm font-medium text-gray-900/90 dark:text-gray-500/90 truncate">
+				{ m.ChampionName }
+			</span>
+		</div>
+		<div class="flex items-center gap-x-2 w-1/3">
+			<span class="text-sm font-medium text-gray-900/90 dark:text-gray-100/90 truncate">
+				{ fmt.Sprintf("%d-%d", m.Wins, m.Losses) }
+			</span>
+		</div>
+		<div class="flex items-center gap-x-2 w-1/3 justify-end">
+			if m.LPDelta == nil {
+				<span class="text-xs text-white px-1 rounded bg-gray-500/80">
+					+??
+				</span>
+			} else if *m.LPDelta > 0 {
+				<span class="text-xs text-white px-1 rounded bg-green-500/80">
+					{ fmt.Sprintf("%+d", *m.LPDelta) }
+				</span>
+			} else if *m.LPDelta < 0 {
+				<span class="text-xs text-white px-1 rounded bg-red-500/80">
+					{ fmt.Sprintf("%+d", *m.LPDelta) }
+				</span>
+			} else {
+				<span class="text-xs text-white px-1 rounded bg-gray-500/80">
+					{ fmt.Sprintf("%+d", *m.LPDelta) }
+				</span>
+			}
+		</div>
+	</div>
+}
+
+type ChampstatList []Champstat
+
+templ (m ChampstatList) ToTempl(ctx context.Context) {
+	<div>
+		for _, c := range m {
+			<div class="mb-1 last:mb-0">
+				@c.ToTempl(ctx)
+			</div>
+		}
+	</div>
+}

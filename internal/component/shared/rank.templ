@@ -4,9 +4,20 @@ import (
 	"context"
 	"fmt"
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/riot"
 )
+
+type RankTag internal.Rank
+
+templ (m RankTag) ToTempl(ctx context.Context) {
+	{{ rank := (internal.Rank)(m) }}
+	<div class={ generateTierBGColorClass(&rank), "flex flex-none px-1 rounded h-4 items-center gap-x-1" }>
+		<span class="text-xs text-white">
+			{ generateRankLabel(&rank, false) }
+		</span>
+	</div>
+}
 
 // RankWidget displays summoner rank.
 type RankWidget struct {
@@ -23,9 +34,9 @@ type RankWidget struct {
 
 func NewRankWidget(rank *internal.Rank) RankWidget {
 	w := RankWidget{
-		Rank: rank,
+		Rank:         rank,
 		ShowTierName: true,
-		Size: component.TextSizeSM,
+		Size:         component.TextSizeSM,
 	}
 
 	return w

@@ -1,0 +1,92 @@
+package view
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/live"
+	"github.com/rank1zen/kevin/internal/component/shared"
+	"time"
+)
+
+type LiveMatchModal struct {
+	// Date is game start timestamp
+	Date time.Time
+
+	// Participants are the players in this current match. There is no
+	// chosen order.
+	Participants [10]internal.LiveParticipant
+}
+
+templ (m LiveMatchModal) ToTempl(ctx context.Context) {
+	{{
+		blueSide, redSide := live.ParticipantList{}, live.ParticipantList{}
+		for i, p := range m.Participants {
+			card := live.Participant{
+				ChampionWidget: live.ChampionWidget{
+					ChampionID:  p.ChampionID,
+					SummonerIDs: p.SummonersIDs,
+				},
+				RuneWidget: live.RuneWidget(p.Runes),
+				Participant: live.ParticipantWidget{
+					Name: "XXX",
+					Tag:  "XXX",
+					Rank: shared.RankTag{},
+				},
+			}
+
+			if i < 5 {
+				blueSide = append(blueSide, card)
+			} else {
+				redSide = append(redSide, card)
+			}
+		}
+	}}
+	<div class="flex sticky top-0 z-10 bg-gray-50 dark:bg-gray-950 items-center px-2 h-13 justify-between gap-x-2">
+		{{
+				w := live.MatchWidget{
+					StartTimestamp: m.Date,
+					AverageRank:    shared.RankTag{},
+				}
+		}}
+		<div class="flex items-center gap-x-2">
+			@w.ToTempl(ctx)
+		</div>
+		<div class="flex items-center gap-x-2">
+			@component.ModalExitButton{}.ToTempl(ctx)
+		</div>
+	</div>
+	<div class="px-2 md:px-9">
+		<div class="mt-3">
+			<h2 class="font-semibold text-gray-900/90 dark:text-gray-100/90">
+				Blue Side
+			</h2>
+			<div class="mt-3">
+				@blueSide.ToTempl(ctx)
+			</div>
+		</div>
+		<div class="mt-3">
+			<h2 class="font-semibold text-gray-900/90 dark:text-gray-100/90">
+				Red Side
+			</h2>
+			<div class="mt-3">
+				@redSide.ToTempl(ctx)
+			</div>
+		</div>
+	</div>
+}
+
+type LiveMatchNotFound struct{}
+
+templ (m LiveMatchNotFound) ToTempl(ctx context.Context) {
+	<div class="flex flex-col h-full">
+		<div class="flex justify-end h-13 px-2 items-center">
+			@component.ModalExitButton{}.ToTempl(ctx)
+		</div>
+		<div class="flex flex-1 justify-center items-center">
+			<span>
+				Summoner not in match.
+			</span>
+		</div>
+	</div>
+}

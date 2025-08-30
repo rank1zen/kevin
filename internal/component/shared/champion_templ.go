@@ -14,10 +14,8 @@ import (
 	"github.com/rank1zen/kevin/internal/component"
 )
 
-// Champion displays a champion icon and summoner spells.
-//
-// TODO: rename to ChampionWidget.
-type Champion struct {
+// ChampionWidget displays a champion icon and summoner spells.
+type ChampionWidget struct {
 	ChampionSprite component.Sprite
 
 	// ChampionLevel is the level of the champion at the end of a match.
@@ -29,8 +27,8 @@ type Champion struct {
 	SummonerD, SummonerF *component.Sprite
 }
 
-func NewMatchChampionWidget(championID int, championLevel int, summonerIDs [2]int) Champion {
-	c := Champion{
+func NewMatchChampionWidget(championID int, championLevel int, summonerIDs [2]int) ChampionWidget {
+	c := ChampionWidget{
 		ChampionSprite: NewChampionSprite(championID, component.TextSize2XL),
 		ChampionLevel:  championLevel,
 	}
@@ -44,8 +42,8 @@ func NewMatchChampionWidget(championID int, championLevel int, summonerIDs [2]in
 	return c
 }
 
-func NewLiveChampionWidget(championID int, summonerIDs [2]int) Champion {
-	c := Champion{
+func NewLiveChampionWidget(championID int, summonerIDs [2]int) ChampionWidget {
+	c := ChampionWidget{
 		ChampionSprite: NewChampionSprite(championID, component.TextSize2XL),
 	}
 
@@ -58,15 +56,15 @@ func NewLiveChampionWidget(championID int, summonerIDs [2]int) Champion {
 	return c
 }
 
-func NewSimpleChampionWidget(championID int) Champion {
-	c := Champion{
+func NewSimpleChampionWidget(championID int) ChampionWidget {
+	c := ChampionWidget{
 		ChampionSprite: NewChampionSprite(championID, component.TextSize2XL),
 	}
 
 	return c
 }
 
-func (m Champion) ToTempl(ctx context.Context) templ.Component {
+func (m ChampionWidget) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -121,7 +119,7 @@ func (m Champion) ToTempl(ctx context.Context) templ.Component {
 				var templ_7745c5c3_Var2 string
 				templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.ChampionLevel))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/champion.templ`, Line: 72, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/champion.templ`, Line: 70, Col: 42}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 				if templ_7745c5c3_Err != nil {
@@ -182,7 +180,7 @@ func (m Champion) ToTempl(ctx context.Context) templ.Component {
 				var templ_7745c5c3_Var3 string
 				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.ChampionLevel))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/champion.templ`, Line: 94, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/champion.templ`, Line: 92, Col: 41}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 				if templ_7745c5c3_Err != nil {

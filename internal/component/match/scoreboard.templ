@@ -1,0 +1,54 @@
+package match
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/shared"
+)
+
+type Scoreboard struct {
+	BlueSide, RedSide component.Section
+}
+
+templ (m Scoreboard) ToTempl(ctx context.Context) {
+	<div class="px-4 py-3">
+		<div>
+			@m.BlueSide.ToTempl(ctx)
+		</div>
+		<div class="mt-10">
+			@m.RedSide.ToTempl(ctx)
+		</div>
+	</div>
+}
+
+// ParticipantCard displays a participant in a match.
+type ParticipantCard struct {
+	ChampionWidget shared.ChampionWidget
+
+	NameWidget shared.NameWidget
+
+	KDAWidget shared.KDAWidget
+
+	CSWidget shared.CSWidget
+
+	RuneWidget shared.RuneWidget
+
+	Items shared.ItemInventory
+}
+
+templ (m ParticipantCard) ToTempl(ctx context.Context) {
+	<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between lg:flex-nowrap">
+		<div class="flex gap-x-4">
+			@m.ChampionWidget.ToTempl(ctx)
+			@m.NameWidget.ToTempl(ctx)
+		</div>
+		<div class="flex gap-x-2">
+			@m.KDAWidget.ToTempl(ctx)
+			@m.CSWidget.ToTempl(ctx)
+		</div>
+		<div class="flex gap-x-4 w-full justify-between lg:w-auto">
+			@m.RuneWidget.ToTempl(ctx)
+			@m.Items.ToTempl(ctx)
+		</div>
+	</div>
+}

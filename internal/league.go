@@ -89,15 +89,15 @@ func WithRiotSpectatorPerks(perks *riot.LivePerks) RunePageOption {
 	return func(runes *RunePage) error {
 		runes.PrimaryTree = perks.PerkStyle
 		runes.PrimaryKeystone = perks.PerkIDs[0]
-		runes.PrimaryA = perks.PerkIDs[1]
-		runes.PrimaryB = perks.PerkIDs[2]
-		runes.PrimaryC = perks.PerkIDs[3]
+		// runes.PrimaryA = perks.PerkIDs[1]
+		// runes.PrimaryB = perks.PerkIDs[2]
+		// runes.PrimaryC = perks.PerkIDs[3]
 		runes.SecondaryTree = perks.PerkSubStyle
-		runes.SecondaryA = perks.PerkIDs[4]
-		runes.SecondaryB = perks.PerkIDs[5]
-		runes.MiniOffense = perks.PerkIDs[6]
-		runes.MiniFlex = perks.PerkIDs[7]
-		runes.MiniDefense = perks.PerkIDs[8]
+		// runes.SecondaryA = perks.PerkIDs[4]
+		// runes.SecondaryB = perks.PerkIDs[5]
+		// runes.MiniOffense = perks.PerkIDs[6]
+		// runes.MiniFlex = perks.PerkIDs[7]
+		// runes.MiniDefense = perks.PerkIDs[8]
 		return nil
 	}
 }

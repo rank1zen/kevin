@@ -1,0 +1,68 @@
+package match
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/shared"
+)
+
+var (
+	NonePlayedZ      = component.ComponentFunc(NonePlayed)
+	HistorySkeletonZ = component.ComponentFunc(HistorySkeleton)
+)
+
+type History component.List
+
+func (m History) ToTempl(ctx context.Context) templ.Component {
+	list := (component.List)(m)
+	return list.ToTempl(ctx)
+}
+
+// HistoryCard displays a match in a summoner's match history.
+type HistoryCard struct {
+	ChampionWidget shared.ChampionWidget
+
+	KDAWidget shared.KDAWidget
+
+	CSWidget shared.CSWidget
+
+	RuneWidget shared.RuneWidget
+
+	ItemWidget shared.ItemInventory
+
+	RankChange shared.RankDeltaWidget
+
+	OpenDetailButton component.Component
+}
+
+templ (m HistoryCard) ToTempl(ctx context.Context) {
+	<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap items-center justify-between lg:flex-nowrap">
+		<div class="flex gap-x-3">
+			@m.ChampionWidget.ToTempl(ctx)
+			@m.KDAWidget.ToTempl(ctx)
+			@m.CSWidget.ToTempl(ctx)
+		</div>
+		<div class="flex gap-x-2 lg:order-last">
+			@m.RankChange.ToTempl(ctx)
+			@m.OpenDetailButton.ToTempl(ctx)
+		</div>
+		<div class="flex gap-x-2 w-full justify-between lg:w-auto">
+			@m.RuneWidget.ToTempl(ctx)
+			@m.ItemWidget.ToTempl(ctx)
+		</div>
+	</div>
+}
+
+templ NonePlayed(ctx context.Context) {
+	<div class="flex justify-center items-center w-full h-15">
+		<span class="font-medium text-gray-900/90 dark:text-gray-100/90 text-sm">
+			No matches played
+		</span>
+	</div>
+}
+
+templ HistorySkeleton(ctx context.Context) {
+	<div class="px-4 h-15 flex justify-center items-center">
+		@component.Spinner{}.ToTempl(ctx)
+	</div>
+}

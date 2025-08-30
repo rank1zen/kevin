@@ -137,6 +137,10 @@ func (ds *Datasource) GetMatchHistory(ctx context.Context, region riot.Region, p
 func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puuid riot.PUUID) (LiveMatch, error) {
 	riotGame, err := ds.riot.Spectator.GetLiveMatch(ctx, region, string(puuid))
 	if err != nil {
+		if errors.Is(err, riot.ErrNotFound) {
+			return LiveMatch{}, ErrNoLiveMatch
+		}
+
 		return LiveMatch{}, err
 	}
 
@@ -147,7 +151,6 @@ func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puui
 
 // GetRiotName returns the Riot ID (name#tag) associated with puuid.
 func (ds *Datasource) GetRiotName(ctx context.Context, puuid riot.PUUID) (name, tag string, err error) {
-
 	// Using NA for now since puuid is globally unique ...
 	account, err := ds.riot.Account.GetAccountByPUUID(ctx, riot.RegionNA1, puuid.String())
 	if err != nil {

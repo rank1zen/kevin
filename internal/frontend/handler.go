@@ -9,8 +9,8 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/profile"
 	"github.com/rank1zen/kevin/internal/component/shared"
+	"github.com/rank1zen/kevin/internal/component/view"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
@@ -90,16 +90,16 @@ func (h *Handler) GetLiveMatch(ctx context.Context, req LiveMatchRequest) (compo
 	match, err := h.Datasource.GetLiveMatch(ctx, req.Region, req.PUUID)
 	if err != nil {
 		if errors.Is(err, internal.ErrNoLiveMatch) {
-			v := profile.NewLiveMatchNotFound()
-			return v, err
+			c := view.LiveMatchNotFound{}
+			return c, nil
 		}
 
 		return nil, err
 	}
 
-	v := profile.NewLiveMatch(internal.Rank{}, match)
+	c := MapLiveMatch(match)
 
-	return v, nil
+	return c, nil
 }
 
 // GetHomePage returns the home page.
@@ -117,7 +117,13 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		return nil, err
 	}
 
-	c := profile.NewPage(EndpointProvider{}, region, detail)
+	mapper := FrontendToProfilePageMapper{
+		Region:        region,
+		ProfileDetail: detail,
+	}
+
+	c := mapper.Map()
+
 	return c, nil
 }
 
@@ -150,9 +156,13 @@ func (h *Handler) GetSummonerChampions(ctx context.Context, req GetSummonerChamp
 		return nil, err
 	}
 
-	v := profile.NewSummonerChampionList(storeChampions)
+	mapper := FrontendToSummonerChampstatMapper{
+		Champions: storeChampions,
+	}
 
-	return v, nil
+	c := mapper.Map()
+
+	return c, nil
 }
 
 // GetMatchHistory returns [MatchHistory], the matches played on date to date
@@ -172,13 +182,13 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
 
-	if len(storeMatches) == 0 {
-		v := profile.NewMatchHistoryNoMatches()
-		return v, nil
+	mapper := FrontendToHistoryMapper{
+		Region:       req.Region,
+		MatchHistory: storeMatches,
 	}
 
+	c := mapper.Map()
 
-	c := profile.NewMatchHistoryList(storeMatches)
 	return c, nil
 }
 
@@ -188,7 +198,7 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (component.Component, error) {
 	storeSearchResults, err := h.Datasource.Search(ctx, region, q)
 	if err != nil {
-		return shared.SearchErrorCard{}, err
+		return nil, err
 	}
 
 	if len(storeSearchResults) == 0 {
@@ -197,28 +207,44 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 			tag = string(region)
 		}
 
-		v := shared.NewSearchNotFoundCard(EndpointProvider{}, region, name, tag)
+		v := NewSearchNotFoundCard(region, name, tag)
 
 		return v, nil
 	}
 
-	c := shared.NewSearchResultList(storeSearchResults)
+	mapper := FrontendToSearchResultMapper{
+		Region:  region,
+		Results: storeSearchResults,
+	}
+
+	c := mapper.Map()
+
 	return c, nil
 }
 
-type GetMatchDetailsRequest struct {
+type MatchDetailRequest struct {
 	Region  riot.Region `json:"region"`
 	MatchID string
 }
 
-// GetMatchDetails returns [MatchDetail].
-func (h *Handler) GetMatchDetails(ctx context.Context, req GetMatchDetailsRequest) (component.Component, error) {
-	_, err := h.Datasource.GetMatchDetail(ctx, req.Region, req.MatchID)
+func (r MatchDetailRequest) Validate() (problems map[string]string) {
+	return nil
+}
+
+// GetMatchDetail returns [MatchDetail].
+func (h *Handler) GetMatchDetail(ctx context.Context, req MatchDetailRequest) (component.Component, error) {
+	matchDetail, err := h.Datasource.GetMatchDetail(ctx, req.Region, req.MatchID)
 	if err != nil {
 		return nil, err
 	}
 
-	panic("not implemented")
+	mapper := FrontendToMatchDetailMapper{
+		MatchDetail: matchDetail,
+	}
+
+	c := mapper.Map()
+
+	return c, nil
 }
 
 // GetCurrentWeek returns the start of the day, 7 days ago. Currently returns

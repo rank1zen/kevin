@@ -6,10 +6,8 @@ import (
 	"github.com/rank1zen/kevin/internal/component"
 )
 
-// Champion displays a champion icon and summoner spells.
-//
-// TODO: rename to ChampionWidget.
-type Champion struct {
+// ChampionWidget displays a champion icon and summoner spells.
+type ChampionWidget struct {
 	ChampionSprite component.Sprite
 
 	// ChampionLevel is the level of the champion at the end of a match.
@@ -21,10 +19,10 @@ type Champion struct {
 	SummonerD, SummonerF *component.Sprite
 }
 
-func NewMatchChampionWidget(championID int, championLevel int, summonerIDs [2]int) Champion {
-	c := Champion{
+func NewMatchChampionWidget(championID int, championLevel int, summonerIDs [2]int) ChampionWidget {
+	c := ChampionWidget{
 		ChampionSprite: NewChampionSprite(championID, component.TextSize2XL),
-		ChampionLevel: championLevel,
+		ChampionLevel:  championLevel,
 	}
 
 	c.SummonerD = new(component.Sprite)
@@ -36,8 +34,8 @@ func NewMatchChampionWidget(championID int, championLevel int, summonerIDs [2]in
 	return c
 }
 
-func NewLiveChampionWidget(championID int, summonerIDs [2]int) Champion {
-	c := Champion{
+func NewLiveChampionWidget(championID int, summonerIDs [2]int) ChampionWidget {
+	c := ChampionWidget{
 		ChampionSprite: NewChampionSprite(championID, component.TextSize2XL),
 	}
 
@@ -50,15 +48,15 @@ func NewLiveChampionWidget(championID int, summonerIDs [2]int) Champion {
 	return c
 }
 
-func NewSimpleChampionWidget(championID int) Champion {
-	c := Champion{
+func NewSimpleChampionWidget(championID int) ChampionWidget {
+	c := ChampionWidget{
 		ChampionSprite: NewChampionSprite(championID, component.TextSize2XL),
 	}
 
 	return c
 }
 
-templ (m Champion) ToTempl(ctx context.Context) {
+templ (m ChampionWidget) ToTempl(ctx context.Context) {
 	if m.SummonerD != nil && m.SummonerF != nil {
 		<div class="flex flex-none gap-x-0.5 items-center">
 			if m.ChampionLevel == 0 {

@@ -1,0 +1,18 @@
+package profile
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/component"
+)
+
+type Matchlist []component.Section
+
+templ (m Matchlist) ToTempl(ctx context.Context) {
+	<div class="flex-1">
+		for _, c := range m {
+			<div class="mt-9 first:mt-0">
+				@c.ToTempl(ctx)
+			</div>
+		}
+	</div>
+}
