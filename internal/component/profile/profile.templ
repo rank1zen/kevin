@@ -1,0 +1,25 @@
+package profile
+
+import "context"
+
+type Profile struct {
+	Bar Bar
+
+	Matchlist Matchlist
+
+	Side Side
+}
+
+templ (m Profile) ToTempl(ctx context.Context) {
+	<div>
+		<div class="max-w-7xl px-2 lg:px-6 mx-auto">
+			@m.Bar.ToTempl(ctx)
+		</div>
+		<div class="flex lg:px-6 px-2 max-w-7xl mx-auto gap-x-4 lg:gap-x-6">
+			@m.Matchlist.ToTempl(ctx)
+			<div class="hidden md:block">
+				@m.Side.ToTempl(ctx)
+			</div>
+		</div>
+	</div>
+}

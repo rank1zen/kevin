@@ -3,7 +3,6 @@ package profile
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal/component/shared"
 )
 
@@ -11,8 +10,6 @@ type Bar struct {
 	Name, Tag string
 
 	Rank shared.RankWidget
-
-	Champions, LiveMatch component.Modal
 }
 
 templ (m Bar) ToTempl(ctx context.Context) {
@@ -22,10 +19,6 @@ templ (m Bar) ToTempl(ctx context.Context) {
 				{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
 			</h1>
 			@m.Rank.ToTempl(ctx)
-		</div>
-		<div class="flex items-center gap-x-2">
-			// @m.Champions.ToTempl(ctx)
-			// @m.LiveMatch.ToTempl(ctx)
 		</div>
 	</div>
 }

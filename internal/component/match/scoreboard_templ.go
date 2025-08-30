@@ -39,7 +39,7 @@ func (m Scoreboard) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"px-2 py-5\"><div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"px-4 py-3\"><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -65,7 +65,7 @@ func (m Scoreboard) ToTempl(ctx context.Context) templ.Component {
 
 // ParticipantCard displays a participant in a match.
 type ParticipantCard struct {
-	ChampionWidget shared.Champion
+	ChampionWidget shared.ChampionWidget
 
 	NameWidget shared.NameWidget
 
@@ -99,7 +99,7 @@ func (m ParticipantCard) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between md:flex-nowrap\"><div class=\"flex gap-x-4\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between lg:flex-nowrap\"><div class=\"flex gap-x-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -123,7 +123,7 @@ func (m ParticipantCard) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><div class=\"flex gap-x-4 w-full justify-between md:w-auto\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><div class=\"flex gap-x-4 w-full justify-between lg:w-auto\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

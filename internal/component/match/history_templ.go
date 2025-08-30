@@ -14,6 +14,11 @@ import (
 	"github.com/rank1zen/kevin/internal/component/shared"
 )
 
+var (
+	NonePlayedZ      = component.ComponentFunc(NonePlayed)
+	HistorySkeletonZ = component.ComponentFunc(HistorySkeleton)
+)
+
 type History component.List
 
 func (m History) ToTempl(ctx context.Context) templ.Component {
@@ -23,7 +28,7 @@ func (m History) ToTempl(ctx context.Context) templ.Component {
 
 // HistoryCard displays a match in a summoner's match history.
 type HistoryCard struct {
-	ChampionWidget shared.Champion
+	ChampionWidget shared.ChampionWidget
 
 	KDAWidget shared.KDAWidget
 
@@ -59,7 +64,7 @@ func (m HistoryCard) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between md:flex-nowrap\"><div class=\"flex gap-x-3\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap items-center justify-between lg:flex-nowrap\"><div class=\"flex gap-x-3\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -75,7 +80,7 @@ func (m HistoryCard) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"flex gap-x-2 md:order-last\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"flex gap-x-2 lg:order-last\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -87,7 +92,7 @@ func (m HistoryCard) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"flex gap-x-2 w-full justify-between md:w-auto\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"flex gap-x-2 w-full justify-between lg:w-auto\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

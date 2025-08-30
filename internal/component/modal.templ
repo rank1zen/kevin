@@ -16,22 +16,15 @@ type Modal struct {
 templ (m Modal) ToTempl(ctx context.Context) {
 	<div
 		x-id="['modal-button']"
-
 		x-data="{ open: false }"
-
 		@keydown.escape.window="open = false"
-
 		class="relative"
 	>
 		<button
 			type="button"
-
 			x-ref="trigger"
-
 			@click="open = true"
-
 			class="relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0"
-
 			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
 			if m.ButtonChildren != nil {
@@ -44,28 +37,18 @@ templ (m Modal) ToTempl(ctx context.Context) {
 			// TODO: aria labelled by
 			<div
 				role="dialog"
-
 				x-ref="panel"
-
 				x-show="open"
-
 				x-trap.inert.noscroll="open"
-
 				aria-modal="true"
-
 				@click.stop
-
 				:id="$id('modal-button')"
-
 				x-transition.opacity
-
 				class="fixed inset-0 flex items-end md:items-center justify-center z-30 bg-gray-900/20"
 			>
 				<div
 					x-show="open"
-
 					x-transition
-
 					class="bg-gray-50 dark:bg-gray-950 border border-gray-900/10 dark:border-gray-100/10 shadow-lg shadow-gray-900/10 dark:shadow-gray-100/10 w-full md:w-2xl rounded-t-2xl md:rounded-2xl h-3/5"
 				>
 					if m.PanelChildren != nil {
@@ -77,6 +60,88 @@ templ (m Modal) ToTempl(ctx context.Context) {
 	</div>
 }
 
+type LazyModal struct {
+	Icon Icon
+
+	Label string
+
+	Path string
+
+	Data string
+}
+
+templ (m LazyModal) ToTempl(ctx context.Context) {
+	<div
+		x-id="['modal']"
+		x-data="{ open: false }"
+		@keydown.escape.window="open = false"
+		class="relative"
+	>
+		<button
+			type="button"
+			x-ref="trigger"
+			@click="open = true"
+			class="relative w-full flex items-center justify-center gap-x-2  h-9 cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/10 dark:active:bg-gray-100/10 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0"
+			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
+		>
+			<span class="text-sm font-bold text-gray-900/90 dark:text-gray-100/90">
+				{ m.Label }
+			</span>
+		</button>
+		<template x-if="true">
+			<div
+				role="dialog"
+				x-ref="panel"
+				x-show="open"
+				x-trap.inert.noscroll="open"
+				aria-modal="true"
+				@click.stop
+				:id="$id('modal')"
+				x-transition.opacity
+				class="fixed inset-0 flex items-end md:items-center justify-center z-100 bg-gray-900/20 md:items-center"
+			>
+				<div
+					hx-post={ m.Path }
+					hx-trigger="click"
+					hx-ext="json-enc"
+					if m.Data != "" {
+						hx-vals={ string(m.Data) }
+					}
+					x-show="open"
+					x-transition
+					class="bg-gray-50 dark:bg-gray-950 border border-gray-900/10 dark:border-gray-100/10 shadow-lg shadow-gray-900/10 dark:shadow-gray-100/10 w-full md:w-2xl rounded-t-2xl md:rounded-2xl h-3/5 overflow-y-auto"
+				>
+					<div class="flex sticky top-0 z-10 bg-gray-50 dark:bg-gray-950 items-center px-2 h-13 justify-end">
+						@ModalExitButton{}.ToTempl(ctx)
+					</div>
+					<div class="flex justify-center items-center">
+						@Spinner{}.ToTempl(ctx)
+					</div>
+				</div>
+			</div>
+		</template>
+	</div>
+}
+
+templ modalPanel() {
+	<template x-if="true">
+		// TODO: aria labelled by
+		<div
+			role="dialog"
+			x-ref="panel"
+			x-show="open"
+			x-trap.inert.noscroll="open"
+			aria-modal="true"
+			@click.stop
+			:id="$id('modal-button')"
+			x-transition.opacity
+			class="fixed inset-0 flex items-end md:items-center justify-center z-100 bg-gray-900/20"
+		>
+			{ children... }
+		</div>
+	</template>
+}
+
 // ModalExitButton can be used in a [Modal] component to close the window.
 type ModalExitButton struct{}
 
@@ -84,11 +149,8 @@ templ (m ModalExitButton) ToTempl(ctx context.Context) {
 	<div class="flex size-9 items-center justify-center">
 		<button
 			type="button"
-
 			x-ref="exit"
-
 			@click="open = false"
-
 			class="cursor-pointer size-7 rounded-full flex items-center justify-center bg-gray-900/5 dark:bg-gray-100/5"
 		>
 			@WindowCloseIcon.ToTempl(ctx)

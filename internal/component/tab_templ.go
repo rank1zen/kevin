@@ -14,16 +14,6 @@ type TabContainer struct {
 	Children Component
 }
 
-/*
-{
-	selectedId: null,
-	init() { this.$nextTick(() => this.select(this.$id('fdsdafdafdafdsda', 1))) },
-	select(id) { this.selectedId = id },
-	isSelected(id) { return this.selectedId === id },
-	whichChild(el, parent) { return Array.from(parent.children).indexOf(el) + 1 }
-}
-*/
-
 func (m TabContainer) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -66,17 +56,6 @@ func (m TabContainer) ToTempl(ctx context.Context) templ.Component {
 type TabList struct {
 	Tabs []TabTrigger
 }
-
-/*
-   <ul x-bind="zxnjvumrjl" role="tablist" class="-mb-px flex items-stretch overflow-x-auto">
-       <li>
-           <button x-bind="qlzoqbzppb" type="button" :class="isSelected($el.id) ? 'border-gray-200 bg-white' : 'border-transparent'" class="inline-flex rounded-t-lg border-t border-l border-r px-5 py-2.5 border-gray-200 bg-white" role="tab" id="fdsdafdafdafdsda-1-1" tabindex="0" aria-selected="true">Tab 1</button>
-       </li>
-       <li>
-           <button x-bind="qlzoqbzppb" type="button" :class="isSelected($el.id) ? 'border-gray-200 bg-white' : 'border-transparent'" class="inline-flex rounded-t-lg border-t border-l border-r px-5 py-2.5 border-transparent" role="tab" id="fdsdafdafdafdsda-1-2" tabindex="-1" aria-selected="false">Tab 2</button>
-       </li>
-   </ul>
-*/
 
 func (m TabList) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -131,27 +110,6 @@ type TabTrigger struct {
 	Icon Icon
 }
 
-/*
-{
-	['x-ref']: 'tablist',
-	['@keydown.right.prevent.stop']() { this.$focus.wrap().next() },
-	['@keydown.home.prevent.stop']() { this.$focus.first() },
-	['@keydown.page-up.prevent.stop']() { this.$focus.first() },
-	['@keydown.left.prevent.stop']() { this.$focus.wrap().prev() },
-	['@keydown.end.prevent.stop']() { this.$focus.last() },
-	['@keydown.page-down.prevent.stop']() { this.$focus.last() }
-}
-*/
-
-/*{
-	[':id']() { return this.$id('fdsdafdafdafdsda', this.whichChild(this.$el.parentElement, this.$refs.tablist)) },
-	['@click']() { this.select(this.$el.id) },
-	['@focus']() { this.select(this.$el.id) },
-	[':tabindex']() { return this.isSelected(this.$el.id) ? 0 : -1 },
-	[':aria-selected']() { return this.isSelected(this.$el.id) },
-	[':class']() { return this.isSelected(this.$el.id) ? 'border-black bg-white' : 'border-transparent' }
-}*/
-
 func (m TabTrigger) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -191,7 +149,7 @@ func (m TabTrigger) ToTempl(ctx context.Context) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(m.Label)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/tab.templ`, Line: 115, Col: 13}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/tab.templ`, Line: 73, Col: 13}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {

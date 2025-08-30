@@ -20,7 +20,7 @@ func (m RiotToProfileMapper) Convert() Profile {
 		PUUID:   m.Account.PUUID,
 		Name:    m.Account.GameName,
 		Tagline: m.Account.TagLine,
-		Rank:    RankStatus{
+		Rank: RankStatus{
 			PUUID:         m.Account.PUUID,
 			EffectiveDate: m.EffectiveDate,
 			Detail:        nil,
@@ -31,7 +31,7 @@ func (m RiotToProfileMapper) Convert() Profile {
 		profile.Rank.Detail = &RankDetail{
 			Wins:   m.Rank.Wins,
 			Losses: m.Rank.Losses,
-			Rank:   Rank{
+			Rank: Rank{
 				Tier:     m.Rank.Tier,
 				Division: m.Rank.Division,
 				LP:       m.Rank.LeaguePoints,
@@ -84,14 +84,14 @@ func (m RiotToMatchMapper) Map() Match {
 type RiotToParticipantMapper struct {
 	Participant riot.MatchParticipant
 
-	MatchID string
+	MatchID       string
 	MatchDuration time.Duration
 
-	TeamKills int
-	TeamGold  int
+	TeamKills  int
+	TeamGold   int
 	TeamDamage int
 
-	CounterpartGold int
+	CounterpartGold   int
 	CounterpartDamage int
 }
 

@@ -2,12 +2,13 @@ package match
 
 import (
 	"context"
+	"fmt"
 	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/shared"
+	"time"
 )
 
 type Detail struct {
-	MatchDateDuration shared.MatchDateDurationWidget
+	DateDurationWidget DateDurationWidget
 
 	Tabs component.TabList
 
@@ -15,23 +16,45 @@ type Detail struct {
 }
 
 templ (m Detail) ToTempl(ctx context.Context) {
-	<div class="bg-gray-900/5 dark:bg-gray-100/5">
-		<div class="flex h-13 px-2 gap-x-2 items-center justify-between">
-			<div>
-				@m.MatchDateDuration.ToTempl(ctx)
-			</div>
-			@m.Tabs.ToTempl(ctx)
-		</div>
-		<div class="px-2">
-			@m.Panels.ToTempl(ctx)
-		</div>
+	<div class="flex py-3 px-4 gap-x-2 items-center justify-between">
+		@m.Tabs.ToTempl(ctx)
+		@m.DateDurationWidget.ToTempl(ctx)
 	</div>
+	@m.Panels.ToTempl(ctx)
+}
+
+type DateDurationWidget struct {
+	Date time.Time
+
+	Duration time.Duration
+
+	AlignRight bool
+}
+
+templ (m DateDurationWidget) ToTempl(ctx context.Context) {
+	if m.AlignRight {
+		<div class="h-9 flex-1 min-w-0 text-right">
+			<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+				{ m.Date.Format("3:04 PM Monday, Jan 2") }
+			</div>
+			<div class="text-xs text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+				{ fmt.Sprintf("%v", m.Duration) }
+			</div>
+		</div>
+	} else {
+		<div class="h-9 flex-1 min-w-0">
+			<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+				{ m.Date.Format("3:04 PM Monday, Jan 2") }
+			</div>
+			<div class="text-xs text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+				{ fmt.Sprintf("%v", m.Duration) }
+			</div>
+		</div>
+	}
 }
 
 templ DetailSkeleton(ctx context.Context) {
-	<div class="py-3 px-4">
-		<div class="rounde-2xl bg-gray-50 dark:bg-gray-950 h-30 flex items-center justify-center">
-			@component.Spinner{}.ToTempl(ctx)
-		</div>
+	<div class="h-26 flex items-center justify-center">
+		@component.Spinner{}.ToTempl(ctx)
 	</div>
 }

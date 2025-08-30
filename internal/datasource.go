@@ -137,6 +137,10 @@ func (ds *Datasource) GetMatchHistory(ctx context.Context, region riot.Region, p
 func (ds *Datasource) GetLiveMatch(ctx context.Context, region riot.Region, puuid riot.PUUID) (LiveMatch, error) {
 	riotGame, err := ds.riot.Spectator.GetLiveMatch(ctx, region, string(puuid))
 	if err != nil {
+		if errors.Is(err, riot.ErrNotFound) {
+			return LiveMatch{}, ErrNoLiveMatch
+		}
+
 		return LiveMatch{}, err
 	}
 

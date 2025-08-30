@@ -6,6 +6,11 @@ import (
 	"github.com/rank1zen/kevin/internal/component/shared"
 )
 
+var (
+	NonePlayedZ      = component.ComponentFunc(NonePlayed)
+	HistorySkeletonZ = component.ComponentFunc(HistorySkeleton)
+)
+
 type History component.List
 
 func (m History) ToTempl(ctx context.Context) templ.Component {
@@ -15,7 +20,7 @@ func (m History) ToTempl(ctx context.Context) templ.Component {
 
 // HistoryCard displays a match in a summoner's match history.
 type HistoryCard struct {
-	ChampionWidget shared.Champion
+	ChampionWidget shared.ChampionWidget
 
 	KDAWidget shared.KDAWidget
 
@@ -31,17 +36,17 @@ type HistoryCard struct {
 }
 
 templ (m HistoryCard) ToTempl(ctx context.Context) {
-	<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between md:flex-nowrap">
+	<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap items-center justify-between lg:flex-nowrap">
 		<div class="flex gap-x-3">
 			@m.ChampionWidget.ToTempl(ctx)
 			@m.KDAWidget.ToTempl(ctx)
 			@m.CSWidget.ToTempl(ctx)
 		</div>
-		<div class="flex gap-x-2 md:order-last">
+		<div class="flex gap-x-2 lg:order-last">
 			@m.RankChange.ToTempl(ctx)
 			@m.OpenDetailButton.ToTempl(ctx)
 		</div>
-		<div class="flex gap-x-2 w-full justify-between md:w-auto">
+		<div class="flex gap-x-2 w-full justify-between lg:w-auto">
 			@m.RuneWidget.ToTempl(ctx)
 			@m.ItemWidget.ToTempl(ctx)
 		</div>

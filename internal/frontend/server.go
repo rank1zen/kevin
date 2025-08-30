@@ -118,9 +118,7 @@ func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 
 	logger := fromCtx(ctx)
 
-	var (
-		region = r.FormValue("region")
-	)
+	region := r.FormValue("region")
 
 	payload := slog.Group("payload", "region", region)
 
@@ -239,11 +237,12 @@ func (f *Server) serveChampions(w http.ResponseWriter, r *http.Request) {
 
 func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	logger := fromCtx(ctx)
 
 	req, err := decode[LiveMatchRequest](r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		slog.Debug("bad request", "err", err)
+		logger.Debug("bad request", "err", err)
 		return
 	}
 
@@ -252,7 +251,7 @@ func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 	component, err := f.handler.GetLiveMatch(ctx, req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.Debug("failed service", "err", err, payload)
+		logger.Debug("failed service", "err", err, payload)
 		return
 	}
 

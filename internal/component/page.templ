@@ -20,7 +20,7 @@ type Page struct {
 }
 
 templ (m Page) ToTempl(ctx context.Context) {
-	<!doctype html>
+	<!DOCTYPE html>
 	<html
 		lang="en"
 		x-data="{ darkMode: false }"
@@ -29,7 +29,7 @@ templ (m Page) ToTempl(ctx context.Context) {
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
-			<link rel="stylesheet" href="static/output.css" />
+			<link rel="stylesheet" href="static/output.css"/>
 			<script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
 			<script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/anchor@3.x.x/dist/cdn.min.js"></script>
@@ -41,24 +41,22 @@ templ (m Page) ToTempl(ctx context.Context) {
 				</title>
 			}
 		</head>
-		<body>
-			<div class="flex flex-col h-screen bg-white dark:bg-black">
-				if m.HeaderChildren != nil {
-					<div class="sticky top-0 w-full z-10 bg-white dark:bg-gray-950 border-b border-gray-900/10 dark:border-gray-100/10">
-						@m.HeaderChildren.ToTempl(ctx)
-					</div>
+		<body class="bg-white dark:bg-black">
+			if m.HeaderChildren != nil {
+				<header class="sticky top-0 w-full z-90 bg-white dark:bg-black border-b border-gray-900/10 dark:border-gray-100/10">
+					@m.HeaderChildren.ToTempl(ctx)
+				</header>
+			}
+			<main class="min-h-screen">
+				if m.Children != nil {
+					@m.Children.ToTempl(ctx)
 				}
-				<div class="bg-white flex-1 w-full dark:bg-gray-950">
-					if m.Children != nil {
-						@m.Children.ToTempl(ctx)
-					}
-				</div>
-				if m.FooterChildren != nil {
-					<footer class="w-full">
-						@m.FooterChildren.ToTempl(ctx)
-					</footer>
-				}
-			</div>
+			</main>
+			if m.FooterChildren != nil {
+				<footer class="w-full">
+					@m.FooterChildren.ToTempl(ctx)
+				</footer>
+			}
 		</body>
 	</html>
 }

@@ -6,35 +6,39 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/live"
 	"github.com/rank1zen/kevin/internal/component/match"
 	"github.com/rank1zen/kevin/internal/component/profile"
 	"github.com/rank1zen/kevin/internal/component/search"
 	"github.com/rank1zen/kevin/internal/component/shared"
 	"github.com/rank1zen/kevin/internal/component/summoner"
+	"github.com/rank1zen/kevin/internal/component/view"
 	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-type FrontendToZZZMapper struct {
+// History is a list of match accordions. If there are no matches, History is a card indicating no matches have been
+// played.
+type History component.Component
+
+type FrontendToHistoryMapper struct {
 	Region riot.Region
 
 	MatchHistory []internal.SummonerMatch
 }
 
-func (mapper FrontendToZZZMapper) Map() match.History {
+func (mapper FrontendToHistoryMapper) Map() History {
 	ma := mapper.MatchHistory
 
 	if len(ma) == 0 {
 		history := match.History{
-			Style: component.ListStyleRaised,
+			Style: component.ListStyleSpaced,
 			Items: []component.Component{component.ComponentFunc(match.NonePlayed)},
 		}
 
 		return history
 	}
 
-	to := []component.Component{}
+	accordions := component.AccordionList{}
 
 	for _, m := range ma {
 		card := match.HistoryCard{
@@ -49,25 +53,17 @@ func (mapper FrontendToZZZMapper) Map() match.History {
 
 		path, data := makeGetMatchDetailRequest(mapper.Region, m.MatchID)
 
-		accordion := component.Accordion{
-			Children: card,
-			ExtraChildren: component.Loader{
-				Path:     path,
-				Data:     string(data),
-				Children: component.ComponentFunc(match.DetailSkeleton),
-				Type:     component.LoaderTypeOnReveal,
-			},
+		accordion := component.LazyAccordion{
+			Children:        card,
+			Path:            path,
+			Data:            string(data),
+			LoadingChildren: component.ComponentFunc(match.DetailSkeleton),
 		}
 
-		to = append(to, accordion)
+		accordions = append(accordions, accordion)
 	}
 
-	list := match.History{
-		Style: component.ListStyleRaised,
-		Items: to,
-	}
-
-	return list
+	return accordions
 }
 
 type FrontendToProfilePageMapper struct {
@@ -110,45 +106,23 @@ func (mapper FrontendToProfilePageMapper) Map() component.Page {
 		Path:     champPath,
 		Type:     component.LoaderTypeOnReveal,
 		Data:     string(champData),
-		Children: component.ComponentFunc(summoner.ChampstatSkeleton),
+		Children: component.ComponentFunc(summoner.ChampstatListSkeleton),
 	}
 
-	layout := profile.Layout{
+	layout := profile.Profile{
 		Bar: profile.Bar{
 			Name: pd.Name,
 			Tag:  pd.Tagline,
 			Rank: shared.NewRankWidget(nil),
-			Champions: component.Modal{
-				ButtonChildren: component.Button{
-					Icon: component.ViewListIcon,
-				},
-				PanelChildren: component.Loader{
-					Path:     champPath,
-					Data:     string(champData),
-					Children: shared.NewLoadingModal(),
-				},
-			},
-			LiveMatch: component.Modal{
-				ButtonChildren: component.Button{
-					Icon: component.OpenMenuIcon,
-				},
-				PanelChildren: component.Loader{
-					Path:     livePath,
-					Data:     string(liveData),
-					Children: shared.NewLoadingModal(),
-				},
-			},
 		},
 		Matchlist: ma,
 		Side: profile.Side{
-			{
-				Heading: "Live Match",
-				Content: live.Me{},
-			},
-			{
-				Heading: "Past Week",
-				Content: champLoader,
-			},
+			{Heading: "Live Match", Content: component.LazyModal{
+				Label: "Live Match",
+				Path:  livePath,
+				Data:  string(liveData),
+			}},
+			{Heading: "Past Week", Content: champLoader},
 		},
 	}
 
@@ -208,8 +182,6 @@ func (mapper FrontendToSearchResultMapper) Map() component.Component {
 	return c
 }
 
-type FrontendToLoaderMapper struct{}
-
 type FrontendToMatchDetailMapper struct {
 	MatchDetail internal.MatchDetail
 }
@@ -260,18 +232,20 @@ func (mapper FrontendToMatchDetailMapper) Map() component.Component {
 	}
 
 	detail := match.Detail{
-		MatchDateDuration: shared.NewMatchDateDurationWidget(md.Date, md.Duration),
 		Tabs: component.TabList{
 			Tabs: []component.TabTrigger{
 				{Label: "Scoreboard"},
-				{Label: "Performance"},
 			},
 		},
 		Panels: component.TabPanelList{
 			PanelList: []component.TabPanel{
 				{Children: scoreboard},
-				{Children: nil},
 			},
+		},
+		DateDurationWidget: match.DateDurationWidget{
+			Date:       md.Date,
+			Duration:   md.Duration,
+			AlignRight: true,
 		},
 	}
 
@@ -289,32 +263,32 @@ type FrontendToSummonerChampstatMapper struct {
 func (mapper FrontendToSummonerChampstatMapper) Map() component.Component {
 	ch := mapper.Champions
 
-	list := component.List{
-		Style: component.ListStyleFlat,
-		Items: []component.Component{},
-	}
+	list := summoner.ChampstatList{}
 
-	for i, c := range ch {
-		if i > 3 {
-			continue
-		}
-
+	for _, c := range ch {
 		name := ddragon.ChampionMap[int(c.Champion)].Name
 
-		card := summoner.ChampionCard{
-			ChampionWidget: shared.Champion{
-				ChampionSprite: shared.NewChampionSprite(int(c.Champion), component.TextSizeLG),
-			},
+		card := summoner.Champstat{
+			ChampionIcon: shared.NewChampionSprite(int(c.Champion), component.TextSizeLG),
 			ChampionName: name,
 			Wins:         c.Wins,
 			Losses:       c.Losses,
 			LPDelta:      nil,
 		}
 
-		list.Items = append(list.Items, card)
+		list = append(list, card)
 	}
 
 	return list
+}
+
+func MapLiveMatch(m internal.LiveMatch) view.LiveMatchModal {
+	v := view.LiveMatchModal{
+		Date:         m.Date,
+		Participants: m.Participants,
+	}
+
+	return v
 }
 
 func NewSearchNotFoundCard(region riot.Region, name, tag string) search.NotFoundCard {

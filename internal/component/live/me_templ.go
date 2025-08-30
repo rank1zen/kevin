@@ -34,7 +34,7 @@ func (m Me) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex items-center justify-center h-9 w-xs bg-gray-900/5 dark:bg-gray-100/5\"><span>Live Match</span></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex items-center justify-center h-9 w-xs bg-gray-900/5 dark:bg-gray-100/5\"><span class=\"text-sm\">Live Match</span></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

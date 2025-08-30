@@ -9,8 +9,8 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/profile"
 	"github.com/rank1zen/kevin/internal/component/shared"
+	"github.com/rank1zen/kevin/internal/component/view"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
@@ -90,16 +90,16 @@ func (h *Handler) GetLiveMatch(ctx context.Context, req LiveMatchRequest) (compo
 	match, err := h.Datasource.GetLiveMatch(ctx, req.Region, req.PUUID)
 	if err != nil {
 		if errors.Is(err, internal.ErrNoLiveMatch) {
-			v := profile.NewLiveMatchNotFound()
-			return v, err
+			c := view.LiveMatchNotFound{}
+			return c, nil
 		}
 
 		return nil, err
 	}
 
-	v := profile.NewLiveMatch(internal.Rank{}, match)
+	c := MapLiveMatch(match)
 
-	return v, nil
+	return c, nil
 }
 
 // GetHomePage returns the home page.
@@ -182,7 +182,7 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
 
-	mapper := FrontendToZZZMapper{
+	mapper := FrontendToHistoryMapper{
 		Region:       req.Region,
 		MatchHistory: storeMatches,
 	}

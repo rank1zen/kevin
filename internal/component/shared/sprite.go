@@ -16,7 +16,7 @@ func NewChampionSprite(championID int, size component.TextSize) component.Sprite
 
 	if size == component.TextSizeLG {
 		pixelSize = 28
-		extra = 0 // TODO: figure out what this should be.
+		extra = 2 // TODO: figure out what this should be.
 	} else {
 		pixelSize = 36
 		extra = 3
