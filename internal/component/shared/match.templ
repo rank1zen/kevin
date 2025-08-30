@@ -21,10 +21,10 @@ func NewMatchDateDurationWidget(date time.Time, duration time.Duration) MatchDat
 
 templ (m MatchDateDurationWidget) ToTempl(ctx context.Context) {
 	<div class="h-9">
-		<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+		<div class="text-sm font-semibold text-gray-900/90 whitespace-nowrap dark:text-gray-100/90">
 			{ m.Date.Format("3:04 PM Monday, Jan 2") }
 		</div>
-		<div class="text-xs text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+		<div class="text-xs text-gray-900/90 whitespace-nowrap dark:text-gray-100/90">
 			{ fmt.Sprintf("%v", m.Duration) }
 		</div>
 	</div>

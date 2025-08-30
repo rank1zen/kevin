@@ -43,7 +43,7 @@ templ (m Page) ToTempl(ctx context.Context) {
 		</head>
 		<body class="bg-white dark:bg-black">
 			if m.HeaderChildren != nil {
-				<header class="sticky top-0 w-full z-90 bg-white dark:bg-black border-b border-gray-900/10 dark:border-gray-100/10">
+				<header class="sticky top-0 w-full z-90 bg-white border-b border-gray-900/10 dark:bg-black dark:border-gray-100/10">
 					@m.HeaderChildren.ToTempl(ctx)
 				</header>
 			}

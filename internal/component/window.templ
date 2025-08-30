@@ -15,11 +15,11 @@ type PanelWindow struct {
 
 templ (m PanelWindow) ToTempl(ctx context.Context) {
 	if m.Children != nil {
-		<div class="bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10">
+		<div class="bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10">
 			@m.Children.ToTempl(ctx)
 		</div>
 	} else {
-		<div class="w-36 h-48 bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10"></div>
+		<div class="w-36 h-48 bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10"></div>
 	}
 }
 
@@ -32,10 +32,10 @@ type Panel struct {
 
 templ (m Panel) ToTempl(ctx context.Context) {
 	if m.Children != nil {
-		<div class="w-max bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10">
+		<div class="w-max bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10">
 			@m.Children.ToTempl(ctx)
 		</div>
 	} else {
-		<div class="w-36 h-48 bg-white dark:bg-black rounded-2xl border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10"></div>
+		<div class="w-36 h-48 bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10"></div>
 	}
 }

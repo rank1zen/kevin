@@ -33,11 +33,11 @@ func staticImage(p string) string {
 type RuneWidget internal.RunePage
 
 templ (m RuneWidget) ToTempl(ctx context.Context) {
-	<div class="flex flex-none h-9 bg-gray-900/5 dark:bg-gray-100/5 rounded-lg">
+	<div class="flex flex-none h-9 bg-gray-900/5 rounded-lg dark:bg-gray-100/5">
 		{{ tree := ddragon.RuneMap[m.PrimaryKeystone] }}
 		{{ treePath := staticImage(tree.IconPath) }}
-		<img class="rounded-lg size-9 hover:bg-gray-900/5 dark:hover:bg-gray-100/5" src={ treePath }/>
-		<div class="rounded-lg h-9 w-6 flex items-center justify-center hover:bg-gray-900/5 dark:hover:bg-gray-100/5">
+		<img class="rounded-lg size-9 dark:hover:bg-gray-100/5 hover:bg-gray-900/5" src={ treePath }/>
+		<div class="rounded-lg h-9 w-6 flex items-center justify-center dark:hover:bg-gray-100/5 hover:bg-gray-900/5">
 			{{ second := ddragon.RuneMap[m.SecondaryTree] }}
 			{{ secondPath := staticImage(second.IconPath) }}
 			<img class="size-4" src={ secondPath }/>
@@ -70,7 +70,7 @@ type Participant struct {
 }
 
 templ (m Participant) ToTempl(ctx context.Context) {
-	<div class="flex h-15 gap-x-4 px-4 justify-between items-center ">
+	<div class="flex h-15 gap-x-4 px-4 justify-between items-center">
 		<div class="flex gap-x-2">
 			@m.ChampionWidget.ToTempl(ctx)
 			@m.Participant.ToTempl(ctx)
@@ -84,9 +84,9 @@ templ (m Participant) ToTempl(ctx context.Context) {
 type ParticipantList []Participant
 
 templ (m ParticipantList) ToTempl(ctx context.Context) {
-	<div class="rounded-2xl bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 shadow-sm shadow-gray-900/10 dark:shadow-gray-100/10">
+	<div class="rounded-2xl bg-white border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10">
 		for _, c := range m {
-			<div class="border-t first:border-0 border-gray-900/10 dark:border-gray-100/10">
+			<div class="border-t border-gray-900/10 dark:border-gray-100/10 first:border-0">
 				@c.ToTempl(ctx)
 			</div>
 		}
@@ -101,7 +101,7 @@ type ParticipantWidget struct {
 
 templ (m ParticipantWidget) ToTempl(ctx context.Context) {
 	<div class="flex flex-col h-9">
-		<div class="text-sm text-semibold text-gray-900/90 dark:text-gray-100/90 whitespace-nowrap">
+		<div class="text-sm text-semibold text-gray-900/90 whitespace-nowrap dark:text-gray-100/90">
 			{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
 		</div>
 		@m.Rank.ToTempl(ctx)
