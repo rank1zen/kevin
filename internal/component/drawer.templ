@@ -32,7 +32,7 @@ templ (m Drawer) ToTempl(ctx context.Context) {
 
 			@click="open = true"
 
-			class="relative cursor-pointer rounded-lg transition hover:bg-gray-900/5 dark:hover:bg-gray-100/5 active:bg-gray-900/20 dark:active:bg-gray-100/20"
+			class="relative cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 active:bg-gray-900/20"
 
 			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
@@ -67,7 +67,7 @@ templ (m Drawer) ToTempl(ctx context.Context) {
 
 					x-transition
 
-					class="bg-gray-50 dark:bg-gray-950 shadow w-lg md:rounded-l-2xl h-screen overflow-y-auto"
+					class="bg-gray-50 shadow w-lg h-screen overflow-y-auto md:rounded-l-2xl dark:bg-gray-950"
 				>
 					if m.PanelChildren != nil {
 						@m.PanelChildren.ToTempl(ctx)

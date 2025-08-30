@@ -79,7 +79,7 @@ func (m ItemInventory) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none bg-gray-900/5 dark:bg-gray-100/5 rounded-lg\"><div class=\"flex items-center gap-x-1 h-9 px-1\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none bg-gray-900/5 rounded-lg dark:bg-gray-100/5\"><div class=\"flex items-center gap-x-1 h-9 px-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

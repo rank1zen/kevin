@@ -37,14 +37,14 @@ func (m MenuItemLayout) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-item h-7 items-center justify-between px-3 gap-3\"><span class=\"text-sm text-gray-900/90 dark:text-gray-100/90  whitespace-nowrap\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-item h-7 items-center justify-between px-3 gap-3\"><span class=\"text-sm text-gray-900/90 whitespace-nowrap dark:text-gray-100/90\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(m.Label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/menu.templ`, Line: 13, Col: 91}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/menu.templ`, Line: 13, Col: 90}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {

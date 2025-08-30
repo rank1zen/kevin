@@ -13,13 +13,13 @@ templ (m Accordion) ToTempl(ctx context.Context) {
 		x-id="['accordion']"
 		x-data="{ open: false }"
 	>
-		<div class="bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 rounded-2xl">
+		<div class="bg-white border border-gray-900/10 rounded-2xl dark:bg-black dark:border-gray-100/10">
 			if m.Children != nil {
 				@m.Children.ToTempl(ctx)
 			}
 		</div>
 		<div
-			class="bg-gray-50 dark:bg-gray-950 border border-gray-900/10 dark:border-gray-100/10 rounded-2xl mt-2 shadow-xs shadow-gray-900/10 dark:shadow-gray-100/10"
+			class="bg-gray-50 border border-gray-900/10 rounded-2xl mt-2 shadow-xs shadow-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 dark:shadow-gray-100/10"
 			x-show="open"
 		>
 			if m.ExtraChildren != nil {
@@ -45,7 +45,7 @@ templ (m LazyAccordion) ToTempl(ctx context.Context) {
 		x-data="{ open: false }"
 	>
 		<div
-			class="bg-white dark:bg-black border border-gray-900/10 dark:border-gray-100/10 rounded-2xl"
+			class="bg-white border border-gray-900/10 rounded-2xl dark:bg-black dark:border-gray-100/10"
 		>
 			if m.Children != nil {
 				@m.Children.ToTempl(ctx)
@@ -59,7 +59,7 @@ templ (m LazyAccordion) ToTempl(ctx context.Context) {
 				hx-vals={ string(m.Data) }
 			}
 			x-show="open"
-			class="bg-gray-50 dark:bg-gray-950 border border-gray-900/10 dark:border-gray-100/10 rounded-2xl mt-2 shadow-xs shadow-gray-900/10 dark:shadow-gray-100/10"
+			class="bg-gray-50 border border-gray-900/10 rounded-2xl mt-2 shadow-xs shadow-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 dark:shadow-gray-100/10"
 		>
 			if m.LoadingChildren != nil {
 				@m.LoadingChildren.ToTempl(ctx)

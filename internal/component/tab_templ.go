@@ -131,7 +131,7 @@ func (m TabTrigger) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<button :id=\"$id('tab', whichChild($el.parentElement, $refs.tabList))\" type=\"button\" role=\"tab\" @click=\"select($el.id)\" class=\"h-9 w-36 transition rounded-lg cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 inline-flex items-center justify-center dark:active:bg-gray-100/10 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10\" :class=\"isSelected($el.id) && 'bg-gray-900/5 dark:hover:bg-gray-100/5'\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<button :id=\"$id('tab', whichChild($el.parentElement, $refs.tabList))\" type=\"button\" role=\"tab\" @click=\"select($el.id)\" class=\"h-9 w-36 transition rounded-lg cursor-pointer inline-flex items-center justify-center dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10\" :class=\"isSelected($el.id) && 'bg-gray-900/5 dark:hover:bg-gray-100/5'\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
