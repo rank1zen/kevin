@@ -31,7 +31,7 @@ func NewItemInventory(items [7]int, visionScore int) ItemInventory {
 		c.Items[i] = component.Tooltip{
 			Tip:         item.Name,
 			ButtonStyle: 1,
-			Children: NewItemSprite(id, component.TextSizeLG),
+			Children:    NewItemSprite(id, component.TextSizeLG),
 		}
 	}
 
@@ -42,16 +42,14 @@ func NewItemInventory(items [7]int, visionScore int) ItemInventory {
 	}
 
 	c.ItemHistory = component.Popover{
-		ButtonChildren: component.ZThinButton{
-			Icon: component.DownSmallIcon,
-		},
+		ButtonChildren: component.ZThinButton{},
 	}
 
 	return c
 }
 
 templ (m ItemInventory) ToTempl(ctx context.Context) {
-	<div class="flex flex-none bg-gray-900/5 rounded-lg dark:bg-gray-100/5">
+	<div class="flex flex-none bg-gray-900/5 h-9 rounded-lg dark:bg-gray-100/5">
 		<div class="flex items-center gap-x-1 h-9 px-1">
 			for _, c := range m.Items {
 				@c.ToTempl(ctx)

@@ -50,9 +50,7 @@ func NewItemInventory(items [7]int, visionScore int) ItemInventory {
 	}
 
 	c.ItemHistory = component.Popover{
-		ButtonChildren: component.ZThinButton{
-			Icon: component.DownSmallIcon,
-		},
+		ButtonChildren: component.ZThinButton{},
 	}
 
 	return c
@@ -79,7 +77,7 @@ func (m ItemInventory) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none bg-gray-900/5 rounded-lg dark:bg-gray-100/5\"><div class=\"flex items-center gap-x-1 h-9 px-1\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none bg-gray-900/5 h-9 rounded-lg dark:bg-gray-100/5\"><div class=\"flex items-center gap-x-1 h-9 px-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -104,7 +102,7 @@ func (m ItemInventory) ToTempl(ctx context.Context) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", m.VisionScore))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/item.templ`, Line: 62, Col: 39}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/item.templ`, Line: 60, Col: 39}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {

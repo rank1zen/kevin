@@ -115,8 +115,6 @@ func (f *Server) getHomePage(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("failed rendering", "err", err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
@@ -157,8 +155,6 @@ func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("failed rendering", "err", err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (f *Server) serveSearchResults(w http.ResponseWriter, r *http.Request) {
@@ -187,8 +183,6 @@ func (f *Server) serveSearchResults(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("failed rendering", "err", err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (f *Server) serveMatchlist(w http.ResponseWriter, r *http.Request) {
@@ -217,8 +211,6 @@ func (f *Server) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("failed rendering", "err", err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (f *Server) updateSummoner(w http.ResponseWriter, r *http.Request) {
@@ -261,8 +253,6 @@ func (f *Server) serveChampions(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("failed rendering", "err", err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
@@ -291,8 +281,6 @@ func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("failed rendering", "err", err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (f *Server) serveMatchDetail(w http.ResponseWriter, r *http.Request) {
@@ -321,8 +309,6 @@ func (f *Server) serveMatchDetail(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("failed rendering", "err", err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (f *Server) addLoggingMiddleware(handler http.Handler) http.Handler {
