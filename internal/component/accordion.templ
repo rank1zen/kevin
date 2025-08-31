@@ -1,8 +1,6 @@
 package component
 
-import (
-	"context"
-)
+import "context"
 
 type Accordion struct {
 	Children Component
@@ -12,17 +10,21 @@ type Accordion struct {
 
 templ (m Accordion) ToTempl(ctx context.Context) {
 	<div
+		role="region"
 		x-id="['accordion']"
 		x-data="{ open: false }"
 	>
-		<div class="bg-white border border-gray-900/10 rounded-2xl dark:bg-black dark:border-gray-100/10">
+		<div
+			class="bg-white border border-gray-200 rounded-2xl dark:bg-black dark:border-neutral-600"
+		>
 			if m.Children != nil {
 				@m.Children.ToTempl(ctx)
 			}
 		</div>
 		<div
-			class="bg-gray-50 border border-gray-900/10 rounded-2xl mt-2 shadow-xs shadow-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 dark:shadow-gray-100/10"
 			x-show="open"
+			x-cloak
+			class="bg-gray-50 border border-gray-200 rounded-2xl mt-2 dark:bg-neutral-900 dark:border-neutral-600"
 		>
 			if m.ExtraChildren != nil {
 				@m.ExtraChildren.ToTempl(ctx)
@@ -31,6 +33,7 @@ templ (m Accordion) ToTempl(ctx context.Context) {
 	</div>
 }
 
+// LazyAccordion lazy loads data into the expanded section.
 type LazyAccordion struct {
 	Children Component
 
@@ -43,11 +46,12 @@ type LazyAccordion struct {
 
 templ (m LazyAccordion) ToTempl(ctx context.Context) {
 	<div
+		role="region"
 		x-id="['accordion']"
 		x-data="{ open: false }"
 	>
 		<div
-			class="bg-white border border-gray-900/10 rounded-2xl dark:bg-black dark:border-gray-100/10"
+			class="bg-white border border-gray-200 rounded-2xl dark:bg-black dark:border-neutral-600"
 		>
 			if m.Children != nil {
 				@m.Children.ToTempl(ctx)
@@ -61,7 +65,8 @@ templ (m LazyAccordion) ToTempl(ctx context.Context) {
 				hx-vals={ string(m.Data) }
 			}
 			x-show="open"
-			class="bg-gray-50 border border-gray-900/10 rounded-2xl mt-2 shadow-xs shadow-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 dark:shadow-gray-100/10"
+			x-cloak
+			class="bg-gray-50 border border-gray-200 rounded-2xl mt-2 dark:bg-neutral-900 dark:border-neutral-600"
 		>
 			if m.LoadingChildren != nil {
 				@m.LoadingChildren.ToTempl(ctx)
@@ -92,8 +97,9 @@ templ (m AccordionTrigger) ToTempl(ctx context.Context) {
 			open = !open;
 			$dispatch('visible');
 		"
-		class="flex items-center justify-center size-9 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
-		:class="open && 'bg-gray-900/5 dark:bg-gray-900/5'"
+		:aria-expanded="open"
+		class="flex items-center justify-center size-9 rounded-lg transition cursor-pointer dark:hover:bg-neutral-100/20 dark:active:bg-neutral-100/40 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
+		:class="open && 'bg-gray-900/5 dark:bg-neutral-100/20'"
 	>
 		@DownLargeIcon()
 	</button>
