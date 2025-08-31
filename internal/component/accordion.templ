@@ -1,6 +1,8 @@
 package component
 
-import "context"
+import (
+	"context"
+)
 
 type Accordion struct {
 	Children Component
@@ -91,8 +93,8 @@ templ (m AccordionTrigger) ToTempl(ctx context.Context) {
 			$dispatch('visible');
 		"
 		class="flex items-center justify-center size-9 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
-		:class="open && 'bg-gray-900/5'"
+		:class="open && 'bg-gray-900/5 dark:bg-gray-900/5'"
 	>
-		@DownIcon.ToTempl(ctx)
+		@DownLargeIcon()
 	</button>
 }

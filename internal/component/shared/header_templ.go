@@ -17,40 +17,30 @@ import (
 // DefaultPageHeader is the default header for all pages.
 //
 // TODO: rename to NewPageHeader.
+//
+// Deprecated: not using this.
 func DefaultPageHeader() component.Header {
 	return component.Header{
 		StartChildren: []component.Component{
 			component.Link{
 				Href:     "/",
-				Children: component.Button{Icon: component.OpenMenuIcon},
+				Children: component.Button{},
 			},
 		},
-		CenterChildren: []component.Component{
+		EndChildren: []component.Component{
 			component.Popover{
 				ButtonChildren: component.ComponentFunc(regionButton),
 				PanelChildren:  component.PanelWindow{Children: component.ComponentFunc(regionPanel)},
 				PanelOffset:    8,
 			},
 			NewSummonerSearchBar(),
-		},
-		EndChildren: []component.Component{
-			NewGithubLink(),
-			NewDarkModeButton(),
+			component.ComponentFunc(newGithubLink),
+			component.ComponentFunc(newDarkModeButton),
 		},
 	}
 }
 
-func NewLoadingHeader() component.Header {
-	c := component.Header{}
-
-	c.EndChildren = []component.Component{
-		component.ModalExitButton{},
-	}
-
-	return c
-}
-
-func regionButton(ctx context.Context) templ.Component {
+func PageHeader(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -71,15 +61,60 @@ func regionButton(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90\">NA1</span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex w-full h-13 gap-x-2 justify-between items-center px-2\"><div class=\"flex gap-x-2 items-center\"><a href=\"/\" class=\"flex size-9 items-center justify-center cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/20\"></a></div><div class=\"flex gap-x-2 items-center\"><button type=\"button\" @click=\"darkMode = !darkMode\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = component.DownSmallIcon.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = component.DarkModeIcon().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button> <a href=\"https://github.com/rank1zen/kevin\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = component.GithubIcon().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</a></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func regionButton(ctx context.Context) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90\">NA1</span>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = component.DownSmallIcon().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -103,12 +138,12 @@ func regionPanel(ctx context.Context) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var2 == nil {
-			templ_7745c5c3_Var2 = templ.NopComponent
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"p-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"p-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -120,7 +155,7 @@ func regionPanel(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -173,25 +208,12 @@ func NewExtraMenu() component.Popover {
 	panel := component.Panel{Children: list}
 
 	popover := component.Popover{
-		ButtonChildren: component.Button{Icon: component.OpenMenuIcon},
+		ButtonChildren: component.Button{},
 		PanelChildren:  panel,
 		PanelOffset:    8,
 	}
 
 	return popover
-}
-
-func NewDarkModeButton() component.Component {
-	return component.ComponentFunc(newDarkModeButton)
-}
-
-func NewGithubLink() component.Component {
-	link := component.Link{
-		Href:     "https://github.com/rank1zen/kevin",
-		Children: component.Button{Icon: GithubIcon},
-	}
-
-	return link
 }
 
 func newDarkModeButton(ctx context.Context) templ.Component {
@@ -210,20 +232,20 @@ func newDarkModeButton(ctx context.Context) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var3 == nil {
-			templ_7745c5c3_Var3 = templ.NopComponent
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<button type=\"button\" @click=\"darkMode = !darkMode\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<button type=\"button\" @click=\"darkMode = !darkMode\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DarkModeIcon.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = component.DarkModeIcon().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</button>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</button>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -247,20 +269,20 @@ func newGithubLink(ctx context.Context) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
+		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var5 == nil {
+			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<a href=\"https://github.com/rank1zen/kevin\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<a href=\"https://github.com/rank1zen/kevin\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = GithubIcon.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = component.GithubIcon().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</a>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</a>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

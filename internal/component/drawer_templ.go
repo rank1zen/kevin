@@ -8,9 +8,7 @@ package component
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import (
-	"context"
-)
+import "context"
 
 // Drawer triggers a drawer panel on click.
 type Drawer struct {
@@ -106,7 +104,7 @@ func drawerExitButton(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = WindowCloseIcon.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = WindowCloseIcon().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
