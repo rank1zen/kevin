@@ -69,7 +69,7 @@ func (m RuneImage) ToTempl(ctx context.Context) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(m.Src)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rune.templ`, Line: 19, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/shared/rune.templ`, Line: 19, Col: 58}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -110,9 +110,7 @@ func NewRuneWidget(runes internal.RunePage) RuneWidget {
 			},
 		},
 		MoreInfo: component.Popover{
-			ButtonChildren: component.ZThinButton{
-				Icon: component.DownSmallIcon,
-			},
+			ButtonChildren: component.ZThinButton{},
 			PanelChildren: component.Panel{
 				Children: RuneExtraInfoContent{RuneRow: NewRuneRow(runes)},
 			},

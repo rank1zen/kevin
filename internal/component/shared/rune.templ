@@ -2,11 +2,11 @@ package shared
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal"
 	"fmt"
-	"path"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal/ddragon"
+	"path"
 )
 
 type RuneImage struct {
@@ -16,7 +16,7 @@ type RuneImage struct {
 }
 
 templ (m RuneImage) ToTempl(ctx context.Context) {
-	<img class={ fmt.Sprintf("size-%d", m.Size)} src={ m.Src } />
+	<img class={ fmt.Sprintf("size-%d", m.Size) } src={ m.Src }/>
 }
 
 // RuneWidget displays match runes.
@@ -35,20 +35,18 @@ func NewRuneWidget(runes internal.RunePage) RuneWidget {
 	w := RuneWidget{
 		Keystone: component.Tooltip{
 			ButtonStyle: 1,
-			Tip:      keystone.Name,
-			Children: RuneImage{Src: path.Join("/static/", keystone.IconPath), Size: 9},
+			Tip:         keystone.Name,
+			Children:    RuneImage{Src: path.Join("/static/", keystone.IconPath), Size: 9},
 		},
 		Subtree: component.Tooltip{
 			ButtonStyle: 1,
-			Tip: subtree.Name,
+			Tip:         subtree.Name,
 			Children: component.ZThinButton{
-				Icon: RuneImage{Src:  path.Join("/static/", subtree.IconPath), Size: 4},
+				Icon: RuneImage{Src: path.Join("/static/", subtree.IconPath), Size: 4},
 			},
 		},
 		MoreInfo: component.Popover{
-			ButtonChildren: component.ZThinButton{
-				Icon: component.DownSmallIcon,
-			},
+			ButtonChildren: component.ZThinButton{},
 			PanelChildren: component.Panel{
 				Children: RuneExtraInfoContent{RuneRow: NewRuneRow(runes)},
 			},
@@ -89,15 +87,15 @@ func NewRuneRow(runes internal.RunePage) RuneRow {
 	keystone := ddragon.RuneMap[runes.PrimaryKeystone]
 	w.Keystone = component.Tooltip{
 		ButtonStyle: 1,
-		Tip:      keystone.Name,
-		Children: RuneImage{Src: path.Join("/static/", keystone.IconPath), Size: 9},
+		Tip:         keystone.Name,
+		Children:    RuneImage{Src: path.Join("/static/", keystone.IconPath), Size: 9},
 	}
 
 	primary := [3]int{runes.PrimaryA, runes.PrimaryB, runes.PrimaryC}
 	for i := range 3 {
 		rune := ddragon.RuneMap[primary[i]]
 		w.Primary[i] = component.Tooltip{
-			Tip: rune.Name,
+			Tip:      rune.Name,
 			Children: RuneImage{Src: path.Join("/static/", rune.IconPath), Size: 7},
 		}
 	}
@@ -106,7 +104,7 @@ func NewRuneRow(runes internal.RunePage) RuneRow {
 	for i := range 2 {
 		rune := ddragon.RuneMap[secondary[i]]
 		w.Secondary[i] = component.Tooltip{
-			Tip: rune.Name,
+			Tip:      rune.Name,
 			Children: RuneImage{Src: path.Join("/static/", rune.IconPath), Size: 7},
 		}
 	}
@@ -117,7 +115,7 @@ func NewRuneRow(runes internal.RunePage) RuneRow {
 		w.Mini[i] = component.Tooltip{
 			Tip: rune.Name,
 			Children: component.ZThinButton{
-				Icon: RuneImage{Src:  path.Join("/static/", rune.IconPath), Size: 4},
+				Icon: RuneImage{Src: path.Join("/static/", rune.IconPath), Size: 4},
 			},
 		}
 	}
