@@ -61,7 +61,7 @@ func PageHeader(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex w-full h-13 gap-x-2 justify-between items-center px-2\"><div class=\"flex gap-x-2 items-center\"><a href=\"/\" class=\"flex flex size-9 items-center justify-center cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/20\"></a></div><div class=\"flex gap-x-2 items-center\"><button type=\"button\" @click=\"darkMode = !darkMode\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex w-full h-13 gap-x-2 justify-between items-center px-2\"><div class=\"flex gap-x-2 items-center\"><a href=\"/\" class=\"flex size-9 items-center justify-center cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/20\"></a></div><div class=\"flex gap-x-2 items-center\"><button type=\"button\" @click=\"darkMode = !darkMode\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
