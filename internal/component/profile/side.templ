@@ -8,7 +8,7 @@ import (
 type Side []component.Section
 
 templ (m Side) ToTempl(ctx context.Context) {
-	<div class="w-xs flex-none">
+	<div class="w-2xs flex-none">
 		for _, c := range m {
 			<div class="pb-4 border-b mt-5 border-gray-900/10 dark:border-gray-100/10 first:mt-0 last:pb-0 last:border-none">
 				@c.ToTempl(ctx)

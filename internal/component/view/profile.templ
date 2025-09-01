@@ -1,0 +1,109 @@
+package view
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/shared"
+	"github.com/rank1zen/kevin/internal/component/summoner"
+	"github.com/rank1zen/kevin/internal/riot"
+	"time"
+)
+
+type MatchHistoryRequest struct {
+	Date time.Time
+	Path string
+	Data string
+}
+
+type LiveMatchRequest struct {
+	Path string
+	Data string
+}
+
+type ChampionRequest struct {
+	Path string
+	Data string
+}
+
+type ProfilePage struct {
+	PUUID riot.PUUID
+
+	Name, Tag string
+
+	Rank internal.RankStatus
+
+	Requests []MatchHistoryRequest
+
+	LiveMatch LiveMatchRequest
+
+	Champion ChampionRequest
+}
+
+templ (m ProfilePage) page(ctx context.Context) {
+	<div>
+		<div class="max-w-7xl px-2 py-5 mx-auto flex items-center lg:px-6">
+			<div class="flex items-center gap-x-2">
+				<h1 class="font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
+					{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
+				</h1>
+				@shared.RankTag{}.ToTempl(ctx)
+			</div>
+		</div>
+		<div class="flex px-2 max-w-7xl mx-auto gap-x-4 lg:px-6 lg:gap-x-6">
+			<div class="flex-1">
+				for _, r := range m.Requests {
+					<div class="py-3">
+						<h2 class="font-medium text-gray-900/90 mb-2 dark:text-neutral-100/90">
+							{ r.Date.Format("Monday, Jan 2") }
+						</h2>
+						<div
+							hx-post={ r.Path }
+							hx-trigger="load once"
+							hx-swap="outerHTML"
+							hx-ext="json-enc"
+							hx-vals={ r.Data }
+							class="px-4 h-15 flex justify-center items-center bg-white border border-gray-200 rounded-2xl dark:bg-black dark:border-neutral-600"
+						>
+							@component.Spinner{}.ToTempl(ctx)
+						</div>
+					</div>
+				}
+			</div>
+			<div class="w-2xs flex-none hidden md:block">
+				<div class="py-3 border-b border-gray-200 dark:border-neutral-600 last:border-b-0">
+					<div class="mt-1 first:mt-0">
+						{{ liveMatch := component.LazyModal{Label: "Live Match", Path: m.LiveMatch.Path, Data: string(m.LiveMatch.Data)} }}
+						@liveMatch.ToTempl(ctx)
+					</div>
+					<div class="mt-1 first:mt-0">
+						<button
+							type="button"
+							class="relative w-full flex items-center justify-center gap-x-2 h-9 cursor-pointer bg-gray-50 rounded-lg transition dark:bg-neutral-900 dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
+						>
+							<span class="text-sm font-bold text-gray-900/90 dark:text-gray-100/90">
+								Update Profile
+							</span>
+						</button>
+					</div>
+				</div>
+				{{ champLoader := component.Loader{Path: m.Champion.Path, Type: component.LoaderTypeOnReveal, Data: string(m.Champion.Data), Children: component.ComponentFunc(summoner.ChampstatListSkeleton)} }}
+				<div class="py-3 border-b border-gray-200 dark:border-neutral-600 last:border-b-0">
+					@champLoader.ToTempl(ctx)
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+func (m ProfilePage) ToTempl(ctx context.Context) templ.Component {
+	page := component.Page{
+		Title:          "Kevin",
+		HeaderChildren: shared.DefaultPageHeader(),
+		Children:       component.ComponentFunc(m.page),
+		FooterChildren: shared.NewPageFooter(),
+	}
+
+	return page.ToTempl(ctx)
+}
