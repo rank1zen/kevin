@@ -109,7 +109,7 @@ func (m RuneWidget) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"flex flex-none bg-gray-50 rounded-lg dark:bg-neutral-900\"><div class=\"transition size-9 rounded-lg hover:bg-gray-900/5 dark:hover:bg-neutral-100/20\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"flex flex-none bg-gray-50 rounded-lg dark:bg-neutral-900\"><div class=\"transition size-9 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-900/5\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -127,7 +127,7 @@ func (m RuneWidget) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"></div><div class=\"transition h-9 w-6 flex items-center justify-center rounded-lg hover:bg-gray-900/5 dark:hover:bg-neutral-100/20\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"></div><div class=\"transition h-9 w-6 flex items-center justify-center rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-900/5\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -145,7 +145,7 @@ func (m RuneWidget) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"></div><div class=\"transition h-9 w-6 rounded-lg hover:bg-gray-900/5 dark:hover:bg-neutral-100/20\"></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"></div><div class=\"transition h-9 w-6 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-900/5\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -219,7 +219,7 @@ func (m ItemWidget) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span></div><div class=\"transition h-9 w-6 rounded-lg hover:bg-gray-900/5 dark:hover:bg-neutral-100/20\"></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span></div><div class=\"transition h-9 w-6 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-900/5\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

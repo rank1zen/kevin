@@ -38,15 +38,15 @@ type RuneWidget internal.RunePage
 
 templ (m RuneWidget) ToTempl(ctx context.Context) {
 	<div class="flex flex-none bg-gray-50 rounded-lg dark:bg-neutral-900">
-		<div class="transition size-9 rounded-lg hover:bg-gray-900/5 dark:hover:bg-neutral-100/20">
+		<div class="transition size-9 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-900/5">
 			{{ keystonePath := path.Join("/static/", ddragon.RuneMap[m.PrimaryKeystone].IconPath) }}
 			<img class="size-9" src={ keystonePath }/>
 		</div>
-		<div class="transition h-9 w-6 flex items-center justify-center rounded-lg hover:bg-gray-900/5 dark:hover:bg-neutral-100/20">
+		<div class="transition h-9 w-6 flex items-center justify-center rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-900/5">
 			{{ secondaryTree := path.Join("/static/", ddragon.RuneMap[m.SecondaryTree].IconPath) }}
 			<img class="size-4" src={ secondaryTree }/>
 		</div>
-		<div class="transition h-9 w-6 rounded-lg hover:bg-gray-900/5 dark:hover:bg-neutral-100/20"></div>
+		<div class="transition h-9 w-6 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-900/5"></div>
 	</div>
 }
 
@@ -72,7 +72,7 @@ templ (m ItemWidget) ToTempl(ctx context.Context) {
 				{ fmt.Sprintf("%d", m.VisionScore) }
 			</span>
 		</div>
-		<div class="transition h-9 w-6 rounded-lg hover:bg-gray-900/5 dark:hover:bg-neutral-100/20"></div>
+		<div class="transition h-9 w-6 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-900/5"></div>
 	</div>
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/rank1zen/kevin/internal/component"
 )
 
+// Deprecated: lol.
 type History component.List
 
 func (m History) ToTempl(ctx context.Context) templ.Component {

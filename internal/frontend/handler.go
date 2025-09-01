@@ -117,14 +117,30 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		return nil, err
 	}
 
-	mapper := FrontendToProfilePageMapper{
-		Region:        region,
-		ProfileDetail: detail,
+	v := view.ProfilePage{
+		PUUID:     detail.PUUID,
+		Name:      detail.Name,
+		Tag:       detail.Tagline,
+		Rank:      detail.Rank,
+		Requests:  []view.MatchHistoryRequest{},
+		LiveMatch: view.LiveMatchRequest{},
+		Champion:  view.ChampionRequest{},
 	}
 
-	c := mapper.Map()
+	var tmp []byte
+	v.LiveMatch.Path, tmp = makeGetLiveMatch(region, detail.PUUID)
+	v.LiveMatch.Data = string(tmp)
 
-	return c, nil
+	v.Champion.Path, tmp = makeGetChampionList(region, detail.PUUID)
+	v.Champion.Data = string(tmp)
+
+	for offset := range 7 {
+		day := GetDay(offset)
+		path, data := makeGetMatchHistoryRequest(region, detail.PUUID, offset)
+		v.Requests = append(v.Requests, view.MatchHistoryRequest{Date: day, Path: path, Data: string(data)})
+	}
+
+	return v, nil
 }
 
 type GetSummonerChampionsRequest struct {
@@ -156,13 +172,9 @@ func (h *Handler) GetSummonerChampions(ctx context.Context, req GetSummonerChamp
 		return nil, err
 	}
 
-	mapper := FrontendToSummonerChampstatMapper{
-		Champions: storeChampions,
-	}
+	v := view.ChampionSection{Champions: storeChampions}
 
-	c := mapper.Map()
-
-	return c, nil
+	return v, nil
 }
 
 // GetMatchHistory returns [MatchHistory], the matches played on date to date

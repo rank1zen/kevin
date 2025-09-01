@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "context"
 
+// Deprecated: lol.
 type Profile struct {
 	Bar Bar
 

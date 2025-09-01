@@ -6,6 +6,8 @@ import (
 	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal/component/live"
 	"github.com/rank1zen/kevin/internal/component/shared"
+	"github.com/rank1zen/kevin/internal/component/summoner"
+	"github.com/rank1zen/kevin/internal/ddragon"
 	"time"
 )
 
@@ -88,5 +90,29 @@ templ (m LiveMatchNotFound) ToTempl(ctx context.Context) {
 				Summoner not in match.
 			</span>
 		</div>
+	</div>
+}
+
+type ChampionSection struct {
+	Champions []internal.SummonerChampion
+}
+
+templ (m ChampionSection) ToTempl(ctx context.Context) {
+	<div>
+		for _, c := range m.Champions {
+			{{ name := ddragon.ChampionMap[int(c.Champion)].Name }}
+			{{
+				card := summoner.Champstat{
+					ChampionIcon: shared.NewChampionSprite(int(c.Champion), component.TextSizeLG),
+					ChampionName: name,
+					Wins:         c.Wins,
+					Losses:       c.Losses,
+					LPDelta:      nil,
+				}
+			}}
+			<div class="mt-1 first:mt-0">
+				@card.ToTempl(ctx)
+			</div>
+		}
 	</div>
 }
