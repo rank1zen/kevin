@@ -3,12 +3,6 @@ package match
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/shared"
-)
-
-var (
-	NonePlayedZ      = component.ComponentFunc(NonePlayed)
-	HistorySkeletonZ = component.ComponentFunc(HistorySkeleton)
 )
 
 type History component.List
@@ -20,22 +14,18 @@ func (m History) ToTempl(ctx context.Context) templ.Component {
 
 // HistoryCard displays a match in a summoner's match history.
 type HistoryCard struct {
-	ChampionWidget shared.ChampionWidget
+	ChampionWidget  ChampionWidget
+	KDAWidget       KDAWidget
+	CSWidget        CSWidget
+	RuneWidget      RuneWidget
+	ItemWidget      ItemWidget
+	RankDeltaWidget RankDeltaWidget
 
-	KDAWidget shared.KDAWidget
-
-	CSWidget shared.CSWidget
-
-	RuneWidget shared.RuneWidget
-
-	ItemWidget shared.ItemInventory
-
-	RankChange shared.RankDeltaWidget
-
-	OpenDetailButton component.Component
+	Path string
+	Data string
 }
 
-templ (m HistoryCard) ToTempl(ctx context.Context) {
+templ (m HistoryCard) accordionChildren(ctx context.Context) {
 	<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap items-center justify-between lg:flex-nowrap">
 		<div class="flex gap-x-3">
 			@m.ChampionWidget.ToTempl(ctx)
@@ -43,14 +33,26 @@ templ (m HistoryCard) ToTempl(ctx context.Context) {
 			@m.CSWidget.ToTempl(ctx)
 		</div>
 		<div class="flex gap-x-2 lg:order-last">
-			@m.RankChange.ToTempl(ctx)
-			@m.OpenDetailButton.ToTempl(ctx)
+			@m.RankDeltaWidget.ToTempl(ctx)
+			@component.AccordionTrigger{}.ToTempl(ctx)
 		</div>
 		<div class="flex gap-x-2 w-full justify-between lg:w-auto">
 			@m.RuneWidget.ToTempl(ctx)
 			@m.ItemWidget.ToTempl(ctx)
 		</div>
 	</div>
+}
+
+templ (m HistoryCard) ToTempl(ctx context.Context) {
+	{{
+		acc := component.LazyAccordion{
+			Children:        component.ComponentFunc(m.accordionChildren),
+			Path:            m.Path,
+			Data:            m.Data,
+			LoadingChildren: component.ComponentFunc(DetailSkeleton),
+		}
+	}}
+	@acc.ToTempl(ctx)
 }
 
 templ NonePlayed(ctx context.Context) {

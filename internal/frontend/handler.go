@@ -177,14 +177,13 @@ func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) 
 		return nil, fmt.Errorf("storage failure: %w", err)
 	}
 
-	mapper := FrontendToHistoryMapper{
-		Region:       req.Region,
-		MatchHistory: storeMatches,
+	if len(storeMatches) == 0 {
+		return view.HistoryNoMatches{}, nil
 	}
 
-	c := mapper.Map()
+	v := MapHistory(req.Region, storeMatches)
 
-	return c, nil
+	return v, nil
 }
 
 // GetSearchResults returns a list of [SearchResultCard] for accounts that
