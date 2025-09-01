@@ -41,17 +41,37 @@ func (mapper FrontendToHistoryMapper) Map() History {
 	accordions := component.AccordionList{}
 
 	for _, m := range ma {
-		card := match.HistoryCard{
-			ChampionWidget:   shared.NewMatchChampionWidget(m.ChampionID, m.ChampionLevel, m.SummonerIDs),
-			KDAWidget:        shared.NewKDAWidget(m.Kills, m.Deaths, m.Assists),
-			CSWidget:         shared.NewCSWidget(m.CreepScore, m.CreepScorePerMinute),
-			RuneWidget:       shared.NewRuneWidget(m.Runes),
-			ItemWidget:       shared.NewItemInventory(m.Items, m.VisionScore),
-			RankChange:       shared.NewRankDeltaWidget(nil, nil, m.Win),
-			OpenDetailButton: component.AccordionTrigger{},
-		}
-
 		path, data := makeGetMatchDetailRequest(mapper.Region, m.MatchID)
+
+		card := match.HistoryCard{
+			ChampionWidget: match.ChampionWidget{
+				ChampionID:    m.ChampionID,
+				ChampionLevel: m.ChampionLevel,
+				SummonerIDs:   m.SummonerIDs,
+			},
+			KDAWidget: match.KDAWidget{
+				Kills:          m.Kills,
+				Deaths:         m.Deaths,
+				Assists:        m.Assists,
+				KilLDeathRatio: 1.3,
+			},
+			CSWidget: match.CSWidget{
+				CS:          m.CreepScore,
+				CSPerMinute: m.CreepScorePerMinute,
+			},
+			RuneWidget: (match.RuneWidget)(m.Runes),
+			ItemWidget: match.ItemWidget{
+				Items:       m.Items,
+				VisionScore: m.VisionScore,
+			},
+			RankDeltaWidget: match.RankDeltaWidget{
+				RankChange: nil,
+				LPChange:   nil,
+				Win:        m.Win,
+			},
+			Path: path,
+			Data: string(data),
+		}
 
 		accordion := component.LazyAccordion{
 			Children:        card,
@@ -286,6 +306,31 @@ func MapLiveMatch(m internal.LiveMatch) view.LiveMatchModal {
 	v := view.LiveMatchModal{
 		Date:         m.Date,
 		Participants: m.Participants,
+	}
+
+	return v
+}
+
+func MapHistory(region riot.Region, m []internal.SummonerMatch) view.HistoryList {
+	v := view.HistoryList{
+		MatchHistory: []struct {
+			internal.SummonerMatch
+			Path string
+			Data string
+		}{},
+	}
+
+	for _, c := range m {
+		path, data := makeGetMatchDetailRequest(region, c.MatchID)
+		v.MatchHistory = append(v.MatchHistory, struct {
+			internal.SummonerMatch
+			Path string
+			Data string
+		}{
+			SummonerMatch: c,
+			Path:          path,
+			Data:          string(data),
+		})
 	}
 
 	return v

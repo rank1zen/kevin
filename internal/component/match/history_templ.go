@@ -11,14 +11,9 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/shared"
 )
 
-var (
-	NonePlayedZ      = component.ComponentFunc(NonePlayed)
-	HistorySkeletonZ = component.ComponentFunc(HistorySkeleton)
-)
-
+// Deprecated: lol.
 type History component.List
 
 func (m History) ToTempl(ctx context.Context) templ.Component {
@@ -28,22 +23,18 @@ func (m History) ToTempl(ctx context.Context) templ.Component {
 
 // HistoryCard displays a match in a summoner's match history.
 type HistoryCard struct {
-	ChampionWidget shared.ChampionWidget
+	ChampionWidget  ChampionWidget
+	KDAWidget       KDAWidget
+	CSWidget        CSWidget
+	RuneWidget      RuneWidget
+	ItemWidget      ItemWidget
+	RankDeltaWidget RankDeltaWidget
 
-	KDAWidget shared.KDAWidget
-
-	CSWidget shared.CSWidget
-
-	RuneWidget shared.RuneWidget
-
-	ItemWidget shared.ItemInventory
-
-	RankChange shared.RankDeltaWidget
-
-	OpenDetailButton component.Component
+	Path string
+	Data string
 }
 
-func (m HistoryCard) ToTempl(ctx context.Context) templ.Component {
+func (m HistoryCard) accordionChildren(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -84,11 +75,11 @@ func (m HistoryCard) ToTempl(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = m.RankChange.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = m.RankDeltaWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = m.OpenDetailButton.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = component.AccordionTrigger{}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -112,7 +103,7 @@ func (m HistoryCard) ToTempl(ctx context.Context) templ.Component {
 	})
 }
 
-func NonePlayed(ctx context.Context) templ.Component {
+func (m HistoryCard) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -131,6 +122,42 @@ func NonePlayed(ctx context.Context) templ.Component {
 		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
 		if templ_7745c5c3_Var2 == nil {
 			templ_7745c5c3_Var2 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+
+		acc := component.LazyAccordion{
+			Children:        component.ComponentFunc(m.accordionChildren),
+			Path:            m.Path,
+			Data:            m.Data,
+			LoadingChildren: component.ComponentFunc(DetailSkeleton),
+		}
+		templ_7745c5c3_Err = acc.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func NonePlayed(ctx context.Context) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"flex justify-center items-center w-full h-15\"><span class=\"font-medium text-gray-900/90 text-sm dark:text-gray-100/90\">No matches played</span></div>")
@@ -157,9 +184,9 @@ func HistorySkeleton(ctx context.Context) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var3 == nil {
-			templ_7745c5c3_Var3 = templ.NopComponent
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"px-4 h-15 flex justify-center items-center\">")
