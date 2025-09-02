@@ -125,6 +125,7 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		Requests:  []view.MatchHistoryRequest{},
 		LiveMatch: view.LiveMatchRequest{},
 		Champion:  view.ChampionRequest{},
+		Update:    view.UpdateSummonerRequest{},
 	}
 
 	var tmp []byte
@@ -133,6 +134,9 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 
 	v.Champion.Path, tmp = makeGetChampionList(region, detail.PUUID)
 	v.Champion.Data = string(tmp)
+
+	v.Update.Path, tmp = makeUpdateSummoner(region, detail.Name, detail.Tagline)
+	v.Update.Data = string(tmp)
 
 	for offset := range 7 {
 		day := GetDay(offset)
