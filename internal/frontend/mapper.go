@@ -3,11 +3,11 @@ package frontend
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal/component/match"
-	"github.com/rank1zen/kevin/internal/component/profile"
 	"github.com/rank1zen/kevin/internal/component/search"
 	"github.com/rank1zen/kevin/internal/component/shared"
 	"github.com/rank1zen/kevin/internal/component/summoner"
@@ -84,80 +84,6 @@ func (mapper FrontendToHistoryMapper) Map() History {
 	}
 
 	return accordions
-}
-
-type FrontendToProfilePageMapper struct {
-	Region riot.Region
-
-	ProfileDetail internal.ProfileDetail
-}
-
-func (mapper FrontendToProfilePageMapper) Map() component.Page {
-	pd := mapper.ProfileDetail
-
-	ma := profile.Matchlist{}
-
-	for i := range 7 {
-		path, data := makeGetMatchHistoryRequest(mapper.Region, pd.PUUID, i)
-
-		list := component.List{
-			Style: component.ListStyleRaised,
-			Items: []component.Component{},
-		}
-
-		list.Items = append(list.Items, component.ComponentFunc(match.HistorySkeleton))
-
-		loader := component.Loader{
-			Path:     path,
-			Data:     string(data),
-			Children: list,
-		}
-
-		ma = append(ma, component.Section{
-			Heading: GetDay(i).Format("Monday, Jan 2"),
-			Content: loader,
-		})
-	}
-
-	champPath, champData := makeGetChampionList(mapper.Region, pd.PUUID)
-	livePath, liveData := makeGetLiveMatch(mapper.Region, pd.PUUID)
-
-	champLoader := component.Loader{
-		Path:     champPath,
-		Type:     component.LoaderTypeOnReveal,
-		Data:     string(champData),
-		Children: component.ComponentFunc(summoner.ChampstatListSkeleton),
-	}
-
-	layout := profile.Profile{
-		Bar: profile.Bar{
-			Name: pd.Name,
-			Tag:  pd.Tagline,
-			Rank: shared.NewRankWidget(nil),
-		},
-		Matchlist: ma,
-		Side: profile.Side{
-			{Heading: "Live Match", Content: component.LazyModal{
-				Label: "Live Match",
-				Path:  livePath,
-				Data:  string(liveData),
-			}},
-			{Heading: "Past Week", Content: champLoader},
-		},
-	}
-
-	if rank := pd.Rank.Detail; rank != nil {
-		layout.Bar.Rank = shared.NewRankWidget(&rank.Rank)
-	}
-
-	page := component.Page{
-		Title:          fmt.Sprintf("%s#%s - Kevin", pd.Name, pd.Tagline),
-		HeaderChildren: shared.DefaultPageHeader(),
-		Children:       layout,
-		FooterChildren: shared.NewPageFooter(),
-	}
-
-	return page
 }
 
 type FrontendToSearchResultMapper struct {
@@ -350,13 +276,14 @@ func NewSearchNotFoundCard(region riot.Region, name, tag string) search.NotFound
 	return c
 }
 
-func makeGetMatchHistoryRequest(region riot.Region, puuid riot.PUUID, index int) (string, []byte) {
+func makeGetMatchHistoryRequest(region riot.Region, puuid riot.PUUID, start, end time.Time) (string, []byte) {
 	path := "/summoner/matchlist"
 
 	req := MatchHistoryRequest{
-		Region: region,
-		PUUID:  puuid,
-		Date:   GetDay(index),
+		Region:  region,
+		PUUID:   puuid,
+		StartTS: start,
+		EndTS:   end,
 	}
 
 	bytes, _ := json.Marshal(req)

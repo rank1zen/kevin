@@ -76,10 +76,35 @@ func TestMatchStore_ListMatchHistoryIDs(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	ids, err := store.ListMatchHistoryIDs(ctx, puuid, time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, time.April, 2, 0, 0, 0, 0, time.UTC))
-	require.NoError(t, err)
+	for _, tc := range []struct {
+		Name string
 
-	assert.Equal(t, []string{"1"}, ids)
+		Start, End time.Time
+
+		Expected []string
+	}{
+		{
+			Name:     "expects exclusive end time",
+			Start:    time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC),
+			End:      time.Date(2025, time.April, 2, 0, 0, 0, 0, time.UTC),
+			Expected: []string{"1"},
+		},
+		{
+			Name:     "expects timezone conversion",
+			Start:    time.Date(2025, time.March, 31, 20, 0, 0, 0, Toronto),
+			End:      time.Date(2025, time.April, 1, 20, 0, 0, 0, Toronto),
+			Expected: []string{"1"},
+		},
+	} {
+		t.Run(
+			tc.Name,
+			func(t *testing.T) {
+				ids, err := store.ListMatchHistoryIDs(ctx, puuid, tc.Start, tc.End)
+				require.NoError(t, err)
+				assert.Equal(t, tc.Expected, ids)
+			},
+		)
+	}
 }
 
 func TestMatchStore_GetMatch(t *testing.T) {
@@ -102,7 +127,28 @@ func TestMatchStore_GetMatch(t *testing.T) {
 	actual, err := store.GetMatch(ctx, "1")
 	require.NoError(t, err)
 
-	assert.Equal(t, expected, actual)
+	for _, tc := range []struct {
+		Name             string
+		Expected, Actual any
+	}{
+		{
+			Name:     "expects correct id",
+			Expected: "1",
+			Actual:   actual.ID,
+		},
+		{
+			Name:     "expects correct version",
+			Expected: "14.5",
+			Actual:   actual.Version,
+		},
+		{
+			Name:     "expects correct date",
+			Expected: time.Date(2025, 4, 0, 0, 0, 0, 0, time.UTC),
+			Actual:   actual.Date.In(time.UTC),
+		},
+	} {
+		t.Run(tc.Name, func(t *testing.T) { assert.Equal(t, tc.Expected, tc.Actual) })
+	}
 }
 
 func TestMatchStore_GetParticipant(t *testing.T) {
@@ -278,7 +324,7 @@ func TestMatchStore_GetSummonerChampions(t *testing.T) {
 		},
 		{
 			Name:     "expects correct order",
-			Expected: []internal.Champion{ddragon.ChampionUrgotID,ddragon.ChampionIllaoiID},
+			Expected: []internal.Champion{ddragon.ChampionUrgotID, ddragon.ChampionIllaoiID},
 			Actual:   order,
 		},
 	} {

@@ -136,7 +136,7 @@ func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 
 	riotRegion := convertStringToRiotRegion(region)
 
-	component, err := f.handler.GetSummonerPage(ctx, riotRegion, name, tag)
+	component, err := f.handler.GetSummonerPage(ctx, riotRegion, name, tag, time.UTC)
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerNotFound) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -198,12 +198,16 @@ func (f *Server) serveMatchlist(w http.ResponseWriter, r *http.Request) {
 
 	payload := slog.Any("request", req)
 
-	component, err := f.handler.GetMatchHistory(ctx, req)
+	handler := ProfileHandler{Datasource: f.handler.Datasource}
+
+	component, err := handler.GetMatchHistory(ctx, req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)
 		return
 	}
+
+	// TODO: adjust timezone here
 
 	err = component.ToTempl(ctx).Render(ctx, w)
 	if err != nil {
@@ -221,7 +225,9 @@ func (f *Server) updateSummoner(w http.ResponseWriter, r *http.Request) {
 
 	payload := slog.Group("payload", "region", decoded.Region, "name", decoded.Name, "tag", decoded.Tag)
 
-	if err := f.handler.UpdateSummoner(ctx, decoded); err != nil {
+	handler := ProfileHandler{Datasource: f.handler.Datasource}
+
+	if err := handler.UpdateSummoner(ctx, decoded); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("service failed", "err", err, payload)
 		return
@@ -240,7 +246,8 @@ func (f *Server) serveChampions(w http.ResponseWriter, r *http.Request) {
 
 	payload := slog.Group("payload", "region", decoded.Region, "puuid", decoded.PUUID, "week", decoded.Week)
 
-	component, err := f.handler.GetSummonerChampions(ctx, decoded)
+	handler := ProfileHandler{Datasource: f.handler.Datasource}
+	component, err := handler.GetSummonerChampions(ctx, decoded)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)
@@ -268,7 +275,8 @@ func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
 
 	payload := slog.Group("payload", "region", req.Region, "puuid", req.PUUID)
 
-	component, err := f.handler.GetLiveMatch(ctx, req)
+	handler := ProfileHandler{Datasource: f.handler.Datasource}
+	component, err := handler.GetLiveMatch(ctx, req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)
@@ -296,15 +304,17 @@ func (f *Server) serveMatchDetail(w http.ResponseWriter, r *http.Request) {
 
 	payload := slog.Group("payload", "region", req.Region, "match_id", req.MatchID)
 
-	component, err := f.handler.GetMatchDetail(ctx, req)
+	handler := ProfileHandler{Datasource: f.handler.Datasource}
+	component, err := handler.GetMatchDetail(ctx, req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)
 		return
 	}
 
-	err = component.ToTempl(ctx).Render(ctx, w)
-	if err != nil {
+	// TODO: adjust timezone here
+
+	if err := component.ToTempl(ctx).Render(ctx, w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed rendering", "err", err)
 		return

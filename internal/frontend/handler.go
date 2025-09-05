@@ -2,8 +2,6 @@ package frontend
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -13,28 +11,6 @@ import (
 	"github.com/rank1zen/kevin/internal/component/view"
 	"github.com/rank1zen/kevin/internal/riot"
 )
-
-type MatchHistoryRequest struct {
-	Region riot.Region `json:"region"`
-
-	PUUID riot.PUUID `json:"puuid"`
-
-	// Date should be the start of the day. The request will fetch all
-	// matches played on the day.
-	Date time.Time `json:"date"`
-}
-
-func (r MatchHistoryRequest) Validate() (problems map[string]string) {
-	problems = make(map[string]string)
-
-	validatePUUID(problems, r.PUUID)
-
-	if r.Date.Hour() != 0 || r.Date.Minute() != 0 || r.Date.Second() != 0 {
-		problems["date"] = "date needs to be start of day"
-	}
-
-	return problems
-}
 
 // Handler provides the API for server operations.
 type Handler struct {
@@ -54,54 +30,6 @@ func (h *Handler) CheckHealth(ctx context.Context) error {
 	return err
 }
 
-type UpdateSummonerRequest struct {
-	Region riot.Region `json:"region"`
-	Name   string      `json:"name"`
-	Tag    string      `json:"tag"`
-}
-
-func (r UpdateSummonerRequest) Validate() (problems map[string]string) {
-	return nil
-}
-
-// UpdateSummoner syncs a summoner and their rank with riot.
-func (h *Handler) UpdateSummoner(ctx context.Context, req UpdateSummonerRequest) error {
-	if err := h.Datasource.UpdateProfileByRiotID(ctx, req.Region, req.Name, req.Tag); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type LiveMatchRequest struct {
-	Region riot.Region `json:"region"`
-	PUUID  riot.PUUID  `json:"puuid"`
-}
-
-func (r LiveMatchRequest) Validate() (problems map[string]string) {
-	problems = make(map[string]string)
-	validatePUUID(problems, r.PUUID)
-	return problems
-}
-
-// GetLiveMatch returns a live match view depending on whether the summoner is
-// on game.
-func (h *Handler) GetLiveMatch(ctx context.Context, req LiveMatchRequest) (component.Component, error) {
-	match, err := h.Datasource.GetLiveMatch(ctx, req.Region, req.PUUID)
-	if err != nil {
-		if errors.Is(err, internal.ErrNoLiveMatch) {
-			c := view.LiveMatchNotFound{}
-			return c, nil
-		}
-
-		return nil, err
-	}
-
-	c := MapLiveMatch(match)
-
-	return c, nil
-}
-
 // GetHomePage returns the home page.
 func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (component.Component, error) {
 	v := shared.NewHomePage()
@@ -111,7 +39,7 @@ func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (componen
 // GetSummonerPage returns a summoner's profile page if summoner exists in
 // store, otherwise, it will complete a update for summoner, then return the
 // page. If no summoner with name#tag exists, return a does not exist page.
-func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string) (component.Component, error) {
+func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string, tz *time.Location) (*view.ProfilePage, error) {
 	detail, err := h.Datasource.GetProfileDetailByRiotID(ctx, region, name, tag)
 	if err != nil {
 		return nil, err
@@ -138,68 +66,13 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 	v.Update.Path, tmp = makeUpdateSummoner(region, detail.Name, detail.Tagline)
 	v.Update.Data = string(tmp)
 
-	for offset := range 7 {
-		day := GetDay(offset)
-		path, data := makeGetMatchHistoryRequest(region, detail.PUUID, offset)
-		v.Requests = append(v.Requests, view.MatchHistoryRequest{Date: day, Path: path, Data: string(data)})
+	dates := GetDays(time.Now().In(tz))
+	for i := range len(dates) - 1 {
+		path, data := makeGetMatchHistoryRequest(region, detail.PUUID, dates[i+1], dates[i])
+		v.Requests = append(v.Requests, view.MatchHistoryRequest{Date: dates[i+1], Path: path, Data: string(data)})
 	}
 
-	return v, nil
-}
-
-type GetSummonerChampionsRequest struct {
-	Region riot.Region `json:"region"`
-	PUUID  riot.PUUID  `json:"puuid"`
-	Week   time.Time   `json:"week"`
-}
-
-func (r GetSummonerChampionsRequest) Validate() (problems map[string]string) {
-	problems = make(map[string]string)
-
-	validatePUUID(problems, r.PUUID)
-
-	if r.Week.Hour() != 0 || r.Week.Minute() != 0 || r.Week.Second() != 0 {
-		problems["date"] = "date needs to be start of day"
-	}
-
-	return problems
-}
-
-// GetSummonerChampions returns The method will fetch all
-// games played in the specified interval.
-func (h *Handler) GetSummonerChampions(ctx context.Context, req GetSummonerChampionsRequest) (component.Component, error) {
-	start := req.Week
-	end := start.Add(7 * 24 * time.Hour)
-
-	storeChampions, err := h.Datasource.GetSummonerChampions(ctx, req.Region, req.PUUID, start, end)
-	if err != nil {
-		return nil, err
-	}
-
-	v := view.ChampionSection{Champions: storeChampions}
-
-	return v, nil
-}
-
-// GetMatchHistory returns [MatchHistory], the matches played on date to date
-// + 24 hours. The method will fetch riot first to ensure all matches played on
-// date are in store.
-func (h *Handler) GetMatchHistory(ctx context.Context, req MatchHistoryRequest) (component.Component, error) {
-	// TODO: consider daylight savings
-	end := req.Date.Add(24 * time.Hour)
-
-	storeMatches, err := h.Datasource.GetMatchHistory(ctx, req.Region, req.PUUID, req.Date, end)
-	if err != nil {
-		return nil, fmt.Errorf("storage failure: %w", err)
-	}
-
-	if len(storeMatches) == 0 {
-		return view.HistoryNoMatches{}, nil
-	}
-
-	v := MapHistory(req.Region, storeMatches)
-
-	return v, nil
+	return &v, nil
 }
 
 // GetSearchResults returns a list of [SearchResultCard] for accounts that
@@ -232,31 +105,6 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 	return c, nil
 }
 
-type MatchDetailRequest struct {
-	Region  riot.Region `json:"region"`
-	MatchID string
-}
-
-func (r MatchDetailRequest) Validate() (problems map[string]string) {
-	return nil
-}
-
-// GetMatchDetail returns [MatchDetail].
-func (h *Handler) GetMatchDetail(ctx context.Context, req MatchDetailRequest) (component.Component, error) {
-	matchDetail, err := h.Datasource.GetMatchDetail(ctx, req.Region, req.MatchID)
-	if err != nil {
-		return nil, err
-	}
-
-	mapper := FrontendToMatchDetailMapper{
-		MatchDetail: matchDetail,
-	}
-
-	c := mapper.Map()
-
-	return c, nil
-}
-
 // GetCurrentWeek returns the start of the day, 7 days ago. Currently returns
 // UTC time.
 func GetCurrentWeek() time.Time {
@@ -264,15 +112,6 @@ func GetCurrentWeek() time.Time {
 	y, m, d := now.Date()
 	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	return startOfDay.Add(-24 * 6 * time.Hour)
-}
-
-// GetDay returns the start of the day, offset days ago. Currently returns UTC
-// time.
-func GetDay(offset int) time.Time {
-	now := time.Now().In(time.UTC)
-	y, m, d := now.Date()
-	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
-	return startOfDay.Add(time.Duration(-24*offset) * time.Hour)
 }
 
 func ComputeFraction(wins, losses int) float32 {

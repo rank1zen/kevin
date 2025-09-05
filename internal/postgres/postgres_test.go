@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/postgres"
@@ -12,8 +13,12 @@ import (
 
 var DefaultPGInstance *postgres.PGInstance
 
+var Toronto *time.Location
+
 func TestMain(t *testing.M) {
 	ctx := context.Background()
+
+	Toronto, _ = time.LoadLocation("America/Toronto")
 
 	DefaultPGInstance = postgres.NewPGInstance(context.Background(), "../../migrations")
 
