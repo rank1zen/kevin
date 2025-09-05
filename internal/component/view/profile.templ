@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/profile"
 	"github.com/rank1zen/kevin/internal/component/shared"
 	"github.com/rank1zen/kevin/internal/component/summoner"
 	"github.com/rank1zen/kevin/internal/riot"
@@ -27,6 +28,11 @@ type ChampionRequest struct {
 	Data string
 }
 
+type UpdateSummonerRequest struct {
+	Path string
+	Data string
+}
+
 type ProfilePage struct {
 	PUUID riot.PUUID
 
@@ -39,6 +45,8 @@ type ProfilePage struct {
 	LiveMatch LiveMatchRequest
 
 	Champion ChampionRequest
+
+	Update UpdateSummonerRequest
 }
 
 templ (m ProfilePage) page(ctx context.Context) {
@@ -78,18 +86,14 @@ templ (m ProfilePage) page(ctx context.Context) {
 						@liveMatch.ToTempl(ctx)
 					</div>
 					<div class="mt-1 first:mt-0">
-						<button
-							type="button"
-							class="relative w-full flex items-center justify-center gap-x-2 h-9 cursor-pointer bg-gray-50 rounded-lg transition dark:bg-neutral-900 dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
-						>
-							<span class="text-sm font-bold text-gray-900/90 dark:text-gray-100/90">
-								Update Profile
-							</span>
-						</button>
+						@profile.UpdateProfile{Path: m.Update.Path, Data: m.Update.Data}.ToTempl(ctx)
 					</div>
 				</div>
 				{{ champLoader := component.Loader{Path: m.Champion.Path, Type: component.LoaderTypeOnReveal, Data: string(m.Champion.Data), Children: component.ComponentFunc(summoner.ChampstatListSkeleton)} }}
 				<div class="py-3 border-b border-gray-200 dark:border-neutral-600 last:border-b-0">
+					<h3 class="font-medium text-sm text-gray-900/90 mb-2 dark:text-neutral-100/90">
+						Past Week
+					</h3>
 					@champLoader.ToTempl(ctx)
 				</div>
 			</div>
