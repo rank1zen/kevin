@@ -26,6 +26,7 @@ const (
 //
 // NOTE: the panel has fixed rounding for now.
 // NOTE: could add transitions when popup shows.
+// Deprecated: use popover.Popover instead
 type Popover struct {
 	// ButtonChildren are placed inside the button that triggers the
 	// popover. A nil value will default to [Button].
@@ -44,27 +45,21 @@ type Popover struct {
 templ (m Popover) ToTempl(ctx context.Context) {
 	<div
 		x-id="['popover-button']"
-
 		x-data="{ open: false }"
-
 		@keydown.escape.prevent.stop="
 			open = false;
 			$refs.button.focus();
 		"
-
 		@focusin.window="
 			if (! $refs.panel.contains($event.target)) {
 				open = false;
 			}
 		"
-
 		class="relative"
 	>
 		<button
 			type="button"
-
 			x-ref="button"
-
 			@click="
 				if (open) {
 					open = false;
@@ -73,13 +68,9 @@ templ (m Popover) ToTempl(ctx context.Context) {
 					open = true;
 				}
 			"
-
 			:aria-controls="$id('popover-button')"
-
 			:aria-expanded="open"
-
 			class="relative rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
-
 			:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 		>
 			if m.ButtonChildren != nil {
@@ -92,20 +83,15 @@ templ (m Popover) ToTempl(ctx context.Context) {
 			// NOTE: rounding is fixed
 			<div
 				x-ref="panel"
-
 				x-show="open"
-
 				@click.outside="
 					if (open) {
 						open = false;
 						$refs.button.focus();
 					}
 				"
-
 				:id="$id('popover-button')"
-
 				class="z-10 rounded-2xl"
-
 				{ generateXAnchorAttrKey(m.PanelPosition, m.PanelOffset)... }
 			>
 				if m.PanelChildren != nil {

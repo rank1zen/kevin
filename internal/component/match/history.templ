@@ -3,15 +3,8 @@ package match
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/accordion"
 )
-
-// Deprecated: lol.
-type History component.List
-
-func (m History) ToTempl(ctx context.Context) templ.Component {
-	list := (component.List)(m)
-	return list.ToTempl(ctx)
-}
 
 // HistoryCard displays a match in a summoner's match history.
 type HistoryCard struct {
@@ -26,34 +19,31 @@ type HistoryCard struct {
 	Data string
 }
 
-templ (m HistoryCard) accordionChildren(ctx context.Context) {
-	<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap items-center justify-between lg:flex-nowrap">
-		<div class="flex gap-x-3">
-			@m.ChampionWidget.ToTempl(ctx)
-			@m.KDAWidget.ToTempl(ctx)
-			@m.CSWidget.ToTempl(ctx)
-		</div>
-		<div class="flex gap-x-2 lg:order-last">
-			@m.RankDeltaWidget.ToTempl(ctx)
-			@component.AccordionTrigger{}.ToTempl(ctx)
-		</div>
-		<div class="flex gap-x-2 w-full justify-between lg:w-auto">
-			@m.RuneWidget.ToTempl(ctx)
-			@m.ItemWidget.ToTempl(ctx)
-		</div>
-	</div>
-}
-
 templ (m HistoryCard) ToTempl(ctx context.Context) {
-	{{
-		acc := component.LazyAccordion{
-			Children:        component.ComponentFunc(m.accordionChildren),
-			Path:            m.Path,
-			Data:            m.Data,
-			LoadingChildren: component.ComponentFunc(DetailSkeleton),
+	@accordion.Accordion() {
+		@accordion.Card() {
+			<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap items-center justify-between lg:flex-nowrap">
+				<div class="flex gap-x-3">
+					@m.ChampionWidget.ToTempl(ctx)
+					@m.KDAWidget.ToTempl(ctx)
+					@m.CSWidget.ToTempl(ctx)
+				</div>
+				<div class="flex gap-x-2 lg:order-last">
+					@m.RankDeltaWidget.ToTempl(ctx)
+					@accordion.Trigger()
+				</div>
+				<div class="flex gap-x-2 w-full justify-between lg:w-auto">
+					@m.RuneWidget.ToTempl(ctx)
+					@m.ItemWidget.ToTempl(ctx)
+				</div>
+			</div>
 		}
-	}}
-	@acc.ToTempl(ctx)
+		@accordion.LazyPanel{Path: m.Path, Data: m.Data}.ToTempl(ctx) {
+			<div class="h-26 flex items-center justify-center">
+				@component.Spinner{}.ToTempl(ctx)
+			</div>
+		}
+	}
 }
 
 templ NonePlayed(ctx context.Context) {

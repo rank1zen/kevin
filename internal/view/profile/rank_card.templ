@@ -1,0 +1,95 @@
+package profile
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/shared"
+	"strings"
+)
+
+type RankCard struct {
+	RankDetail *internal.RankDetail
+}
+
+templ (m RankCard) ToTempl(ctx context.Context) {
+	<div class="bg-gray-900/5 h-30 rounded-lg p-2">
+		if m.RankDetail == nil {
+			<div class="">
+				Unranked
+			</div>
+		} else {
+			<div class="flex justify-between items-center">
+				<div>Icon</div>
+				<div class="">
+					<div>
+						{{ tierName := strings.ToUpper(string(m.RankDetail.Rank.Tier)) }}
+						{ fmt.Sprintf("%s %d LP", tierName, m.RankDetail.Rank.LP) }
+					</div>
+					<div>
+						{ fmt.Sprintf("%dW - %dL (%d%%)", m.RankDetail.Wins, m.RankDetail.Losses, 51) }
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+type ChampionListPartial chan ChampionList
+
+templ (m ChampionListPartial) ToTempl(ctx context.Context) {
+	for d := range m {
+		@templ.Flush() {
+			@d.ToTempl(ctx)
+		}
+	}
+}
+
+type Champstat struct {
+	ChampionID   int
+	ChampionName string
+	Wins, Losses int
+	LPDelta      *int
+}
+
+type ChampionList struct {
+	Champions []Champstat
+}
+
+templ (m ChampionList) ToTempl(ctx context.Context) {
+	for _, c := range m.Champions {
+		<div class="flex gap-x-2 items-center">
+			<div class="flex items-center gap-x-2 w-1/2">
+				@shared.NewChampionSprite(c.ChampionID, component.TextSizeLG).ToTempl(ctx)
+				<span class="text-sm font-semibold text-gray-900/90 truncate dark:text-neutral-100/90">
+					{ c.ChampionName }
+				</span>
+			</div>
+			<div class="flex items-center gap-x-2 w-1/4">
+				<span class="text-sm font-mono font-medium text-gray-900/90 truncate dark:text-neutral-100/90">
+					{ fmt.Sprintf("%d-%d", c.Wins, c.Losses) }
+				</span>
+			</div>
+			<div class="flex items-center gap-x-2 w-1/4 justify-end">
+				if c.LPDelta == nil {
+					<span class="text-xs text-white px-1 rounded bg-gray-500/80">
+						+??
+					</span>
+				} else if *c.LPDelta > 0 {
+					<span class="text-xs text-white px-1 rounded bg-green-500/80">
+						{ fmt.Sprintf("%+d", *c.LPDelta) }
+					</span>
+				} else if *c.LPDelta < 0 {
+					<span class="text-xs text-white px-1 rounded bg-red-500/80">
+						{ fmt.Sprintf("%+d", *c.LPDelta) }
+					</span>
+				} else {
+					<span class="text-xs text-white px-1 rounded bg-gray-500/80">
+						{ fmt.Sprintf("%+d", *c.LPDelta) }
+					</span>
+				}
+			</div>
+		</div>
+	}
+}

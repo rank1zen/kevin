@@ -11,6 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import "context"
 
 // Page is the top-level component returned to the browser.
+// Deprecated: use page.Page instead
 type Page struct {
 	// Title is the document title. An empty value indicates no title.
 	Title string
@@ -60,7 +61,7 @@ func (m Page) ToTempl(ctx context.Context) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(m.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/page.templ`, Line: 40, Col: 14}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/page.templ`, Line: 41, Col: 14}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {

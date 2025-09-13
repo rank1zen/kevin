@@ -1,0 +1,62 @@
+package partial
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/shared"
+	"github.com/rank1zen/kevin/internal/ddragon"
+)
+
+type ChampionList struct {
+	Champions []ChampionEntry
+}
+
+templ (m ChampionList) ToTempl(ctx context.Context) {
+	<div class="flex flex-col gap-y-1">
+		for _, c := range m.Champions {
+			<div class="flex gap-x-2 items-center">
+				<div class="flex items-center gap-x-2 w-1/2">
+					@shared.NewChampionSprite(int(c.Champion), component.TextSizeLG).ToTempl(ctx)
+					<span class="text-sm font-semibold text-gray-900/90 truncate dark:text-neutral-100/90">
+						{ ddragon.ChampionMap[int(c.Champion)].Name }
+					</span>
+				</div>
+				<div class="flex items-center gap-x-2 w-1/4">
+					<span class="text-sm font-mono font-medium text-gray-900/90 truncate dark:text-neutral-100/90">
+						{ fmt.Sprintf("%d-%d", c.Wins, c.Losses) }
+					</span>
+				</div>
+				<div class="flex items-center gap-x-2 w-1/4 justify-end">
+					if c.LPDelta == nil {
+						<span class="text-xs text-white px-1 rounded bg-gray-500/80">
+							+??
+						</span>
+					} else if *c.LPDelta > 0 {
+						<span class="text-xs text-white px-1 rounded bg-green-500/80">
+							{ fmt.Sprintf("%+d", *c.LPDelta) }
+						</span>
+					} else if *c.LPDelta < 0 {
+						<span class="text-xs text-white px-1 rounded bg-red-500/80">
+							{ fmt.Sprintf("%+d", *c.LPDelta) }
+						</span>
+					} else {
+						<span class="text-xs text-white px-1 rounded bg-gray-500/80">
+							{ fmt.Sprintf("%+d", *c.LPDelta) }
+						</span>
+					}
+				</div>
+			</div>
+		}
+	</div>
+}
+
+type ChampionEntry struct {
+	Champion int
+
+	GamesPlayed int
+
+	Wins, Losses int
+
+	LPDelta *int
+}

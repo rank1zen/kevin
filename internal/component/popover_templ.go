@@ -34,6 +34,7 @@ const (
 //
 // NOTE: the panel has fixed rounding for now.
 // NOTE: could add transitions when popup shows.
+// Deprecated: use popover.Popover instead
 type Popover struct {
 	// ButtonChildren are placed inside the button that triggers the
 	// popover. A nil value will default to [Button].

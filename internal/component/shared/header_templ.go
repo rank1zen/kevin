@@ -14,33 +14,11 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-// DefaultPageHeader is the default header for all pages.
-//
-// TODO: rename to NewPageHeader.
-//
-// Deprecated: not using this.
-func DefaultPageHeader() component.Header {
-	return component.Header{
-		StartChildren: []component.Component{
-			component.Link{
-				Href:     "/",
-				Children: component.Button{},
-			},
-		},
-		EndChildren: []component.Component{
-			component.Popover{
-				ButtonChildren: component.ComponentFunc(regionButton),
-				PanelChildren:  component.PanelWindow{Children: component.ComponentFunc(regionPanel)},
-				PanelOffset:    8,
-			},
-			NewSummonerSearchBar(),
-			component.ComponentFunc(newGithubLink),
-			component.ComponentFunc(newDarkModeButton),
-		},
-	}
+type Header struct {
+	Region riot.Region
 }
 
-func PageHeader(ctx context.Context) templ.Component {
+func (m Header) ToTempl(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -61,23 +39,93 @@ func PageHeader(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex w-full h-13 gap-x-2 justify-between items-center px-2\"><div class=\"flex gap-x-2 items-center\"><a href=\"/\" class=\"flex size-9 items-center justify-center cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/20\"></a></div><div class=\"flex gap-x-2 items-center\"><button type=\"button\" @click=\"darkMode = !darkMode\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex bg-white: dark:bg-black h-13 gap-x-2 justify-between items-center px-2\"><div class=\"flex gap-x-2 items-center\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = component.DarkModeIcon().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ExtraMenu{}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</button> <a href=\"https://github.com/rank1zen/kevin\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<a href=\"/\" class=\"flex size-9 items-center justify-center cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/20\"></a></div><div class=\"flex gap-x-2 items-center\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = component.GithubIcon().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = NewSummonerSearchBar().ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</a></div></div>")
+
+		regions := RegionPicker{
+			CurrentRegion: m.Region,
+			Regions: []RegionEntry{
+				{
+					Region: riot.RegionBR1,
+					Name:   "Brazil",
+				},
+				{
+					Region: riot.RegionEUN1,
+					Name:   "Europe Nordic & East",
+				},
+				{
+					Region: riot.RegionEUW1,
+					Name:   "Europe West",
+				},
+				{
+					Region: riot.RegionJP1,
+					Name:   "Japan",
+				},
+				{
+					Region: riot.RegionKR,
+					Name:   "Korea",
+				},
+				{
+					Region: riot.RegionLA1,
+					Name:   "LAS",
+				},
+				{
+					Region: riot.RegionLA2,
+					Name:   "LAN",
+				},
+				{
+					Region: riot.RegionME1,
+					Name:   "Middle East",
+				},
+				{
+					Region: riot.RegionNA1,
+					Name:   "North America",
+				},
+				{
+					Region: riot.RegionOC1,
+					Name:   "Oceania",
+				},
+				{
+					Region: riot.RegionRU,
+					Name:   "Russia",
+				},
+				{
+					Region: riot.RegionSEA,
+					Name:   "Southeast Asia",
+				},
+				{
+					Region: riot.RegionTR1,
+					Name:   "Turkiye",
+				},
+				{
+					Region: riot.RegionTW2,
+					Name:   "Taiwan",
+				},
+				{
+					Region: riot.RegionVN2,
+					Name:   "Vietnam",
+				},
+			},
+		}
+		templ_7745c5c3_Err = regions.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -85,7 +133,7 @@ func PageHeader(ctx context.Context) templ.Component {
 	})
 }
 
-func regionButton(ctx context.Context) templ.Component {
+func newDarkModeButton(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -106,138 +154,7 @@ func regionButton(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90\">NA1</span>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = component.DownSmallIcon().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-func regionPanel(ctx context.Context) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var3 == nil {
-			templ_7745c5c3_Var3 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"p-2\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = component.MenuItemLayout{Label: "NA1", SubLabel: "North America"}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = component.MenuItemLayout{Label: "KR", SubLabel: "Korea"}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-type RegionPickerButton struct {
-	Region riot.Region
-}
-
-func RegionPanel() component.PanelWindow {
-	list := component.List{Items: []component.Component{}}
-	for _, region := range []riot.Region{
-		riot.RegionBR1,
-		riot.RegionEUW1,
-		riot.RegionKR,
-		riot.RegionNA1,
-	} {
-		list.Items = append(list.Items, component.MenuItemLayout{Label: regionToString(region), SubLabel: regionName(region)})
-	}
-
-	c := component.PanelWindow{
-		Children: component.ComponentFunc(regionPanel),
-	}
-
-	return c
-}
-
-func regionName(region riot.Region) string {
-	names := map[riot.Region]string{
-		riot.RegionNA1: "North America",
-	}
-
-	return names[region]
-}
-
-func regionToString(region riot.Region) string {
-	return string(region)
-}
-
-func NewExtraMenu() component.Popover {
-	list := component.List{Items: []component.Component{}}
-
-	list.Items = append(list.Items, component.Link{
-		Href:     "https://github.com/rank1zen/kevin",
-		Children: component.MenuItemLayout{Label: "Github"},
-	})
-
-	panel := component.Panel{Children: list}
-
-	popover := component.Popover{
-		ButtonChildren: component.Button{},
-		PanelChildren:  panel,
-		PanelOffset:    8,
-	}
-
-	return popover
-}
-
-func newDarkModeButton(ctx context.Context) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<button type=\"button\" @click=\"darkMode = !darkMode\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<button type=\"button\" @click=\"darkMode = !darkMode\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -245,7 +162,7 @@ func newDarkModeButton(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</button>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</button>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -269,12 +186,12 @@ func newGithubLink(ctx context.Context) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<a href=\"https://github.com/rank1zen/kevin\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<a href=\"https://github.com/rank1zen/kevin\" class=\"size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -282,7 +199,7 @@ func newGithubLink(ctx context.Context) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</a>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</a>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

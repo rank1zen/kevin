@@ -14,13 +14,15 @@ import (
 	"github.com/rank1zen/kevin/internal/component/match"
 )
 
-type HistoryList struct {
-	MatchHistory []struct {
-		internal.SummonerMatch
+type HistoryEntry struct {
+	internal.SummonerMatch
 
-		Path string
-		Data string
-	}
+	MatchDetailPath string
+	MatchDetailData string
+}
+
+type HistoryList struct {
+	Entries []HistoryEntry
 }
 
 func (m HistoryList) ToTempl(ctx context.Context) templ.Component {
@@ -44,88 +46,64 @@ func (m HistoryList) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		for _, v := range m.MatchHistory {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"mb-2 last:mb-0\">")
+		if len(m.Entries) == 0 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex justify-center bg-white border border-gray-200 rounded-2xl items-center w-full h-15 dark:bg-black dark:border-neutral-600\"><span class=\"font-medium text-gray-900/90 text-sm dark:text-gray-100/90\">No matches played</span></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-
-			card := match.HistoryCard{
-				ChampionWidget: match.ChampionWidget{
-					ChampionID:    v.ChampionID,
-					ChampionLevel: v.ChampionLevel,
-					SummonerIDs:   v.SummonerIDs,
-				},
-				KDAWidget: match.KDAWidget{
-					Kills:          v.Kills,
-					Deaths:         v.Deaths,
-					Assists:        v.Assists,
-					KilLDeathRatio: v.KillParticipation,
-				},
-				CSWidget: match.CSWidget{
-					CS:          v.CreepScore,
-					CSPerMinute: v.CreepScorePerMinute,
-				},
-				RuneWidget: (match.RuneWidget)(v.Runes),
-				ItemWidget: match.ItemWidget{
-					Items:       v.Items,
-					VisionScore: v.VisionScore,
-				},
-				RankDeltaWidget: match.RankDeltaWidget{
-					RankChange: nil,
-					LPChange:   nil,
-					Win:        v.Win,
-				},
-				Path: v.Path,
-				Data: v.Data,
-			}
-			templ_7745c5c3_Err = card.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-type HistoryNoMatches struct{}
-
-func (m HistoryNoMatches) ToTempl(ctx context.Context) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+			for _, v := range m.Entries {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"mb-2 last:mb-0\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
 				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var2 == nil {
-			templ_7745c5c3_Var2 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"flex justify-center bg-white border border-gray-200 rounded-2xl items-center w-full h-15 dark:bg-black dark:border-neutral-600\"><span class=\"font-medium text-gray-900/90 text-sm dark:text-gray-100/90\">No matches played</span></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+
+				card := match.HistoryCard{
+					ChampionWidget: match.ChampionWidget{
+						ChampionID:    v.ChampionID,
+						ChampionLevel: v.ChampionLevel,
+						SummonerIDs:   v.SummonerIDs,
+					},
+					KDAWidget: match.KDAWidget{
+						Kills:          v.Kills,
+						Deaths:         v.Deaths,
+						Assists:        v.Assists,
+						KilLDeathRatio: v.KillParticipation,
+					},
+					CSWidget: match.CSWidget{
+						CS:          v.CreepScore,
+						CSPerMinute: v.CreepScorePerMinute,
+					},
+					RuneWidget: (match.RuneWidget)(v.Runes),
+					ItemWidget: match.ItemWidget{
+						Items:       v.Items,
+						VisionScore: v.VisionScore,
+					},
+					RankDeltaWidget: match.RankDeltaWidget{
+						RankChange: nil,
+						LPChange:   nil,
+						Win:        v.Win,
+					},
+					Path: v.MatchDetailPath,
+					Data: v.MatchDetailData,
+				}
+				templ_7745c5c3_Err = card.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		return nil
 	})

@@ -27,25 +27,15 @@ func (h *ProfileHandler) GetMatchHistory(ctx context.Context, req MatchHistoryRe
 		return view.HistoryList{}, fmt.Errorf("storage failure: %w", err)
 	}
 
-	v := view.HistoryList{
-		MatchHistory: []struct {
-			internal.SummonerMatch
-			Path string
-			Data string
-		}{},
-	}
+	v := view.HistoryList{Entries: []view.HistoryEntry{}}
 
 	for _, match := range storeMatches {
 		path, data := makeGetMatchDetailRequest(req.Region, match.MatchID)
 
-		v.MatchHistory = append(v.MatchHistory, struct {
-			internal.SummonerMatch
-			Path string
-			Data string
-		}{
-			SummonerMatch: match,
-			Path:          path,
-			Data:          string(data),
+		v.Entries = append(v.Entries, view.HistoryEntry{
+			SummonerMatch:   match,
+			MatchDetailPath: path,
+			MatchDetailData: string(data),
 		})
 	}
 
@@ -59,13 +49,22 @@ func (h *ProfileHandler) GetMatchDetail(ctx context.Context, req MatchDetailRequ
 		return nil, err
 	}
 
-	mapper := FrontendToMatchDetailMapper{
-		MatchDetail: matchDetail,
+	v := view.MatchDetailBox{
+		Date:     matchDetail.Date,
+		Duration: matchDetail.Duration,
+		RedSide:  []internal.ParticipantDetail{},
+		BlueSide: []internal.ParticipantDetail{},
 	}
 
-	c := mapper.Map()
+	for i := range 5 {
+		v.BlueSide = append(v.BlueSide, matchDetail.Participants[i])
+	}
 
-	return c, nil
+	for i := range 5 {
+		v.RedSide = append(v.RedSide, matchDetail.Participants[5+i])
+	}
+
+	return v, nil
 }
 
 // GetLiveMatch returns a live match view depending on whether the summoner is

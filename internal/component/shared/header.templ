@@ -6,122 +6,88 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-// DefaultPageHeader is the default header for all pages.
-//
-// TODO: rename to NewPageHeader.
-//
-// Deprecated: not using this.
-func DefaultPageHeader() component.Header {
-	return component.Header{
-		StartChildren: []component.Component{
-			component.Link{
-				Href:     "/",
-				Children: component.Button{},
-			},
-		},
-		EndChildren: []component.Component{
-			component.Popover{
-				ButtonChildren: component.ComponentFunc(regionButton),
-				PanelChildren:  component.PanelWindow{Children: component.ComponentFunc(regionPanel)},
-				PanelOffset:    8,
-			},
-			NewSummonerSearchBar(),
-			component.ComponentFunc(newGithubLink),
-			component.ComponentFunc(newDarkModeButton),
-		},
-	}
-}
-
-templ PageHeader(ctx context.Context) {
-	<div class="flex w-full h-13 gap-x-2 justify-between items-center px-2">
-		<div class="flex gap-x-2 items-center">
-			<a href="/" class="flex size-9 items-center justify-center cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/20"></a>
-		</div>
-		<div class="flex gap-x-2 items-center">
-			<button
-				type="button"
-				@click="darkMode = !darkMode"
-				class="size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0"
-			>
-				@component.DarkModeIcon()
-			</button>
-			<a
-				href="https://github.com/rank1zen/kevin"
-				class="size-9 p-2.5 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0"
-			>
-				@component.GithubIcon()
-			</a>
-		</div>
-	</div>
-}
-
-templ regionButton(ctx context.Context) {
-	<div class="flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end">
-		<span class="text-sm font-bold text-gray-900/90 dark:text-gray-100/90">
-			NA1
-		</span>
-		@component.DownSmallIcon()
-	</div>
-}
-
-templ regionPanel(ctx context.Context) {
-	<div class="p-2">
-		@component.MenuItemLayout{Label: "NA1", SubLabel: "North America"}.ToTempl(ctx)
-		@component.MenuItemLayout{Label: "KR", SubLabel: "Korea"}.ToTempl(ctx)
-	</div>
-}
-
-type RegionPickerButton struct {
+type Header struct {
 	Region riot.Region
 }
 
-func RegionPanel() component.PanelWindow {
-	list := component.List{Items: []component.Component{}}
-	for _, region := range []riot.Region{
-		riot.RegionBR1,
-		riot.RegionEUW1,
-		riot.RegionKR,
-		riot.RegionNA1,
-	} {
-		list.Items = append(list.Items, component.MenuItemLayout{Label: regionToString(region), SubLabel: regionName(region)})
-	}
-
-	c := component.PanelWindow{
-		Children: component.ComponentFunc(regionPanel),
-	}
-
-	return c
-}
-
-func regionName(region riot.Region) string {
-	names := map[riot.Region]string{
-		riot.RegionNA1: "North America",
-	}
-
-	return names[region]
-}
-
-func regionToString(region riot.Region) string {
-	return string(region)
-}
-
-func NewExtraMenu() component.Popover {
-	list := component.List{Items: []component.Component{}}
-
-	list.Items = append(list.Items, component.Link{
-		Href:     "https://github.com/rank1zen/kevin",
-		Children: component.MenuItemLayout{Label: "Github"},
-	})
-
-	panel := component.Panel{Children: list}
-
-	popover := component.Popover{
-		ButtonChildren: component.Button{},
-		PanelChildren:  panel,
-		PanelOffset:    8,
-	}
-
-	return popover
+templ (m Header) ToTempl(ctx context.Context) {
+	<div class="flex bg-white: dark:bg-black h-13 gap-x-2 justify-between items-center px-2">
+		<div class="flex gap-x-2 items-center">
+			@ExtraMenu{}.ToTempl(ctx)
+			<a href="/" class="flex size-9 items-center justify-center cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/20"></a>
+		</div>
+		<div class="flex gap-x-2 items-center">
+			@NewSummonerSearchBar().ToTempl(ctx)
+			{{
+				regions := RegionPicker{
+					CurrentRegion: m.Region,
+					Regions: []RegionEntry{
+						{
+							Region: riot.RegionBR1,
+							Name:   "Brazil",
+						},
+						{
+							Region: riot.RegionEUN1,
+							Name:   "Europe Nordic & East",
+						},
+						{
+							Region: riot.RegionEUW1,
+							Name:   "Europe West",
+						},
+						{
+							Region: riot.RegionJP1,
+							Name:   "Japan",
+						},
+						{
+							Region: riot.RegionKR,
+							Name:   "Korea",
+						},
+						{
+							Region: riot.RegionLA1,
+							Name:   "LAS",
+						},
+						{
+							Region: riot.RegionLA2,
+							Name:   "LAN",
+						},
+						{
+							Region: riot.RegionME1,
+							Name:   "Middle East",
+						},
+						{
+							Region: riot.RegionNA1,
+							Name:   "North America",
+						},
+						{
+							Region: riot.RegionOC1,
+							Name:   "Oceania",
+						},
+						{
+							Region: riot.RegionRU,
+							Name:   "Russia",
+						},
+						{
+							Region: riot.RegionSEA,
+							Name:   "Southeast Asia",
+						},
+						{
+							Region: riot.RegionTR1,
+							Name:   "Turkiye",
+						},
+						{
+							Region: riot.RegionTW2,
+							Name:   "Taiwan",
+						},
+						{
+							Region: riot.RegionVN2,
+							Name:   "Vietnam",
+						},
+					},
+				}
+			}}
+			@regions.ToTempl(ctx)
+		</div>
+	</div>
 }
 
 templ newDarkModeButton(ctx context.Context) {

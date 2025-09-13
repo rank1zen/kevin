@@ -8,14 +8,31 @@ package match
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import (
-	"context"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/shared"
-)
+import "context"
+import "github.com/rank1zen/kevin/internal"
+
+type ScoreboardParticipant struct {
+	ChampionID    int
+	ChampionLevel int
+	SummonerIDs   [2]int
+
+	Name, Tag string
+	RankTag   *internal.RankStatus
+
+	Kills, Deaths, Assists int
+	KillDeathRatio         float32
+
+	CS          int
+	CSPerMinute float32
+
+	RuneWidget internal.RunePage
+
+	Items       [7]int
+	VisionScore int
+}
 
 type Scoreboard struct {
-	BlueSide, RedSide component.Section
+	Participants []ScoreboardParticipant
 }
 
 func (m Scoreboard) ToTempl(ctx context.Context) templ.Component {
@@ -39,103 +56,67 @@ func (m Scoreboard) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"px-4 py-3\"><div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"bg-white border border-gray-900/10 shadow-sm shadow-gray-900/10 rounded-2xl dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = m.BlueSide.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+		for _, p := range m.Participants {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between lg:flex-nowrap bg-white border-b border-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none\"><div class=\"flex gap-x-2 flex-1 min-w-0 max-w-60\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			champion := ChampionWidget{ChampionID: p.ChampionID, ChampionLevel: p.ChampionLevel, SummonerIDs: p.SummonerIDs}
+			templ_7745c5c3_Err = champion.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"flex-1 min-w-0\"><div class=\"text-sm font-semibold text-gray-900/90 whitespace-nowrap dark:text-gray-100/90 truncate\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var2 string
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name + "#" + p.Tag)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/component/match/scoreboard.templ`, Line: 39, Col: 29}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div><div class=\"text-xs font-semibold text-gray-900/90 dark:text-gray-100/90\">Unknown</div></div></div><div class=\"flex gap-x-4\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			kda := KDAWidget{Kills: p.Kills, Deaths: p.Deaths, Assists: p.Assists}
+			templ_7745c5c3_Err = kda.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			cs := CSWidget{CS: p.CS, CSPerMinute: p.CSPerMinute}
+			templ_7745c5c3_Err = cs.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"flex gap-x-2 w-full justify-between lg:w-auto\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			rune := (RuneWidget)(p.RuneWidget)
+			templ_7745c5c3_Err = rune.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			item := ItemWidget{Items: p.Items, VisionScore: p.VisionScore}
+			templ_7745c5c3_Err = item.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"mt-10\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.RedSide.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-// ParticipantCard displays a participant in a match.
-type ParticipantCard struct {
-	ChampionWidget shared.ChampionWidget
-
-	NameWidget shared.NameWidget
-
-	KDAWidget shared.KDAWidget
-
-	CSWidget shared.CSWidget
-
-	RuneWidget shared.RuneWidget
-
-	Items shared.ItemInventory
-}
-
-func (m ParticipantCard) ToTempl(ctx context.Context) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var2 == nil {
-			templ_7745c5c3_Var2 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between lg:flex-nowrap\"><div class=\"flex gap-x-4\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.ChampionWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.NameWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"flex gap-x-2\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.KDAWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.CSWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><div class=\"flex gap-x-4 w-full justify-between lg:w-auto\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.RuneWidget.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = m.Items.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

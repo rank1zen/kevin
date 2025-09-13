@@ -7,7 +7,6 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/match"
 	"github.com/rank1zen/kevin/internal/component/search"
 	"github.com/rank1zen/kevin/internal/component/shared"
 	"github.com/rank1zen/kevin/internal/component/summoner"
@@ -15,76 +14,6 @@ import (
 	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/riot"
 )
-
-// History is a list of match accordions. If there are no matches, History is a card indicating no matches have been
-// played.
-type History component.Component
-
-type FrontendToHistoryMapper struct {
-	Region riot.Region
-
-	MatchHistory []internal.SummonerMatch
-}
-
-func (mapper FrontendToHistoryMapper) Map() History {
-	ma := mapper.MatchHistory
-
-	if len(ma) == 0 {
-		history := match.History{
-			Style: component.ListStyleSpaced,
-			Items: []component.Component{component.ComponentFunc(match.NonePlayed)},
-		}
-
-		return history
-	}
-
-	accordions := component.AccordionList{}
-
-	for _, m := range ma {
-		path, data := makeGetMatchDetailRequest(mapper.Region, m.MatchID)
-
-		card := match.HistoryCard{
-			ChampionWidget: match.ChampionWidget{
-				ChampionID:    m.ChampionID,
-				ChampionLevel: m.ChampionLevel,
-				SummonerIDs:   m.SummonerIDs,
-			},
-			KDAWidget: match.KDAWidget{
-				Kills:          m.Kills,
-				Deaths:         m.Deaths,
-				Assists:        m.Assists,
-				KilLDeathRatio: 1.3,
-			},
-			CSWidget: match.CSWidget{
-				CS:          m.CreepScore,
-				CSPerMinute: m.CreepScorePerMinute,
-			},
-			RuneWidget: (match.RuneWidget)(m.Runes),
-			ItemWidget: match.ItemWidget{
-				Items:       m.Items,
-				VisionScore: m.VisionScore,
-			},
-			RankDeltaWidget: match.RankDeltaWidget{
-				RankChange: nil,
-				LPChange:   nil,
-				Win:        m.Win,
-			},
-			Path: path,
-			Data: string(data),
-		}
-
-		accordion := component.LazyAccordion{
-			Children:        card,
-			Path:            path,
-			Data:            string(data),
-			LoadingChildren: component.ComponentFunc(match.DetailSkeleton),
-		}
-
-		accordions = append(accordions, accordion)
-	}
-
-	return accordions
-}
 
 type FrontendToSearchResultMapper struct {
 	Region riot.Region
@@ -128,80 +57,6 @@ func (mapper FrontendToSearchResultMapper) Map() component.Component {
 	return c
 }
 
-type FrontendToMatchDetailMapper struct {
-	MatchDetail internal.MatchDetail
-}
-
-func (mapper FrontendToMatchDetailMapper) Map() component.Component {
-	md := mapper.MatchDetail
-
-	var (
-		blue = component.List{Style: component.ListStyleRaised, Items: []component.Component{}}
-		red  = component.List{Style: component.ListStyleRaised, Items: []component.Component{}}
-	)
-
-	newParticipantCard := func(p internal.ParticipantDetail) match.ParticipantCard {
-		var rank *internal.Rank = nil
-		if p.CurrentRank != nil {
-			if p.CurrentRank.Detail != nil {
-				rank = &p.CurrentRank.Detail.Rank
-			}
-		}
-
-		return match.ParticipantCard{
-			ChampionWidget: shared.NewMatchChampionWidget(p.ChampionID, p.ChampionLevel, p.SummonerIDs),
-			NameWidget:     shared.NewNameWidget("Name", "Tag", rank),
-			KDAWidget:      shared.NewKDAWidget(p.Kills, p.Deaths, p.Assists),
-			CSWidget:       shared.NewCSWidget(p.CreepScore, p.CreepScorePerMinute),
-			RuneWidget:     shared.NewRuneWidget(p.Runes),
-			Items:          shared.NewItemInventory(p.Items, p.VisionScore),
-		}
-	}
-
-	for _, p := range getTeamParticipants(md, 100) {
-		blue.Items = append(blue.Items, newParticipantCard(p))
-	}
-
-	for _, p := range getTeamParticipants(md, 200) {
-		red.Items = append(red.Items, newParticipantCard(p))
-	}
-
-	scoreboard := match.Scoreboard{
-		BlueSide: component.Section{
-			Heading: "Blue Side",
-			Content: blue,
-		},
-		RedSide: component.Section{
-			Heading: "Red Side",
-			Content: red,
-		},
-	}
-
-	detail := match.Detail{
-		Tabs: component.TabList{
-			Tabs: []component.TabTrigger{
-				{Label: "Scoreboard"},
-			},
-		},
-		Panels: component.TabPanelList{
-			PanelList: []component.TabPanel{
-				{Children: scoreboard},
-			},
-		},
-		DateDurationWidget: match.DateDurationWidget{
-			Date:       md.Date,
-			Duration:   md.Duration,
-			AlignRight: true,
-		},
-	}
-
-	c := component.TabContainer{
-		Children: detail,
-	}
-
-	return c
-}
-
 type FrontendToSummonerChampstatMapper struct {
 	Champions []internal.SummonerChampion
 }
@@ -232,31 +87,6 @@ func MapLiveMatch(m internal.LiveMatch) view.LiveMatchModal {
 	v := view.LiveMatchModal{
 		Date:         m.Date,
 		Participants: m.Participants,
-	}
-
-	return v
-}
-
-func MapHistory(region riot.Region, m []internal.SummonerMatch) view.HistoryList {
-	v := view.HistoryList{
-		MatchHistory: []struct {
-			internal.SummonerMatch
-			Path string
-			Data string
-		}{},
-	}
-
-	for _, c := range m {
-		path, data := makeGetMatchDetailRequest(region, c.MatchID)
-		v.MatchHistory = append(v.MatchHistory, struct {
-			internal.SummonerMatch
-			Path string
-			Data string
-		}{
-			SummonerMatch: c,
-			Path:          path,
-			Data:          string(data),
-		})
 	}
 
 	return v

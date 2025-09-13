@@ -7,7 +7,6 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/shared"
 	"github.com/rank1zen/kevin/internal/component/view"
 	"github.com/rank1zen/kevin/internal/riot"
 )
@@ -32,7 +31,9 @@ func (h *Handler) CheckHealth(ctx context.Context) error {
 
 // GetHomePage returns the home page.
 func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (component.Component, error) {
-	v := shared.NewHomePage()
+	v := view.HomePage{
+		Region: region,
+	}
 	return v, nil
 }
 
@@ -54,6 +55,7 @@ func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name,
 		LiveMatch: view.LiveMatchRequest{},
 		Champion:  view.ChampionRequest{},
 		Update:    view.UpdateSummonerRequest{},
+		Region:    region,
 	}
 
 	var tmp []byte

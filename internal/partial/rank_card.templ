@@ -1,0 +1,35 @@
+package partial
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"strings"
+)
+
+type RankCard struct {
+	RankDetail *internal.RankDetail
+}
+
+templ (m RankCard) ToTempl(ctx context.Context) {
+	<div class="bg-gray-900/5 h-30 rounded-lg p-2">
+		if m.RankDetail == nil {
+			<div class="">
+				Unranked
+			</div>
+		} else {
+			<div class="flex justify-between items-center">
+				<div>Icon</div>
+				<div class="">
+					<div>
+						{{ tierName := strings.ToUpper(string(m.RankDetail.Rank.Tier)) }}
+						{ fmt.Sprintf("%s %d LP", tierName, m.RankDetail.Rank.LP) }
+					</div>
+					<div>
+						{ fmt.Sprintf("%dW - %dL (%d%%)", m.RankDetail.Wins, m.RankDetail.Losses, 51) }
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}

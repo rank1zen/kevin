@@ -1,0 +1,17 @@
+package suspense
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/component"
+)
+
+type MatchDetailBox struct {
+	Path string
+	Data string
+}
+
+templ (m MatchDetailBox) ToTempl(ctx context.Context) {
+	<div class="h-26 flex items-center justify-center">
+		@component.Spinner{}.ToTempl(ctx)
+	</div>
+}

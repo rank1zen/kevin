@@ -6,62 +6,62 @@ import (
 	"github.com/rank1zen/kevin/internal/component/match"
 )
 
-type HistoryList struct {
-	MatchHistory []struct {
-		internal.SummonerMatch
+type HistoryEntry struct {
+	internal.SummonerMatch
 
-		Path string
-		Data string
-	}
+	MatchDetailPath string
+	MatchDetailData string
+}
+
+type HistoryList struct {
+	Entries []HistoryEntry
 }
 
 templ (m HistoryList) ToTempl(ctx context.Context) {
-	<div>
-		for _, v := range m.MatchHistory {
-			<div class="mb-2 last:mb-0">
-				{{
-					card := match.HistoryCard{
-						ChampionWidget: match.ChampionWidget{
-							ChampionID:    v.ChampionID,
-							ChampionLevel: v.ChampionLevel,
-							SummonerIDs:   v.SummonerIDs,
-						},
-						KDAWidget: match.KDAWidget{
-							Kills:          v.Kills,
-							Deaths:         v.Deaths,
-							Assists:        v.Assists,
-							KilLDeathRatio: v.KillParticipation,
-						},
-						CSWidget: match.CSWidget{
-							CS:          v.CreepScore,
-							CSPerMinute: v.CreepScorePerMinute,
-						},
-						RuneWidget: (match.RuneWidget)(v.Runes),
-						ItemWidget: match.ItemWidget{
-							Items:       v.Items,
-							VisionScore: v.VisionScore,
-						},
-						RankDeltaWidget: match.RankDeltaWidget{
-							RankChange: nil,
-							LPChange:   nil,
-							Win:        v.Win,
-						},
-						Path: v.Path,
-						Data: v.Data,
-					}
-				}}
-				@card.ToTempl(ctx)
-			</div>
-		}
-	</div>
-}
-
-type HistoryNoMatches struct{}
-
-templ (m HistoryNoMatches) ToTempl(ctx context.Context) {
-	<div class="flex justify-center bg-white border border-gray-200 rounded-2xl items-center w-full h-15 dark:bg-black dark:border-neutral-600">
-		<span class="font-medium text-gray-900/90 text-sm dark:text-gray-100/90">
-			No matches played
-		</span>
-	</div>
+	if len(m.Entries) == 0 {
+		<div class="flex justify-center bg-white border border-gray-200 rounded-2xl items-center w-full h-15 dark:bg-black dark:border-neutral-600">
+			<span class="font-medium text-gray-900/90 text-sm dark:text-gray-100/90">
+				No matches played
+			</span>
+		</div>
+	} else {
+		<div>
+			for _, v := range m.Entries {
+				<div class="mb-2 last:mb-0">
+					{{
+						card := match.HistoryCard{
+							ChampionWidget: match.ChampionWidget{
+								ChampionID:    v.ChampionID,
+								ChampionLevel: v.ChampionLevel,
+								SummonerIDs:   v.SummonerIDs,
+							},
+							KDAWidget: match.KDAWidget{
+								Kills:          v.Kills,
+								Deaths:         v.Deaths,
+								Assists:        v.Assists,
+								KilLDeathRatio: v.KillParticipation,
+							},
+							CSWidget: match.CSWidget{
+								CS:          v.CreepScore,
+								CSPerMinute: v.CreepScorePerMinute,
+							},
+							RuneWidget: (match.RuneWidget)(v.Runes),
+							ItemWidget: match.ItemWidget{
+								Items:       v.Items,
+								VisionScore: v.VisionScore,
+							},
+							RankDeltaWidget: match.RankDeltaWidget{
+								RankChange: nil,
+								LPChange:   nil,
+								Win:        v.Win,
+							},
+							Path: v.MatchDetailPath,
+							Data: v.MatchDetailData,
+						}
+					}}
+					@card.ToTempl(ctx)
+				</div>
+			}
+		</div>
+	}
 }

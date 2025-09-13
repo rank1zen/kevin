@@ -1,0 +1,18 @@
+package suspense
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/partial"
+)
+
+type ChampionList struct {
+	Channel chan partial.ChampionList
+}
+
+templ (m ChampionList) ToTempl(ctx context.Context) {
+	@templ.Flush() {
+		for c := range m.Channel {
+			@c.ToTempl(ctx)
+		}
+	}
+}
