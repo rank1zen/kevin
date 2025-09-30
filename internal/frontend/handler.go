@@ -2,14 +2,30 @@ package frontend
 
 import (
 	"context"
+	"net/http"
 	"strings"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/view"
+	"github.com/rank1zen/kevin/internal/page"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/view/search"
+	"github.com/rank1zen/kevin/internal/view/shared"
 )
+
+func Error(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
+	w.WriteHeader(200)
+
+	logger := fromCtx(ctx)
+
+	logger.Debug("failed service")
+	shared.Error(ctx, shared.ErrorData{
+		StatusCode: 0,
+		Header:     "An error has occurred",
+		Message:    "",
+	})
+}
 
 // Handler provides the API for server operations.
 type Handler struct {
@@ -18,69 +34,34 @@ type Handler struct {
 	Datasource *internal.Datasource
 }
 
-// CheckHealth does a simple request to ensure systems are working.
-func (h *Handler) CheckHealth(ctx context.Context) error {
-	ds := h.Datasource
-	if ds == nil {
-		ds = &internal.Datasource{}
-	}
-
-	_, err := ds.GetPUUID(ctx, "orrange", "NA1")
-	return err
-}
-
-// GetHomePage returns the home page.
-func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (component.Component, error) {
-	v := view.HomePage{
+func (h *Handler) GetHomePage(ctx context.Context, region riot.Region) (*page.HomePageData, error) {
+	v := page.HomePageData{
 		Region: region,
-	}
-	return v, nil
-}
-
-// GetSummonerPage returns a summoner's profile page if summoner exists in
-// store, otherwise, it will complete a update for summoner, then return the
-// page. If no summoner with name#tag exists, return a does not exist page.
-func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string, tz *time.Location) (*view.ProfilePage, error) {
-	detail, err := h.Datasource.GetProfileDetailByRiotID(ctx, region, name, tag)
-	if err != nil {
-		return nil, err
-	}
-
-	v := view.ProfilePage{
-		PUUID:     detail.PUUID,
-		Name:      detail.Name,
-		Tag:       detail.Tagline,
-		Rank:      detail.Rank,
-		Requests:  []view.MatchHistoryRequest{},
-		LiveMatch: view.LiveMatchRequest{},
-		Champion:  view.ChampionRequest{},
-		Update:    view.UpdateSummonerRequest{},
-		Region:    region,
-	}
-
-	var tmp []byte
-	v.LiveMatch.Path, tmp = makeGetLiveMatch(region, detail.PUUID)
-	v.LiveMatch.Data = string(tmp)
-
-	v.Champion.Path, tmp = makeGetChampionList(region, detail.PUUID)
-	v.Champion.Data = string(tmp)
-
-	v.Update.Path, tmp = makeUpdateSummoner(region, detail.Name, detail.Tagline)
-	v.Update.Data = string(tmp)
-
-	dates := GetDays(time.Now().In(tz))
-	for i := range len(dates) - 1 {
-		path, data := makeGetMatchHistoryRequest(region, detail.PUUID, dates[i+1], dates[i])
-		v.Requests = append(v.Requests, view.MatchHistoryRequest{Date: dates[i+1], Path: path, Data: string(data)})
 	}
 
 	return &v, nil
 }
 
-// GetSearchResults returns a list of [SearchResultCard] for accounts that
-// match q. If no results were found, return [SearchNotFoundCard] instead. If
-// no tag was provided in q, region will be used.
-func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (component.Component, error) {
+// GetSummonerPage returns a summoner's profile page if summoner exists in
+// store, otherwise, it will complete a update for summoner, then return the
+// page. If no summoner with name#tag exists, return a does not exist page.
+func (h *Handler) GetSummonerPage(ctx context.Context, region riot.Region, name, tag string, tz *time.Location) (*page.ProfilePageData, error) {
+	storeProfile, err := h.Datasource.GetProfileDetailByRiotID(ctx, region, name, tag)
+	if err != nil {
+		return nil, err
+	}
+
+	v := page.ProfilePageData{
+		PUUID:  storeProfile.PUUID,
+		Region: region,
+		Name:   name,
+		Tag:    tag,
+	}
+
+	return &v, nil
+}
+
+func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q string) (templ.Component, error) {
 	storeSearchResults, err := h.Datasource.Search(ctx, region, q)
 	if err != nil {
 		return nil, err
@@ -92,19 +73,31 @@ func (h *Handler) GetSearchResults(ctx context.Context, region riot.Region, q st
 			tag = string(region)
 		}
 
-		v := NewSearchNotFoundCard(region, name, tag)
+		data := search.NotFoundCardData{
+			Region: region,
+			Name:   name,
+			Tag:    tag,
+			Path:   "",
+			Data:   "",
+		}
 
-		return v, nil
+		return search.NotFoundCard(ctx, data), nil
 	}
 
-	mapper := FrontendToSearchResultMapper{
-		Region:  region,
-		Results: storeSearchResults,
+	data := search.ResultListData{
+		Cards: []search.ResultCardData{},
 	}
 
-	c := mapper.Map()
+	for _, result := range storeSearchResults {
+		data.Cards = append(data.Cards, search.ResultCardData{
+			Name: result.Name,
+			Tag:  result.Tagline,
+			Rank: nil,
+			Path: "",
+		})
+	}
 
-	return c, nil
+	return search.ResultList(ctx, data), nil
 }
 
 // GetCurrentWeek returns the start of the day, 7 days ago. Currently returns

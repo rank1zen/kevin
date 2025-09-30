@@ -21,7 +21,7 @@ const (
 
 templ Popover() {
 	<div
-		x-id="['popover-button']"
+		x-id="['popover']"
 		x-data="{ open: false }"
 		@keydown.escape.prevent.stop="
 			open = false;
@@ -50,9 +50,9 @@ templ Trigger() {
 				open = true;
 			}
 		"
-		:aria-controls="$id('popover-button')"
+		:aria-controls="$id('popover')"
 		:aria-expanded="open"
-		class="relative rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
+		class="relative flex rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
 		:class="open && 'bg-gray-900/5 dark:bg-gray-100/5'"
 	>
 		{ children... }
@@ -70,7 +70,7 @@ templ Panel(position PopoverPosition) {
 					$refs.button.focus();
 				}
 			"
-			:id="$id('popover-button')"
+			:id="$id('popover')"
 			class="z-10 rounded-2xl bg-white border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10"
 			{ generateXAnchorAttrKey(position)... }
 		>

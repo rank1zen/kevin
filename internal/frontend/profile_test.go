@@ -36,7 +36,7 @@ func TestProfileHandler_GetMatchHistory(t *testing.T) {
 	require.NoError(t, err)
 
 	ids := []string{}
-	for _, match := range v.MatchHistory {
+	for _, match := range v.Matchlist {
 		ids = append(ids, match.MatchID)
 	}
 

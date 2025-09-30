@@ -11,8 +11,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/page"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/view/profile"
 )
 
 var (
@@ -33,7 +36,7 @@ type Server struct {
 }
 
 //go:embed static
-var staticAssets embed.FS
+var StaticAssets embed.FS
 
 // New creates a [Server]. If handler is nil, the default [Handler] is used.
 func New(handler *Handler, opts ...FrontendOption) *Server {
@@ -47,31 +50,33 @@ func New(handler *Handler, opts ...FrontendOption) *Server {
 
 	router := http.NewServeMux()
 
+	var (
+		profile = ProfileService{}
+		search  = SearchService{}
+	)
+
+	profile.RegisterRoutes(router)
+
 	router.HandleFunc("GET /", frontend.getHomePage)
 
 	router.HandleFunc("GET /{riotID}", frontend.getSumonerPage)
 
 	router.HandleFunc("POST /search", frontend.serveSearchResults)
 
-	router.HandleFunc("POST /summoner/fetch", frontend.updateSummoner)
-
-	router.HandleFunc("POST /summoner/matchlist", frontend.serveMatchlist)
-
-	router.HandleFunc("POST /summoner/live", frontend.serveLiveMatch)
-
-	router.HandleFunc("POST /summoner/champions", frontend.serveChampions)
-
-	router.HandleFunc("POST /match", frontend.serveMatchDetail)
-
 	loggedRouter := frontend.addLoggingMiddleware(router)
 
 	main := http.NewServeMux()
 	main.Handle("/", loggedRouter)
-	main.Handle("GET /static/", http.FileServer(http.FS(staticAssets)))
+	main.Handle("GET /static/", http.FileServer(http.FS(StaticAssets)))
 
 	frontend.router = main
 
 	return &frontend
+}
+
+func (s *Server) Open() error {
+	err := http.ListenAndServe(s.Address, s)
+	return err
 }
 
 type FrontendOption func(*Server)
@@ -82,11 +87,11 @@ func WithLogger(logger *slog.Logger) FrontendOption {
 	}
 }
 
-func (f *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f.router.ServeHTTP(w, r)
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.router.ServeHTTP(w, r)
 }
 
-func (f *Server) getHomePage(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getHomePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	logger := fromCtx(ctx)
@@ -102,22 +107,21 @@ func (f *Server) getHomePage(w http.ResponseWriter, r *http.Request) {
 
 	riotRegion := convertStringToRiotRegion(region)
 
-	component, err := f.handler.GetHomePage(ctx, riotRegion)
+	v, err := s.handler.GetHomePage(ctx, riotRegion)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", "err", err, payload)
 		return
 	}
 
-	err = component.ToTempl(ctx).Render(ctx, w)
-	if err != nil {
+	if err := page.HomePage(ctx, *v).Render(ctx, w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed rendering", "err", err)
 		return
 	}
 }
 
-func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	logger := fromCtx(ctx)
@@ -136,7 +140,7 @@ func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 
 	riotRegion := convertStringToRiotRegion(region)
 
-	component, err := f.handler.GetSummonerPage(ctx, riotRegion, name, tag, time.UTC)
+	data, err := s.handler.GetSummonerPage(ctx, riotRegion, name, tag, time.UTC)
 	if err != nil {
 		if errors.Is(err, internal.ErrSummonerNotFound) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -149,15 +153,45 @@ func (f *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = component.ToTempl(ctx).Render(ctx, w)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed rendering", "err", err)
-		return
-	}
+	championListCh := make(chan profile.ChampionListData)
+	data.ChampionListCh = championListCh
+
+	rankCardCh := make(chan profile.RankCardData)
+	data.RankCardCh = rankCardCh
+
+	historyEntryCh := make(chan profile.HistoryEntryData)
+	data.HistoryEntryCh = historyEntryCh
+	go func() {
+		defer close(historyEntryCh)
+		defer close(championListCh)
+		defer close(rankCardCh)
+
+		profileHandler := ProfileHandler{Datasource: s.handler.Datasource}
+		days := GetDays(time.Now())
+		for i := range len(days) - 1 {
+			historyEntryData, err := profileHandler.GetMatchHistory(ctx, MatchHistoryRequest{
+				Region:  riotRegion,
+				PUUID:   data.PUUID,
+				StartTS: days[i+1],
+				EndTS:   days[i],
+			})
+			if err == nil {
+				historyEntryCh <- *historyEntryData
+			}
+		}
+	}()
+
+	component := page.ProfilePage(ctx, *data)
+
+	templ.Handler(component, templ.WithStreaming()).ServeHTTP(w, r)
+	// if err := component.Render(ctx, w); err != nil {
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	logger.Debug("failed rendering", "err", err)
+	// 	return
+	// }
 }
 
-func (f *Server) serveSearchResults(w http.ResponseWriter, r *http.Request) {
+func (s *Server) serveSearchResults(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := fromCtx(ctx)
 
@@ -170,162 +204,25 @@ func (f *Server) serveSearchResults(w http.ResponseWriter, r *http.Request) {
 
 	riotRegion := convertStringToRiotRegion(region)
 
-	component, err := f.handler.GetSearchResults(ctx, riotRegion, q)
+	c, err := s.handler.GetSearchResults(ctx, riotRegion, q)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed service", slog.Any("err", err), payload)
 		return
 	}
 
-	err = component.ToTempl(ctx).Render(ctx, w)
-	if err != nil {
+	if err := c.Render(ctx, w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Debug("failed rendering", "err", err)
 		return
 	}
 }
 
-func (f *Server) serveMatchlist(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := fromCtx(ctx)
-
-	req, err := decode[MatchHistoryRequest](r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		logger.Debug("bad request", "err", err)
-		return
-	}
-
-	payload := slog.Any("request", req)
-
-	handler := ProfileHandler{Datasource: f.handler.Datasource}
-
-	component, err := handler.GetMatchHistory(ctx, req)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed service", "err", err, payload)
-		return
-	}
-
-	// TODO: adjust timezone here
-
-	err = component.ToTempl(ctx).Render(ctx, w)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed rendering", "err", err)
-		return
-	}
-}
-
-func (f *Server) updateSummoner(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := fromCtx(ctx)
-
-	decoded, _ := decode[UpdateSummonerRequest](r)
-
-	payload := slog.Group("payload", "region", decoded.Region, "name", decoded.Name, "tag", decoded.Tag)
-
-	handler := ProfileHandler{Datasource: f.handler.Datasource}
-
-	if err := handler.UpdateSummoner(ctx, decoded); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("service failed", "err", err, payload)
-		return
-	}
-
-	// Redirect to summoner page
-	w.Header().Set("HX-Location", fmt.Sprintf("/%s-%s", decoded.Name, decoded.Tag))
-	w.WriteHeader(http.StatusOK)
-}
-
-func (f *Server) serveChampions(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := fromCtx(ctx)
-
-	decoded, _ := decode[GetSummonerChampionsRequest](r)
-
-	payload := slog.Group("payload", "region", decoded.Region, "puuid", decoded.PUUID, "week", decoded.Week)
-
-	handler := ProfileHandler{Datasource: f.handler.Datasource}
-	component, err := handler.GetSummonerChampions(ctx, decoded)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed service", "err", err, payload)
-		return
-	}
-
-	err = component.ToTempl(ctx).Render(ctx, w)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed rendering", "err", err)
-		return
-	}
-}
-
-func (f *Server) serveLiveMatch(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := fromCtx(ctx)
-
-	req, err := decode[LiveMatchRequest](r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		logger.Debug("bad request", "err", err)
-		return
-	}
-
-	payload := slog.Group("payload", "region", req.Region, "puuid", req.PUUID)
-
-	handler := ProfileHandler{Datasource: f.handler.Datasource}
-	component, err := handler.GetLiveMatch(ctx, req)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed service", "err", err, payload)
-		return
-	}
-
-	err = component.ToTempl(ctx).Render(ctx, w)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed rendering", "err", err)
-		return
-	}
-}
-
-func (f *Server) serveMatchDetail(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := fromCtx(ctx)
-
-	req, err := decode[MatchDetailRequest](r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		slog.Debug("bad request", "err", err)
-		return
-	}
-
-	payload := slog.Group("payload", "region", req.Region, "match_id", req.MatchID)
-
-	handler := ProfileHandler{Datasource: f.handler.Datasource}
-	component, err := handler.GetMatchDetail(ctx, req)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed service", "err", err, payload)
-		return
-	}
-
-	// TODO: adjust timezone here
-
-	if err := component.ToTempl(ctx).Render(ctx, w); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed rendering", "err", err)
-		return
-	}
-}
-
-func (f *Server) addLoggingMiddleware(handler http.Handler) http.Handler {
+func (s *Server) addLoggingMiddleware(handler http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ts := time.Now()
 
-		requestLogger := f.Logger.With(slog.Group("request", "method", r.Method, "endpoint", r.URL))
+		requestLogger := s.Logger.With(slog.Group("request", "method", r.Method, "endpoint", r.URL))
 
 		r = r.WithContext(newCtx(r.Context(), requestLogger))
 

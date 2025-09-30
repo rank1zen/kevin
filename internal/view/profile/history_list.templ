@@ -1,0 +1,15 @@
+package profile
+
+import "context"
+
+type HistoryListData struct {
+	Async <-chan HistoryEntryData
+}
+
+templ HistoryList(ctx context.Context, data HistoryListData) {
+	for data := range data.Async {
+		@templ.Flush() {
+			@HistoryEntry(ctx, data)
+		}
+	}
+}

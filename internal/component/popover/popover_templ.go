@@ -48,7 +48,7 @@ func Popover() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['popover-button']\" x-data=\"{ open: false }\" @keydown.escape.prevent.stop=\"\n\t\t\topen = false;\n\t\t\t$refs.button.focus();\n\t\t\" @focusin.window=\"\n\t\t\tif (! $refs.panel.contains($event.target)) {\n\t\t\t\topen = false;\n\t\t\t}\n\t\t\" class=\"relative\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['popover']\" x-data=\"{ open: false }\" @keydown.escape.prevent.stop=\"\n\t\t\topen = false;\n\t\t\t$refs.button.focus();\n\t\t\" @focusin.window=\"\n\t\t\tif (! $refs.panel.contains($event.target)) {\n\t\t\t\topen = false;\n\t\t\t}\n\t\t\" class=\"relative\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -85,7 +85,7 @@ func Trigger() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<button type=\"button\" x-ref=\"button\" @click=\"\n\t\t\tif (open) {\n\t\t\t\topen = false;\n\t\t\t} else {\n\t\t\t\t$refs.button.focus();\n\t\t\t\topen = true;\n\t\t\t}\n\t\t\" :aria-controls=\"$id('popover-button')\" :aria-expanded=\"open\" class=\"relative rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10\" :class=\"open && 'bg-gray-900/5 dark:bg-gray-100/5'\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<button type=\"button\" x-ref=\"button\" @click=\"\n\t\t\tif (open) {\n\t\t\t\topen = false;\n\t\t\t} else {\n\t\t\t\t$refs.button.focus();\n\t\t\t\topen = true;\n\t\t\t}\n\t\t\" :aria-controls=\"$id('popover')\" :aria-expanded=\"open\" class=\"relative flex rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10\" :class=\"open && 'bg-gray-900/5 dark:bg-gray-100/5'\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -122,7 +122,7 @@ func Panel(position PopoverPosition) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<template x-if=\"true\"><div x-ref=\"panel\" x-show=\"open\" @click.outside=\"\n\t\t\t\tif (open) {\n\t\t\t\t\topen = false;\n\t\t\t\t\t$refs.button.focus();\n\t\t\t\t}\n\t\t\t\" :id=\"$id('popover-button')\" class=\"z-10 rounded-2xl bg-white border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<template x-if=\"true\"><div x-ref=\"panel\" x-show=\"open\" @click.outside=\"\n\t\t\t\tif (open) {\n\t\t\t\t\topen = false;\n\t\t\t\t\t$refs.button.focus();\n\t\t\t\t}\n\t\t\t\" :id=\"$id('popover')\" class=\"z-10 rounded-2xl bg-white border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

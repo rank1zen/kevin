@@ -1,0 +1,90 @@
+package shared
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+type HeaderData struct {
+	Region riot.Region
+}
+
+templ Header(ctx context.Context, data HeaderData) {
+	<div class="flex bg-white dark:bg-black h-13 gap-x-2 justify-between items-center px-2">
+		<div class="flex gap-x-2">
+			@ExtraMenu{}.ToTempl(ctx)
+			<a href="/" class="size-9 items-center justify-center cursor-pointer rounded-lg transition dark:hover:bg-gray-100/5 dark:active:bg-gray-100/20 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/20"></a>
+		</div>
+		<div class="flex flex-1 min-w-3xs max-w-sm gap-x-2 items-center">
+			@SearchBar{}.ToTempl(ctx)
+			{{
+				regions := RegionPicker{
+					CurrentRegion: data.Region,
+					Regions: []RegionEntry{
+						{
+							Region: riot.RegionBR1,
+							Name:   "Brazil",
+						},
+						{
+							Region: riot.RegionEUN1,
+							Name:   "Europe Nordic & East",
+						},
+						{
+							Region: riot.RegionEUW1,
+							Name:   "Europe West",
+						},
+						{
+							Region: riot.RegionJP1,
+							Name:   "Japan",
+						},
+						{
+							Region: riot.RegionKR,
+							Name:   "Korea",
+						},
+						{
+							Region: riot.RegionLA1,
+							Name:   "LAS",
+						},
+						{
+							Region: riot.RegionLA2,
+							Name:   "LAN",
+						},
+						{
+							Region: riot.RegionME1,
+							Name:   "Middle East",
+						},
+						{
+							Region: riot.RegionNA1,
+							Name:   "North America",
+						},
+						{
+							Region: riot.RegionOC1,
+							Name:   "Oceania",
+						},
+						{
+							Region: riot.RegionRU,
+							Name:   "Russia",
+						},
+						{
+							Region: riot.RegionSEA,
+							Name:   "Southeast Asia",
+						},
+						{
+							Region: riot.RegionTR1,
+							Name:   "Turkiye",
+						},
+						{
+							Region: riot.RegionTW2,
+							Name:   "Taiwan",
+						},
+						{
+							Region: riot.RegionVN2,
+							Name:   "Vietnam",
+						},
+					},
+				}
+			}}
+			@regions.ToTempl(ctx)
+		</div>
+	</div>
+}

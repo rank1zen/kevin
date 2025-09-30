@@ -13,6 +13,7 @@ import (
 	"github.com/rank1zen/kevin/internal/component/view"
 	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/view/profile"
 )
 
 type FrontendToSearchResultMapper struct {
@@ -90,6 +91,15 @@ func MapLiveMatch(m internal.LiveMatch) view.LiveMatchModal {
 	}
 
 	return v
+}
+
+func Map(date time.Time, matchlist []internal.SummonerMatch) *profile.HistoryEntryData {
+	data := &profile.HistoryEntryData{
+		Date:      date,
+		Matchlist: []profile.HistoryCardData{},
+	}
+
+	return data
 }
 
 func NewSearchNotFoundCard(region riot.Region, name, tag string) search.NotFoundCard {
