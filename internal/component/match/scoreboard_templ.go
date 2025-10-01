@@ -61,7 +61,7 @@ func (m Scoreboard) ToTempl(ctx context.Context) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		for _, p := range m.Participants {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between lg:flex-nowrap bg-white border-b border-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none\"><div class=\"flex gap-x-2 flex-1 min-w-0 max-w-60\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between bg-white border-b border-gray-900/10 lg:flex-nowrap dark:bg-gray-950 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none\"><div class=\"flex gap-x-2 flex-1 min-w-0 max-w-60\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -70,7 +70,7 @@ func (m Scoreboard) ToTempl(ctx context.Context) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"flex-1 min-w-0\"><div class=\"text-sm font-semibold text-gray-900/90 whitespace-nowrap dark:text-gray-100/90 truncate\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"flex-1 min-w-0\"><div class=\"text-sm font-semibold text-gray-900/90 whitespace-nowrap truncate dark:text-gray-100/90\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

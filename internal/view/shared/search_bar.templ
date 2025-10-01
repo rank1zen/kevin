@@ -1,9 +1,6 @@
 package shared
 
-import (
-	"context"
-	"github.com/rank1zen/kevin/internal/component"
-)
+import "context"
 
 type SearchBar struct{}
 
@@ -45,12 +42,8 @@ templ (m SearchBar) ToTempl(ctx context.Context) {
 						open = false;
 					}
 				"
-				class="absolute w-full mt-4 z-10 bg-white p-2 rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10"
-			>
-				<div class="h-15 flex items-center justify-center">
-					@component.Spinner{}.ToTempl(ctx)
-				</div>
-			</div>
+				class="absolute w-full mt-4 z-10 bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10"
+			></div>
 		</template>
 	</div>
 }

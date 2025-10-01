@@ -30,7 +30,7 @@ templ Trigger() {
 }
 
 templ Card() {
-	<div class="bg-white border border-gray-200 shadow-sm shadow-gray-200 dark:shadow-none rounded-2xl dark:bg-neutral-900 dark:border-neutral-600">
+	<div class="bg-white border border-gray-200 shadow-sm shadow-gray-200 rounded-2xl dark:shadow-none dark:bg-neutral-900 dark:border-neutral-600">
 		{ children... }
 	</div>
 }
@@ -39,7 +39,7 @@ templ Panel() {
 	<div
 		x-show="open"
 		x-cloak
-		class="bg-white border border-gray-200 shadow-sm shadow-gray-200 rounded-2xl dark:shadow-none mt-2 dark:bg-neutral-900 dark:border-neutral-600"
+		class="bg-white border border-gray-200 shadow-sm shadow-gray-200 rounded-2xl mt-2 dark:shadow-none dark:bg-neutral-900 dark:border-neutral-600"
 	>
 		{ children... }
 	</div>

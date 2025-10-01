@@ -106,7 +106,7 @@ func Card() templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"bg-white border border-gray-200 shadow-sm shadow-gray-200 dark:shadow-none rounded-2xl dark:bg-neutral-900 dark:border-neutral-600\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"bg-white border border-gray-200 shadow-sm shadow-gray-200 rounded-2xl dark:shadow-none dark:bg-neutral-900 dark:border-neutral-600\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -143,7 +143,7 @@ func Panel() templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div x-show=\"open\" x-cloak class=\"bg-white border border-gray-200 shadow-sm shadow-gray-200 rounded-2xl dark:shadow-none mt-2 dark:bg-neutral-900 dark:border-neutral-600\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div x-show=\"open\" x-cloak class=\"bg-white border border-gray-200 shadow-sm shadow-gray-200 rounded-2xl mt-2 dark:shadow-none dark:bg-neutral-900 dark:border-neutral-600\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

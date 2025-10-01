@@ -51,17 +51,16 @@ func New(handler *Handler, opts ...FrontendOption) *Server {
 	router := http.NewServeMux()
 
 	var (
-		profile = ProfileService{}
-		search  = SearchService{}
+		profile = ProfileService{Handler: &ProfileHandler{Datasource: handler.Datasource}}
+		search  = SearchService{Handler: &SearchHandler{Datasource: handler.Datasource}}
 	)
 
 	profile.RegisterRoutes(router)
+	search.RegisterRoutes(router)
 
 	router.HandleFunc("GET /", frontend.getHomePage)
 
 	router.HandleFunc("GET /{riotID}", frontend.getSumonerPage)
-
-	router.HandleFunc("POST /search", frontend.serveSearchResults)
 
 	loggedRouter := frontend.addLoggingMiddleware(router)
 
@@ -75,8 +74,8 @@ func New(handler *Handler, opts ...FrontendOption) *Server {
 }
 
 func (s *Server) Open() error {
-	err := http.ListenAndServe(s.Address, s)
-	return err
+	// err := http.ListenAndServe(s.Address, s)
+	return nil
 }
 
 type FrontendOption func(*Server)
@@ -189,33 +188,6 @@ func (s *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
 	// 	logger.Debug("failed rendering", "err", err)
 	// 	return
 	// }
-}
-
-func (s *Server) serveSearchResults(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := fromCtx(ctx)
-
-	var (
-		region = r.FormValue("region")
-		q      = r.FormValue("q")
-	)
-
-	payload := slog.Group("payload", "region", region, "q", q)
-
-	riotRegion := convertStringToRiotRegion(region)
-
-	c, err := s.handler.GetSearchResults(ctx, riotRegion, q)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed service", slog.Any("err", err), payload)
-		return
-	}
-
-	if err := c.Render(ctx, w); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed rendering", "err", err)
-		return
-	}
 }
 
 func (s *Server) addLoggingMiddleware(handler http.Handler) http.Handler {

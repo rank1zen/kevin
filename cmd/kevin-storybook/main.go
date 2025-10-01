@@ -240,6 +240,34 @@ var routes = []*Route{
 			},
 		}),
 	},
+	{
+		Name: "search.ResultMenu",
+		Path: "/search-result-menu",
+		Renderer: search.ResultMenu(context.Background(), search.ResultMenuData{
+			Name: "T1 OK GOOD YES",
+			Tag:  "NA1",
+			ProfileResults: []search.ResultCardData{
+				{
+					Name: "Bartholomew Montgomery",
+					Tag:  "NA1",
+					Rank: &internal.Rank{
+						Tier:     riot.TierBronze,
+						Division: riot.Division4,
+						LP:       67,
+					},
+				},
+				{
+					Name: "Bartholomew",
+					Tag:  "NA1",
+					Rank: &internal.Rank{
+						Tier:     riot.TierBronze,
+						Division: riot.Division4,
+						LP:       67,
+					},
+				},
+			},
+		}),
+	},
 }
 
 func aaa(x int) *int {

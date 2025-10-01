@@ -64,7 +64,7 @@ func MatchParticipantCard(ctx context.Context, data MatchParticipantCardData) te
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex-1 min-w-0\"><div class=\"text-sm font-semibold text-gray-900/90 whitespace-nowrap dark:text-gray-100/90 truncate\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex-1 min-w-0\"><div class=\"text-sm font-semibold text-gray-900/90 whitespace-nowrap truncate dark:text-gray-100/90\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -8,10 +8,7 @@ package shared
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import (
-	"context"
-	"github.com/rank1zen/kevin/internal/component"
-)
+import "context"
 
 type SearchBar struct{}
 
@@ -36,15 +33,7 @@ func (m SearchBar) ToTempl(ctx context.Context) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['summoner-search-bar']\" x-data=\"{ query: '', open: true }\" @focusin.window=\"\n\t\t\tif (! $refs.panel.contains($event.target)) {\n\t\t\t\topen = false;\n\t\t\t}\n\t\t\" class=\"relative flex-1 min-w-0\"><input type=\"hidden\" name=\"region\" value=\"NA1\"> <input type=\"search\" name=\"q\" placeholder=\"Search summoner...\" x-model=\"query\" @input=\"open = true\" hx-post=\"/search\" hx-trigger=\"input changed delay:250ms, keyup[key=='Enter']\" hx-include=\"[name='region']\" hx-target=\"#results\" class=\"transition h-9 rounded-lg bg-gray-900/5 text-sm text-gray-900/90 w-full inset-ring-blue-500/50 px-3 dark:bg-gray-200/5 dark:text-gray-100/90 focus:inset-ring-2 focus:outline-0\"><template x-if=\"true\"><div id=\"results\" x-ref=\"panel\" x-show=\"open && query != ''\" @click.outside=\"\n\t\t\t\t\tif (open) {\n\t\t\t\t\t\topen = false;\n\t\t\t\t\t}\n\t\t\t\t\" class=\"absolute w-full mt-4 z-10 bg-white p-2 rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10\"><div class=\"h-15 flex items-center justify-center\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = component.Spinner{}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></div></template></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div x-id=\"['summoner-search-bar']\" x-data=\"{ query: '', open: true }\" @focusin.window=\"\n\t\t\tif (! $refs.panel.contains($event.target)) {\n\t\t\t\topen = false;\n\t\t\t}\n\t\t\" class=\"relative flex-1 min-w-0\"><input type=\"hidden\" name=\"region\" value=\"NA1\"> <input type=\"search\" name=\"q\" placeholder=\"Search summoner...\" x-model=\"query\" @input=\"open = true\" hx-post=\"/search\" hx-trigger=\"input changed delay:250ms, keyup[key=='Enter']\" hx-include=\"[name='region']\" hx-target=\"#results\" class=\"transition h-9 rounded-lg bg-gray-900/5 text-sm text-gray-900/90 w-full inset-ring-blue-500/50 px-3 dark:bg-gray-200/5 dark:text-gray-100/90 focus:inset-ring-2 focus:outline-0\"><template x-if=\"true\"><div id=\"results\" x-ref=\"panel\" x-show=\"open && query != ''\" @click.outside=\"\n\t\t\t\t\tif (open) {\n\t\t\t\t\t\topen = false;\n\t\t\t\t\t}\n\t\t\t\t\" class=\"absolute w-full mt-4 z-10 bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10\"></div></template></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
