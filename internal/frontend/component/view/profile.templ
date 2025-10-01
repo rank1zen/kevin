@@ -1,0 +1,130 @@
+package view
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/component"
+	"github.com/rank1zen/kevin/internal/component/page"
+	"github.com/rank1zen/kevin/internal/component/profile"
+	"github.com/rank1zen/kevin/internal/component/shared"
+	"github.com/rank1zen/kevin/internal/riot"
+	"time"
+)
+
+type MatchHistoryRequest struct {
+	Date time.Time
+	Path string
+	Data string
+}
+
+type LiveMatchRequest struct {
+	Path string
+	Data string
+}
+
+type ChampionRequest struct {
+	Path string
+	Data string
+}
+
+type UpdateSummonerRequest struct {
+	Path string
+	Data string
+}
+
+type ProfilePage struct {
+	PUUID riot.PUUID
+
+	Region riot.Region
+
+	Name, Tag string
+
+	Rank internal.RankStatus
+
+	Requests []MatchHistoryRequest
+
+	LiveMatch LiveMatchRequest
+
+	Champion ChampionRequest
+
+	ChampionList profile.ChampionListPartial
+
+	Update UpdateSummonerRequest
+}
+
+templ (m ProfilePage) ToTempl(ctx context.Context) {
+	@page.Page(fmt.Sprintf("%s#%s - Kevin", m.Name, m.Tag)) {
+		@page.Header() {
+			@shared.Header{Region: m.Region}.ToTempl(ctx)
+		}
+		@page.Body() {
+			<div>
+				<div class="max-w-7xl px-2 py-5 mx-auto flex items-center lg:px-6">
+					<div class="flex items-center gap-x-2">
+						<h1 class="font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
+							{ fmt.Sprintf("%s#%s", m.Name, m.Tag) }
+						</h1>
+						@shared.RankTag{}.ToTempl(ctx)
+					</div>
+				</div>
+				<div class="flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6">
+					<div class="flex-1">
+						for _, r := range m.Requests {
+							<div class="py-3">
+								<h2 class="font-medium text-gray-900/90 mb-2 dark:text-neutral-100/90">
+									{ r.Date.Format("Monday, Jan 2") }
+								</h2>
+								<div
+									hx-post={ r.Path }
+									hx-trigger="load once"
+									hx-swap="outerHTML"
+									hx-ext="json-enc"
+									hx-vals={ r.Data }
+									class="px-4 h-15 flex justify-center items-center bg-white border border-gray-200 rounded-2xl dark:bg-black dark:border-neutral-600"
+								>
+									@component.Spinner{}.ToTempl(ctx)
+								</div>
+							</div>
+						}
+					</div>
+					<div class="w-2xs flex-none hidden md:block">
+						<div class="py-4 border-b border-gray-200 dark:border-neutral-600">
+							<h3 class="font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90">
+								Tier Graph
+							</h3>
+							<div class="my-2">
+								@profile.RankCard{}.ToTempl(ctx)
+							</div>
+							<div class="my-2">
+								@profile.UpdateProfileButton{Path: m.Update.Path, Data: m.Update.Data}.ToTempl(ctx)
+							</div>
+						</div>
+						<div class="py-4 border-b border-gray-200 dark:border-neutral-600">
+							<h3 class="font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90">
+								Live Match
+							</h3>
+							<div class="my-2">
+								@profile.LiveMatchButton{Path: m.LiveMatch.Path, Data: m.LiveMatch.Data}.ToTempl(ctx)
+							</div>
+						</div>
+						<div class="py-3 border-b border-gray-200 dark:border-neutral-600">
+							<h3 class="font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90">
+								Past Week
+							</h3>
+							<div class="my-2">
+								@m.ChampionList.ToTempl(ctx)
+							</div>
+							<div class="my-2">
+								@profile.SummonerChampionButton{}.ToTempl(ctx)
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+		@page.Footer() {
+			@shared.NewPageFooter().ToTempl(ctx)
+		}
+	}
+}

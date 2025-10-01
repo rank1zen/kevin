@@ -1,0 +1,46 @@
+package search
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal"
+)
+
+type ResultCardData struct {
+	Name, Tag string
+	Rank      *internal.Rank
+	Path      string
+}
+
+templ ResultCard(ctx context.Context, data ResultCardData) {
+	<a href={ data.Path } class="px-3 w-full h-15 flex flex-col justify-center items-start rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0">
+		<div class="text-sm font-medium text-gray-900/90 min-w-0 truncate dark:text-gray-200/90">
+			{ data.Name +"#"+ data.Tag }
+		</div>
+		<div class="flex gap-x-1">
+			if data.Rank != nil {
+				@RankTag(ctx, RankTagData{
+					Rank: *data.Rank,
+				})
+			} else {
+				<span class="text-xs text-gray-900/90">
+					Unranked
+				</span>
+			}
+		</div>
+	</a>
+}
+
+func NewResultCardData(m internal.SearchResult) *ResultCardData {
+	data := &ResultCardData{
+		Name: m.Name,
+		Tag:  m.Tagline,
+		Rank: nil,
+		Path: m.Name + "-" + m.Tagline,
+	}
+
+	if m.Rank != nil && m.Rank.Detail != nil {
+		data.Rank = &m.Rank.Detail.Rank
+	}
+
+	return data
+}

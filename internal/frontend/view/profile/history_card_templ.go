@@ -189,10 +189,4 @@ func HistoryCard(ctx context.Context, data HistoryCardData) templ.Component {
 	})
 }
 
-type Partial struct{}
-
-func resolvePartial(Partial) {
-
-}
-
 var _ = templruntime.GeneratedTemplate

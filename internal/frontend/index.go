@@ -3,21 +3,15 @@ package frontend
 import (
 	"net/http"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/page"
 )
 
 type IndexService struct {
-	Datasource *internal.Datasource
-
-	ProfileService ProfileService
-	SearchService  SearchService
+	Handler *IndexHandler
 }
 
 func (s *IndexService) RegisterRoutes(router *http.ServeMux) {
 	router.HandleFunc("GET /{$}", s.handleHomePage)
-
-	// router.HandleFunc("GET /{riotID}", s.handleProfilePage)
 }
 
 func (s *IndexService) handleHomePage(w http.ResponseWriter, r *http.Request) {
@@ -41,3 +35,5 @@ func (s *IndexService) handleHomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+type IndexHandler struct{}

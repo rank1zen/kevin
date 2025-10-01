@@ -1,0 +1,118 @@
+package shared
+
+import (
+	"context"
+	"fmt"
+)
+
+func NewKDAWidget(k, d, a int) KDAWidget {
+	c := KDAWidget{
+		Kills:          k,
+		Deaths:         d,
+		Assists:        a,
+		KilLDeathRatio: (float32(k) + float32(a)) / float32(d),
+	}
+
+	return c
+}
+
+func NewCSWidget(cs int, cspm float32) CSWidget {
+	c := CSWidget{
+		CS:          cs,
+		CSPerMinute: cspm,
+	}
+
+	return c
+}
+
+// KDAWidget is a fixed size widget displaying Kills, Deaths, and Assists.
+type KDAWidget struct {
+	Kills, Deaths, Assists int
+
+	KilLDeathRatio float32
+
+	AlignRight bool
+}
+
+templ (m KDAWidget) ToTempl(ctx context.Context) {
+	<div class="h-9 w-18">
+		<div class="flex flex-none items-center font-semibold text-sm">
+			<div class="flex-1 text-gray-900/90 text-left dark:text-gray-100/90">
+				{ fmt.Sprintf("%d", m.Kills) }
+			</div>
+			<div class="text-gray-900/5 mx-1 dark:text-gray-100/5">
+				/
+			</div>
+			<div class="flex-1 text-red-500/90 text-center">
+				{ fmt.Sprintf("%d", m.Deaths) }
+			</div>
+			<div class="text-gray-900/5 mx-1 dark:text-gray-100/5">
+				/
+			</div>
+			<div class="flex-1 text-gray-900/90 text-right dark:text-gray-100/90">
+				{ fmt.Sprintf("%d", m.Assists) }
+			</div>
+		</div>
+		if m.AlignRight {
+			<div class="text-xs text-right text-gray-900/90 dark:text-gray-100/90">
+				{ fmt.Sprintf("%.2f KDA", m.KilLDeathRatio) }
+			</div>
+		} else {
+			<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+				{ fmt.Sprintf("%.2f KDA", m.KilLDeathRatio) }
+			</div>
+		}
+	</div>
+}
+
+type CSWidget struct {
+	CS int
+
+	CSPerMinute float32
+
+	AlignRight bool
+}
+
+templ (m CSWidget) ToTempl(ctx context.Context) {
+	{{
+		var textAlign string
+		if m.AlignRight {
+			textAlign = "text-right"
+		} else {
+			textAlign = "text-left"
+		}
+	}}
+	<div class={ "h-9 w-15", textAlign }>
+		<div class="font-semibold text-sm text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%d CS", m.CS) }
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%.1f", m.CSPerMinute) }
+		</div>
+	</div>
+}
+
+// GoldWidget shows stats related to gold earned.
+type GoldWidget struct {
+	GoldEarned int
+
+	GoldEarnedPerMinute int
+
+	GoldDeltaCounterpart int
+
+	ShowIcon bool
+}
+
+templ (m GoldWidget) ToTempl(ctx context.Context) {
+	<div class="size-9">
+		<div class="font-semibold text-sm text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%d", m.GoldEarned) }
+			<span>
+				GLD
+			</span>
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%d", m.GoldEarnedPerMinute) }
+		</div>
+	</div>
+}

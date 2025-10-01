@@ -1,0 +1,42 @@
+package profile
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/riot"
+	"strings"
+)
+
+type RankCardData struct {
+	RankDetail *internal.RankDetail
+}
+
+templ RankCard(ctx context.Context, data RankCardData) {
+	if data.RankDetail == nil {
+		<div class="h-30 rounded-lg bg-gray-100 p-2 flex items-center justify-center">
+			<span class="text-sm text-gray-500/90">
+				UNRANKED
+			</span>
+		</div>
+	} else {
+		<div class="flex h-25 justify-between items-center bg-gray-100 rounded-lg p-2">
+			<img class="h-11" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsupport-leagueoflegends.riotgames.com%2Fhc%2Farticle_attachments%2F4415894930323%2FChallenger_Emblem_2022.png&f=1&nofb=1&ipt=de55a2f43584113307a306fb0c113a59419c4006df09d4c50cb866a9c914a841"/>
+			<div class="flex-none">
+				<div class="h-5 w-full font-medium text-sm text-gray-900/90">
+					{{ tierName := strings.ToUpper(string(data.RankDetail.Rank.Tier.String())) }}
+					{{ division := data.RankDetail.Rank.Division.String() }}
+					{{ lp := data.RankDetail.Rank.LP }}
+					if data.RankDetail.Rank.Tier == riot.TierChallenger || data.RankDetail.Rank.Tier == riot.TierGrandmaster || data.RankDetail.Rank.Tier == riot.TierMaster {
+						{ fmt.Sprintf("%s %d LP", tierName, lp) }
+					} else {
+						{ fmt.Sprintf("%s %s %d LP", tierName, division, lp) }
+					}
+				</div>
+				<div class="h-4 w-full text-right text-xs text-gray-900/90">
+					{ fmt.Sprintf("%dW - %dL (%d%%)", data.RankDetail.Wins, data.RankDetail.Losses, 51) }
+				</div>
+			</div>
+		</div>
+	}
+}

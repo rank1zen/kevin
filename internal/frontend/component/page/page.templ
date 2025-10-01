@@ -1,0 +1,45 @@
+package page
+
+templ Page(title string) {
+	<!DOCTYPE html>
+	<html
+		lang="en"
+		x-data="{ darkMode: false }"
+		:class="darkMode && 'dark'"
+	>
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<link rel="stylesheet" href="static/output.css"/>
+			<script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+			<script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/anchor@3.x.x/dist/cdn.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+			<title>
+				{ title }
+			</title>
+		</head>
+		<body class="bg-white dark:bg-black">
+			{ children... }
+		</body>
+	</html>
+}
+
+templ Header() {
+	<header class="sticky top-0 w-full z-90 bg-white border-b border-gray-900/10 dark:bg-black dark:border-gray-100/10">
+		{ children... }
+	</header>
+}
+
+templ Body() {
+	<main class="min-h-screen">
+		{ children... }
+	</main>
+}
+
+templ Footer() {
+	<footer class="w-full">
+		{ children... }
+	</footer>
+}

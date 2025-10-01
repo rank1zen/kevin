@@ -1,0 +1,95 @@
+package modal
+
+import "github.com/rank1zen/kevin/internal/component"
+
+templ Modal() {
+	<div
+		x-id="['modal-button']"
+		x-data="{ open: false }"
+		@keydown.escape.window="open = false"
+		class="relative"
+	>
+		{ children... }
+	</div>
+}
+
+templ Trigger() {
+	<button
+		type="button"
+		x-ref="trigger"
+		@click="open = true"
+		class="relative w-full flex items-center justify-center gap-x-2 h-9 cursor-pointer rounded-lg bg-gray-900/5 transition dark:bg-neutral-20 dark:hover:bg-neutral-100/40 dark:active:bg-neutral-100/60 hover:bg-gray-900/10 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
+	>
+		{ children... }
+	</button>
+}
+
+templ Panel() {
+	<template x-if="true">
+		<div
+			role="dialog"
+			x-ref="panel"
+			x-show="open"
+			x-trap.inert.noscroll="open"
+			aria-modal="true"
+			@click.stop
+			:id="$id('modal')"
+			x-transition.opacity
+			class="fixed inset-0 flex items-end justify-center z-100 bg-gray-900/20 md:items-center"
+		>
+			<div
+				x-show="open"
+				x-transition
+				class="bg-gray-50 border border-gray-900/10 shadow-lg shadow-gray-900/10 w-full rounded-t-2xl h-3/5 overflow-y-auto md:w-2xl md:rounded-2xl dark:bg-gray-950 dark:border-gray-100/10 dark:shadow-gray-100/10"
+			>
+				{ children... }
+			</div>
+		</div>
+	</template>
+}
+
+templ LazyPanel(Path, Data string) {
+	<template x-if="true">
+		<div
+			role="dialog"
+			x-ref="panel"
+			x-show="open"
+			x-trap.inert.noscroll="open"
+			aria-modal="true"
+			@click.stop
+			:id="$id('modal')"
+			x-transition.opacity
+			class="fixed inset-0 flex items-end justify-center z-100 bg-gray-900/20 md:items-center"
+		>
+			<div
+				hx-post={ Path }
+				hx-trigger="click"
+				hx-ext="json-enc"
+				hx-vals={ string(Data) }
+				x-show="open"
+				x-transition
+				class="bg-gray-50 border border-gray-900/10 shadow-lg shadow-gray-900/10 w-full rounded-t-2xl h-3/5 overflow-y-auto md:w-2xl md:rounded-2xl dark:bg-gray-950 dark:border-gray-100/10 dark:shadow-gray-100/10"
+			>
+				<div class="flex sticky top-0 z-10 bg-gray-50 items-center px-2 h-13 justify-end dark:bg-gray-950">
+					@ExitButton()
+				</div>
+				<div class="flex justify-center items-center">
+					@component.Spinner{}.ToTempl(ctx)
+				</div>
+			</div>
+		</div>
+	</template>
+}
+
+templ ExitButton() {
+	<div class="flex size-9 items-center justify-center">
+		<button
+			type="button"
+			x-ref="exit"
+			@click="open = false"
+			class="cursor-pointer size-7 rounded-full flex items-center justify-center bg-gray-900/5 dark:bg-gray-100/5"
+		>
+			@component.WindowCloseIcon()
+		</button>
+	</div>
+}

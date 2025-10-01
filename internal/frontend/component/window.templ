@@ -1,0 +1,41 @@
+// TODO: move modal window to layouts
+package component
+
+import (
+	"context"
+)
+
+// PanelWindow is a simple panel for floating layers.
+// Deprecated: use Panel instead
+type PanelWindow struct {
+	// Children are placed in the panel. A nil value indicates a blank
+	// panel with a fixed size.
+	Children Component
+}
+
+templ (m PanelWindow) ToTempl(ctx context.Context) {
+	if m.Children != nil {
+		<div class="bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10">
+			@m.Children.ToTempl(ctx)
+		</div>
+	} else {
+		<div class="w-36 h-48 bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10"></div>
+	}
+}
+
+// Panel is a simple panel for floating layers.
+type Panel struct {
+	// Children are placed in the panel. A nil value indicates a blank
+	// panel with a fixed size.
+	Children Component
+}
+
+templ (m Panel) ToTempl(ctx context.Context) {
+	if m.Children != nil {
+		<div class="w-max bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10">
+			@m.Children.ToTempl(ctx)
+		</div>
+	} else {
+		<div class="w-36 h-48 bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10"></div>
+	}
+}

@@ -1,0 +1,17 @@
+package profile
+
+import "context"
+
+type AsyncChampionListData struct {
+	DataCh <-chan ChampionListData
+}
+
+templ AsyncChampionList(ctx context.Context, data AsyncChampionListData) {
+	<div class="flex flex-col gap-y-1">
+		for data := range data.DataCh {
+			@templ.Flush() {
+				@ChampionList(ctx, data)
+			}
+		}
+	</div>
+}

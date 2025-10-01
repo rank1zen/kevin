@@ -20,6 +20,8 @@ type ProfileService struct {
 }
 
 func (s *ProfileService) RegisterRoutes(router *http.ServeMux) {
+	router.HandleFunc("GET /{riotID}/{$}", s.serveSumonerPage)
+
 	router.HandleFunc("POST /summoner/fetch", s.updateSummoner)
 
 	router.HandleFunc("POST /summoner/matchlist", s.serveMatchlist)

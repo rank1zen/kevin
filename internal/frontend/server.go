@@ -11,11 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/a-h/templ"
-	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/page"
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/view/profile"
 )
 
 var (
@@ -53,14 +49,12 @@ func New(handler *Handler, opts ...FrontendOption) *Server {
 	var (
 		profile = ProfileService{Handler: &ProfileHandler{Datasource: handler.Datasource}}
 		search  = SearchService{Handler: &SearchHandler{Datasource: handler.Datasource}}
+		index   = IndexService{Handler: &IndexHandler{}}
 	)
 
 	profile.RegisterRoutes(router)
 	search.RegisterRoutes(router)
-
-	router.HandleFunc("GET /", frontend.getHomePage)
-
-	router.HandleFunc("GET /{riotID}", frontend.getSumonerPage)
+	index.RegisterRoutes(router)
 
 	loggedRouter := frontend.addLoggingMiddleware(router)
 
@@ -88,106 +82,6 @@ func WithLogger(logger *slog.Logger) FrontendOption {
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
-}
-
-func (s *Server) getHomePage(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	logger := fromCtx(ctx)
-
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-
-	region := r.FormValue("region")
-
-	payload := slog.Group("payload", "region", region)
-
-	riotRegion := convertStringToRiotRegion(region)
-
-	v, err := s.handler.GetHomePage(ctx, riotRegion)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed service", "err", err, payload)
-		return
-	}
-
-	if err := page.HomePage(ctx, *v).Render(ctx, w); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed rendering", "err", err)
-		return
-	}
-}
-
-func (s *Server) getSumonerPage(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	logger := fromCtx(ctx)
-
-	region := r.FormValue("region")
-
-	payload := slog.Group("payload", "region", region)
-
-	riotID := r.PathValue("riotID")
-	name, tag, err := ParseRiotID(riotID)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		logger.Debug("failed to resolve riot id", "err", err, payload)
-		return
-	}
-
-	riotRegion := convertStringToRiotRegion(region)
-
-	data, err := s.handler.GetSummonerPage(ctx, riotRegion, name, tag, time.UTC)
-	if err != nil {
-		if errors.Is(err, internal.ErrSummonerNotFound) {
-			w.WriteHeader(http.StatusInternalServerError)
-			logger.Info("summoner is not found", "name", name, "tag", tag, payload)
-			return
-		}
-
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("failed service", "err", err, payload)
-		return
-	}
-
-	championListCh := make(chan profile.ChampionListData)
-	data.ChampionListCh = championListCh
-
-	rankCardCh := make(chan profile.RankCardData)
-	data.RankCardCh = rankCardCh
-
-	historyEntryCh := make(chan profile.HistoryEntryData)
-	data.HistoryEntryCh = historyEntryCh
-	go func() {
-		defer close(historyEntryCh)
-		defer close(championListCh)
-		defer close(rankCardCh)
-
-		profileHandler := ProfileHandler{Datasource: s.handler.Datasource}
-		days := GetDays(time.Now())
-		for i := range len(days) - 1 {
-			historyEntryData, err := profileHandler.GetMatchHistory(ctx, MatchHistoryRequest{
-				Region:  riotRegion,
-				PUUID:   data.PUUID,
-				StartTS: days[i+1],
-				EndTS:   days[i],
-			})
-			if err == nil {
-				historyEntryCh <- *historyEntryData
-			}
-		}
-	}()
-
-	component := page.ProfilePage(ctx, *data)
-
-	templ.Handler(component, templ.WithStreaming()).ServeHTTP(w, r)
-	// if err := component.Render(ctx, w); err != nil {
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	logger.Debug("failed rendering", "err", err)
-	// 	return
-	// }
 }
 
 func (s *Server) addLoggingMiddleware(handler http.Handler) http.Handler {

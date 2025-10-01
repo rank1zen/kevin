@@ -1,0 +1,25 @@
+package search
+
+import "context"
+
+type ResultMenuData struct {
+	Name, Tag      string
+	ProfileResults []ResultCardData
+}
+
+templ ResultMenu(ctx context.Context, data ResultMenuData) {
+	<div class="p-2">
+		<div class="py-2 border-b border-gray-200 first:pt-0 last:pb-0 last:border-none">
+			@NotFoundCard(ctx, NotFoundCardData{Name: data.Name, Tag: data.Tag})
+		</div>
+		if len(data.ProfileResults) > 0 {
+			<div class="py-2 border-b border-gray-200 first:pt-0 last:pb-0 last:border-none">
+				<ul>
+					for _, data := range data.ProfileResults {
+						@ResultCard(ctx, data)
+					}
+				</ul>
+			</div>
+		}
+	</div>
+}
