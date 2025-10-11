@@ -3,8 +3,6 @@ package profile
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/shared"
 )
 
 type ChampionWidgetData struct {
@@ -16,17 +14,17 @@ type ChampionWidgetData struct {
 templ ZChampionWidget(ctx context.Context, data ChampionWidgetData) {
 	<div class="flex flex-none gap-x-0.5 items-center">
 		<div class="relative">
-			{{ champion := shared.NewChampionSprite(data.ChampionID, component.TextSize2XL) }}
-			@champion.ToTempl(ctx)
+			// {{ champion := shared.NewChampionSprite(data.ChampionID, component.TextSize2XL) }}
+			// @champion.ToTempl(ctx)
 			<span class="right-0 bottom-0 size-4 text-xs absolute text-white text-center font-medium">
 				{ fmt.Sprintf("%d", data.ChampionLevel) }
 			</span>
 		</div>
 		<div class="flex flex-col gap-y-0.5">
-			for _, id := range data.SummonerIDs {
-				{{ spell := shared.NewSummonerSpellSprite(id, component.TextSizeXS) }}
-				@spell.ToTempl(ctx)
-			}
+			// for _, id := range data.SummonerIDs {
+			// 	{{ spell := shared.NewSummonerSpellSprite(id, component.TextSizeXS) }}
+			// 	@spell.ToTempl(ctx)
+			// }
 		</div>
 	</div>
 }

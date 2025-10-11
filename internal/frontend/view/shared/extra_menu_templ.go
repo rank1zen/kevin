@@ -10,8 +10,8 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/popover"
+	"github.com/rank1zen/kevin/internal/frontend/component/icon"
+	"github.com/rank1zen/kevin/internal/frontend/component/popover"
 )
 
 type ExtraMenu struct{}
@@ -65,7 +65,7 @@ func (m ExtraMenu) ToTempl(ctx context.Context) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = component.OpenMenuIcon().Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = icon.OpenMenuIcon().Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -99,7 +99,7 @@ func (m ExtraMenu) ToTempl(ctx context.Context) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = component.GithubIcon().Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = icon.GithubIcon().Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -107,7 +107,7 @@ func (m ExtraMenu) ToTempl(ctx context.Context) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = component.DarkModeIcon().Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = icon.DarkModeIcon().Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

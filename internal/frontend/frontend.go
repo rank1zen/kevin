@@ -1,8 +1,12 @@
 package frontend
 
 import (
+	"embed"
 	"time"
 )
+
+//go:embed static
+var StaticAssets embed.FS
 
 // GetDays returns 8 datetimes, representing the past 7 days, including the
 // given timestamp. Each date time is at midnight in the provided timezone. The

@@ -13,10 +13,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/rank1zen/kevin/internal/api"
-	"github.com/rank1zen/kevin/internal/component/page"
+	"github.com/rank1zen/kevin/internal/frontend/component/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/view/profile"
-	"github.com/rank1zen/kevin/internal/view/shared"
 	"time"
 )
 

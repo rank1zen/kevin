@@ -3,8 +3,6 @@ package profile
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/shared"
 )
 
 type ZItemWidgetData struct {
@@ -14,17 +12,17 @@ type ZItemWidgetData struct {
 
 templ ZItemWidget(ctx context.Context, data ZItemWidgetData) {
 	<div class="flex flex-none h-9 items-center pl-1 gap-x-1 bg-gray-100 rounded-lg dark:bg-neutral-100/20">
-		for i := range 6 {
-			if id := data.Items[i]; id != 0 {
-				{{ item := shared.NewItemSprite(id, component.TextSizeLG) }}
-				@item.ToTempl(ctx)
-			} else {
-				<div class="size-7 rounded bg-gray-200 dark:bg-neutral-800"></div>
-			}
-		}
+		// for i := range 6 {
+		// if id := data.Items[i]; id != 0 {
+		// 	{{ item := shared.NewItemSprite(id, component.TextSizeLG) }}
+		// 	@item.ToTempl(ctx)
+		// } else {
+		// 	<div class="size-7 rounded bg-gray-200 dark:bg-neutral-800"></div>
+		// }
+		// }
 		<div class="relative">
-			{{ ward := shared.NewItemSprite(data.Items[6], component.TextSizeLG) }}
-			@ward.ToTempl(ctx)
+			// {{ ward := shared.NewItemSprite(data.Items[6], component.TextSizeLG) }}
+			// @ward.ToTempl(ctx)
 			<span class="text-xs text-white font-medium left-1/2 -translate-x-1/2 bottom-0 absolute">
 				{ fmt.Sprintf("%d", data.VisionScore) }
 			</span>

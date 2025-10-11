@@ -10,10 +10,10 @@ import (
 	"github.com/a-h/templ"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+	"github.com/rank1zen/kevin/internal/frontend/view/search"
+	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/view/profile"
-	"github.com/rank1zen/kevin/internal/view/search"
-	"github.com/rank1zen/kevin/internal/view/shared"
 )
 
 func main() {
@@ -118,8 +118,6 @@ var routes = []*Route{
 			RankChange:     nil,
 			LPChange:       nil,
 			Win:            false,
-			Path:           "",
-			Data:           "",
 		}),
 	},
 	{

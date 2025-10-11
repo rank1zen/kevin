@@ -36,7 +36,12 @@ func New(handler *frontend.Handler, opts ...ServerOption) *Server {
 
 	router.Handle("GET /{$}", (*page.HomePageHandler)(handler))
 	router.Handle("GET /{riotID}/{$}", (*page.ProfilePageHandler)(handler))
-	router.Handle("GET /summoner/fetch/{$}", (*page.ProfilePageHandler)(handler))
+	router.Handle("GET /summoner/fetch/{$}", nil)
+
+	router.Handle("POST /summoner/matchlist", nil)
+	router.Handle("POST /summoner/live", nil)
+	router.Handle("POST /summoner/champions", nil)
+	router.Handle("POST /match", nil)
 
 	frontend.router = router
 

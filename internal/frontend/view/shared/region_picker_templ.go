@@ -11,8 +11,8 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/popover"
+	"github.com/rank1zen/kevin/internal/frontend/component/icon"
+	"github.com/rank1zen/kevin/internal/frontend/component/popover"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
@@ -89,7 +89,7 @@ func (m RegionPicker) ToTempl(ctx context.Context) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = component.DownSmallIcon().Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = icon.DownSmallIcon().Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

@@ -1,7 +1,7 @@
 package accordion
 
-import "github.com/rank1zen/kevin/internal/component"
 import "context"
+import "github.com/rank1zen/kevin/internal/frontend/component/icon"
 
 templ Accordion() {
 	<div
@@ -25,7 +25,7 @@ templ Trigger() {
 		class="flex items-center justify-center size-9 rounded-lg transition cursor-pointer dark:hover:bg-neutral-100/20 dark:active:bg-neutral-100/40 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
 		:class="open && 'bg-gray-900/5 dark:bg-neutral-100/20'"
 	>
-		@component.DownLargeIcon()
+		@icon.DownLargeIcon()
 	</button>
 }
 

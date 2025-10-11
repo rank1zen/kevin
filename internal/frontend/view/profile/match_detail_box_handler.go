@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/view/profile"
 )
 
 type MatchDetailBoxHandler frontend.Handler
@@ -26,9 +25,9 @@ func (h *MatchDetailBoxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	storeMatches, err := h.Datasource.GetMatchHistory(ctx, region, puuid)
 
-	v := &profile.HistoryEntryData{
+	v := &HistoryEntryData{
 		Date:      start,
-		Matchlist: []profile.HistoryCardData{},
+		Matchlist: []HistoryCardData{},
 	}
 
 	for _, match := range storeMatches {
@@ -36,7 +35,7 @@ func (h *MatchDetailBoxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 		kda := float32(match.Kills+match.Assists) / float32(match.Deaths)
 
-		v.Matchlist = append(v.Matchlist, profile.HistoryCardData{
+		v.Matchlist = append(v.Matchlist, HistoryCardData{
 			ChampionID:     match.ChampionID,
 			ChampionLevel:  match.ChampionLevel,
 			SummonerIDs:    match.SummonerIDs,
@@ -52,12 +51,10 @@ func (h *MatchDetailBoxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 			RankChange:     nil,
 			LPChange:       nil,
 			Win:            match.Win,
-			Path:           path,
-			Data:           string(data),
 		})
 	}
 
-	c := profile.HistoryEntry(ctx, *v)
+	c := HistoryEntry(ctx, *v)
 
 	if err := c.Render(ctx, w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

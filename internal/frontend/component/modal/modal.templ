@@ -1,6 +1,6 @@
 package modal
 
-import "github.com/rank1zen/kevin/internal/component"
+import "github.com/rank1zen/kevin/internal/frontend/component/icon"
 
 templ Modal() {
 	<div
@@ -73,9 +73,7 @@ templ LazyPanel(Path, Data string) {
 				<div class="flex sticky top-0 z-10 bg-gray-50 items-center px-2 h-13 justify-end dark:bg-gray-950">
 					@ExitButton()
 				</div>
-				<div class="flex justify-center items-center">
-					@component.Spinner{}.ToTempl(ctx)
-				</div>
+				<div class="flex justify-center items-center"></div>
 			</div>
 		</div>
 	</template>
@@ -89,7 +87,7 @@ templ ExitButton() {
 			@click="open = false"
 			class="cursor-pointer size-7 rounded-full flex items-center justify-center bg-gray-900/5 dark:bg-gray-100/5"
 		>
-			@component.WindowCloseIcon()
+			@icon.WindowCloseIcon()
 		</button>
 	</div>
 }

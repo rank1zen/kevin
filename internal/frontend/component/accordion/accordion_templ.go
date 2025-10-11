@@ -8,8 +8,8 @@ package accordion
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/rank1zen/kevin/internal/component"
 import "context"
+import "github.com/rank1zen/kevin/internal/frontend/component/icon"
 
 func Accordion() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -73,7 +73,7 @@ func Trigger() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = component.DownLargeIcon().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = icon.DownLargeIcon().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

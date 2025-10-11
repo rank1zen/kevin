@@ -3,67 +3,25 @@ package profile
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/shared"
-	"github.com/rank1zen/kevin/internal/ddragon"
 )
 
 type ChampionItemData struct {
-	Champion int
-
-	GamesPlayed int
-
+	Champion     int
+	GamesPlayed  int
 	Wins, Losses int
-
-	LPDelta *int
+	LPDelta      *int
 }
 
-// templ (m ChampionItem) ToTempl(ctx context.Context) {
-// 	<div class="flex gap-x-2 items-center">
-// 		<div class="flex items-center gap-x-2 w-1/2">
-// 			<div class="size-7 flex-none">
-// 				@shared.NewChampionSprite(int(m.Champion), component.TextSizeLG).ToTempl(ctx)
-// 			</div>
-// 			<span class="text-sm font-semibold text-gray-900/90 truncate dark:text-neutral-100/90">
-// 				{ ddragon.ChampionMap[int(m.Champion)].Name }
-// 			</span>
-// 		</div>
-// 		<div class="flex items-center gap-x-2 w-1/4">
-// 			<span class="text-sm font-mono font-medium text-gray-900/90 truncate dark:text-neutral-100/90">
-// 				{ fmt.Sprintf("%d-%d", m.Wins, m.Losses) }
-// 			</span>
-// 		</div>
-// 		<div class="flex items-center gap-x-2 w-1/4 justify-end">
-// 			if m.LPDelta == nil {
-// 				<span class="text-xs text-white px-1 rounded bg-gray-500/80">
-// 					+??
-// 				</span>
-// 			} else if *m.LPDelta > 0 {
-// 				<span class="text-xs text-white px-1 rounded bg-green-500/80">
-// 					{ fmt.Sprintf("%+d", *m.LPDelta) }
-// 				</span>
-// 			} else if *m.LPDelta < 0 {
-// 				<span class="text-xs text-white px-1 rounded bg-red-500/80">
-// 					{ fmt.Sprintf("%+d", *m.LPDelta) }
-// 				</span>
-// 			} else {
-// 				<span class="text-xs text-white px-1 rounded bg-gray-500/80">
-// 					{ fmt.Sprintf("%+d", *m.LPDelta) }
-// 				</span>
-// 			}
-// 		</div>
-// 	</div>
-// }
 templ ChampionItem(ctx context.Context, data ChampionItemData) {
 	<tr class="h-9">
 		<td class="">
 			<div class="pr-2 h-9 flex items-center gap-x-1">
 				<div class="size-7 flex-none">
-					@shared.NewChampionSprite(int(data.Champion), component.TextSizeLG).ToTempl(ctx)
+					// @shared.NewChampionSprite(int(data.Champion), component.TextSizeLG).ToTempl(ctx)
 				</div>
 				<div class="overflow-hidden inline-block truncate">
 					<span class="text-sm font-semibold text-gray-900/90 truncate dark:text-neutral-100/90">
-						{ ddragon.ChampionMap[int(data.Champion)].Name }
+						// { ddragon.ChampionMap[int(data.Champion)].Name }
 					</span>
 				</div>
 			</div>

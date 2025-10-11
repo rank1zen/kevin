@@ -1,10 +1,10 @@
 package page
 
 import (
-	"log/slog"
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type HomePageHandler frontend.Handler
@@ -12,14 +12,8 @@ type HomePageHandler frontend.Handler
 func (h *HomePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	region := r.FormValue("region")
-
-	payload := slog.Group("payload", "region", region)
-
-	riotRegion := convertStringToRiotRegion(region)
-
 	v := HomePageData{
-		Region: riotRegion,
+		Region: riot.RegionNA1,
 	}
 
 	if err := HomePage(ctx, v).Render(ctx, w); err != nil {

@@ -11,57 +11,15 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/shared"
-	"github.com/rank1zen/kevin/internal/ddragon"
 )
 
 type ChampionItemData struct {
-	Champion int
-
-	GamesPlayed int
-
+	Champion     int
+	GamesPlayed  int
 	Wins, Losses int
-
-	LPDelta *int
+	LPDelta      *int
 }
 
-//	templ (m ChampionItem) ToTempl(ctx context.Context) {
-//		<div class="flex gap-x-2 items-center">
-//			<div class="flex items-center gap-x-2 w-1/2">
-//				<div class="size-7 flex-none">
-//					@shared.NewChampionSprite(int(m.Champion), component.TextSizeLG).ToTempl(ctx)
-//				</div>
-//				<span class="text-sm font-semibold text-gray-900/90 truncate dark:text-neutral-100/90">
-//					{ ddragon.ChampionMap[int(m.Champion)].Name }
-//				</span>
-//			</div>
-//			<div class="flex items-center gap-x-2 w-1/4">
-//				<span class="text-sm font-mono font-medium text-gray-900/90 truncate dark:text-neutral-100/90">
-//					{ fmt.Sprintf("%d-%d", m.Wins, m.Losses) }
-//				</span>
-//			</div>
-//			<div class="flex items-center gap-x-2 w-1/4 justify-end">
-//				if m.LPDelta == nil {
-//					<span class="text-xs text-white px-1 rounded bg-gray-500/80">
-//						+??
-//					</span>
-//				} else if *m.LPDelta > 0 {
-//					<span class="text-xs text-white px-1 rounded bg-green-500/80">
-//						{ fmt.Sprintf("%+d", *m.LPDelta) }
-//					</span>
-//				} else if *m.LPDelta < 0 {
-//					<span class="text-xs text-white px-1 rounded bg-red-500/80">
-//						{ fmt.Sprintf("%+d", *m.LPDelta) }
-//					</span>
-//				} else {
-//					<span class="text-xs text-white px-1 rounded bg-gray-500/80">
-//						{ fmt.Sprintf("%+d", *m.LPDelta) }
-//					</span>
-//				}
-//			</div>
-//		</div>
-//	}
 func ChampionItem(ctx context.Context, data ChampionItemData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -83,58 +41,55 @@ func ChampionItem(ctx context.Context, data ChampionItemData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<tr class=\"h-9\"><td class=\"\"><div class=\"pr-2 h-9 flex items-center gap-x-1\"><div class=\"size-7 flex-none\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = shared.NewChampionSprite(int(data.Champion), component.TextSizeLG).ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"overflow-hidden inline-block truncate\"><span class=\"text-sm font-semibold text-gray-900/90 truncate dark:text-neutral-100/90\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<tr class=\"h-9\"><td class=\"\"><div class=\"pr-2 h-9 flex items-center gap-x-1\"><div class=\"size-7 flex-none\"></div><div class=\"overflow-hidden inline-block truncate\"><span class=\"text-sm font-semibold text-gray-900/90 truncate dark:text-neutral-100/90\"></span></div></div></td><td class=\"w-18\"><div class=\"pr-2 w-full\"><span class=\"text-sm font-mono font-medium text-gray-900/90 truncate dark:text-neutral-100/90\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(ddragon.ChampionMap[int(data.Champion)].Name)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d-%d", data.Wins, data.Losses))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_item.templ`, Line: 66, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_item.templ`, Line: 32, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</span></div></div></td><td class=\"w-18\"><div class=\"pr-2 w-full\"><span class=\"text-sm font-mono font-medium text-gray-900/90 truncate dark:text-neutral-100/90\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d-%d", data.Wins, data.Losses))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_item.templ`, Line: 74, Col: 51}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</span></div></td><td class=\"w-9\"><div class=\"text-right\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span></div></td><td class=\"w-9\"><div class=\"text-right\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if data.LPDelta == nil {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<span class=\"text-xs text-white px-1 rounded bg-gray-500/80\">+??</span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<span class=\"text-xs text-white px-1 rounded bg-gray-500/80\">+??</span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else if *data.LPDelta > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<span class=\"text-xs text-white px-1 rounded bg-green-500/80\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<span class=\"text-xs text-white px-1 rounded bg-green-500/80\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var3 string
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%+d", *data.LPDelta))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_item.templ`, Line: 44, Col: 41}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</span>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else if *data.LPDelta < 0 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<span class=\"text-xs text-white px-1 rounded bg-red-500/80\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%+d", *data.LPDelta))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_item.templ`, Line: 86, Col: 41}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_item.templ`, Line: 48, Col: 41}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -144,15 +99,15 @@ func ChampionItem(ctx context.Context, data ChampionItemData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		} else if *data.LPDelta < 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<span class=\"text-xs text-white px-1 rounded bg-red-500/80\">")
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<span class=\"text-xs text-white px-1 rounded bg-gray-500/80\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%+d", *data.LPDelta))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_item.templ`, Line: 90, Col: 41}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_item.templ`, Line: 52, Col: 41}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -162,26 +117,8 @@ func ChampionItem(ctx context.Context, data ChampionItemData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<span class=\"text-xs text-white px-1 rounded bg-gray-500/80\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%+d", *data.LPDelta))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_item.templ`, Line: 94, Col: 41}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</span>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div></td></tr>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div></td></tr>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

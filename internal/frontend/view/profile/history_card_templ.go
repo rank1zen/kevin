@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/component/accordion"
+	"github.com/rank1zen/kevin/internal/frontend/component/accordion"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 

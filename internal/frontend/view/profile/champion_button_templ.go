@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal/component/modal"
+	"github.com/rank1zen/kevin/internal/frontend/component/modal"
 )
 
 type ChampionButtonData struct {

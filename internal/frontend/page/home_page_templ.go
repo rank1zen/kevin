@@ -10,9 +10,9 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal/component/page"
+	"github.com/rank1zen/kevin/internal/frontend/component/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/view/shared"
 )
 
 type HomePageData struct {

@@ -8,9 +8,8 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/view/profile"
 )
 
 type ProfilePageHandler frontend.Handler
@@ -34,7 +33,7 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	storeProfile, err := h.Datasource.GetProfileDetailByRiotID(ctx, region, name, tag)
 
-	data := page.ProfilePageData{
+	data := ProfilePageData{
 		PUUID:          storeProfile.PUUID,
 		Region:         region,
 		Name:           name,
@@ -44,7 +43,7 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ChampionListCh: make(chan profile.ChampionListData),
 	}
 
-	c := page.ProfilePage(ctx, data)
+	c := ProfilePage(ctx, data)
 
 	go func() {
 		defer close(data.HistoryEntryCh)
