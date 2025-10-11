@@ -11,8 +11,8 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal/component/accordion"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type HistoryCardData struct {
@@ -30,8 +30,6 @@ type HistoryCardData struct {
 	RankChange             *internal.Rank
 	LPChange               *int
 	Win                    bool
-	Path                   string
-	Data                   string
 }
 
 func HistoryCard(ctx context.Context, data HistoryCardData) templ.Component {
@@ -161,21 +159,16 @@ func HistoryCard(ctx context.Context, data HistoryCardData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"h-26 flex items-center justify-center\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = component.Spinner{}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div>")
+				templ_7745c5c3_Err = PartialMatchDetailBox(ctx, PartialMatchDetailBoxData{
+					Region:  riot.RegionNA1,
+					MatchID: data.MatchID,
+				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				return nil
 			})
-			templ_7745c5c3_Err = accordion.LazyPanel{Path: data.Path, Data: data.Data}.ToTempl(ctx).Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = accordion.Panel().Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

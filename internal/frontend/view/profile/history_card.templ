@@ -3,8 +3,8 @@ package profile
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/component"
 	"github.com/rank1zen/kevin/internal/component/accordion"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type HistoryCardData struct {
@@ -22,8 +22,6 @@ type HistoryCardData struct {
 	RankChange             *internal.Rank
 	LPChange               *int
 	Win                    bool
-	Path                   string
-	Data                   string
 }
 
 templ HistoryCard(ctx context.Context, data HistoryCardData) {
@@ -61,10 +59,11 @@ templ HistoryCard(ctx context.Context, data HistoryCardData) {
 				</div>
 			</div>
 		}
-		@accordion.LazyPanel{Path: data.Path, Data: data.Data}.ToTempl(ctx) {
-			<div class="h-26 flex items-center justify-center">
-				@component.Spinner{}.ToTempl(ctx)
-			</div>
+		@accordion.Panel() {
+			@PartialMatchDetailBox(ctx, PartialMatchDetailBoxData{
+				Region:  riot.RegionNA1,
+				MatchID: data.MatchID,
+			})
 		}
 	}
 }
