@@ -2,6 +2,8 @@ package frontend
 
 import (
 	"embed"
+	"errors"
+	"strings"
 	"time"
 )
 
@@ -23,4 +25,24 @@ func GetDays(ts time.Time) []time.Time {
 	}
 
 	return days
+}
+
+func ParseRiotID(riotID string) (name, tag string, err error) {
+	index := strings.Index(riotID, "-")
+	if index == -1 {
+		return "", "", errors.New("invalid riot id")
+	}
+
+	if index == len(riotID)-1 {
+		return "", "", errors.New("invalid riot id")
+	}
+
+	name = riotID[:index]
+	tag = riotID[index+1:]
+
+	if index := strings.Index(tag, "-"); index != -1 {
+		return "", "", errors.New("invalid riot id")
+	}
+
+	return name, tag, nil
 }

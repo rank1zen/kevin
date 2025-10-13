@@ -3,12 +3,8 @@ package page
 import (
 	"log/slog"
 	"net/http"
-	"strings"
-	"time"
 
-	"github.com/a-h/templ"
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
@@ -24,7 +20,7 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	payload := slog.Group("payload", "region", region)
 
 	riotID := r.PathValue("riotID")
-	name, tag, err := parseRiotID(riotID)
+	name, tag, err := frontend.ParseRiotID(riotID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		logger.Debug("failed to resolve riot id", "err", err, payload)
@@ -38,63 +34,15 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Region:         region,
 		Name:           name,
 		Tag:            tag,
-		HistoryEntryCh: make(chan profile.HistoryEntryData),
-		RankCardCh:     make(chan profile.RankCardData),
-		ChampionListCh: make(chan profile.ChampionListData),
+		HistoryEntryCh: nil,
+		RankCardCh:     nil,
+		ChampionListCh: nil,
 	}
 
 	c := ProfilePage(ctx, data)
 
-	go func() {
-		defer close(data.HistoryEntryCh)
-		defer close(data.ChampionListCh)
-		defer close(data.RankCardCh)
-
-		days := GetDays(time.Now())
-
-		for i := range len(days) - 1 {
-			historyEntryData, err := h.GetMatchHistory(ctx, MatchHistoryRequest{
-				Region:  region,
-				PUUID:   data.PUUID,
-				StartTS: days[i+1],
-				EndTS:   days[i],
-			})
-
-			if err == nil {
-				data.HistoryEntryCh <- *historyEntryData
-			}
-		}
-
-		championListData, err := h.GetSummonerChampions(ctx, GetSummonerChampionsRequest{
-			Region: region,
-			PUUID:  data.PUUID,
-			Week:   GetCurrentWeek(),
-		})
-
-		if err == nil {
-			data.ChampionListCh <- *championListData
-		}
-	}()
-
-	templ.Handler(c, templ.WithStreaming()).ServeHTTP(w, r)
-}
-
-func parseRiotID(riotID string) (name, tag string, err error) {
-	index := strings.Index(riotID, "-")
-	if index == -1 {
-		return "", "", ErrInvalidRiotID
+	if err := c.Render(ctx, w); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-
-	if index == len(riotID)-1 {
-		return "", "", ErrInvalidRiotID
-	}
-
-	name = riotID[:index]
-	tag = riotID[index+1:]
-
-	if index := strings.Index(tag, "-"); index != -1 {
-		return "", "", ErrInvalidRiotID
-	}
-
-	return name, tag, nil
 }
