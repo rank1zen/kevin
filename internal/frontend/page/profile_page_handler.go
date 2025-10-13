@@ -1,33 +1,24 @@
 package page
 
 import (
-	"log/slog"
+	"errors"
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type ProfilePageHandler frontend.Handler
 
 func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	region := frontend.StrToRiotRegion(r.FormValue("region"))
+	name, tag := frontend.ParseRiotID(r.PathValue("riotID"))
 
-	logger := frontend.LoggerFromContext(ctx)
-
-	region := riot.RegionNA1
-
-	payload := slog.Group("payload", "region", region)
-
-	riotID := r.PathValue("riotID")
-	name, tag, err := frontend.ParseRiotID(riotID)
+	storeProfile, err := h.Datasource.GetProfileDetailByRiotID(r.Context(), region, name, tag)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		logger.Debug("failed to resolve riot id", "err", err, payload)
+		w.WriteHeader(http.StatusInternalServerError)
+		frontend.LogError(r, errors.New("storage failure"))
 		return
 	}
-
-	storeProfile, err := h.Datasource.GetProfileDetailByRiotID(ctx, region, name, tag)
 
 	data := ProfilePageData{
 		PUUID:          storeProfile.PUUID,
@@ -39,10 +30,11 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ChampionListCh: nil,
 	}
 
-	c := ProfilePage(ctx, data)
+	c := ProfilePage(r.Context(), data)
 
-	if err := c.Render(ctx, w); err != nil {
+	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		frontend.LogError(r, errors.New("templ render"))
 		return
 	}
 }

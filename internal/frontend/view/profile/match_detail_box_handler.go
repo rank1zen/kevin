@@ -1,63 +1,56 @@
 package profile
 
 import (
-	"log/slog"
+	"errors"
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type MatchDetailBoxHandler frontend.Handler
 
 func (h *MatchDetailBoxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	req := frontend.GetMatchDetailRequest{}
 
-	region := r.FormValue("region")
+	req.Region = new(riot.Region)
+	*req.Region = frontend.StrToRiotRegion(r.FormValue("region"))
 
-	payload := slog.Group("payload", "region", region)
+	req.MatchID = r.FormValue("matchID")
 
-	req, err := decode[MatchHistoryRequest](r)
+	profileService := (*frontend.ProfileService)(h)
+
+	storeMatch, err := profileService.GetMatchDetail(r.Context(), req)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		logger.Debug("bad request", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		frontend.LogError(r, errors.New("storage failure"))
 		return
 	}
 
-	storeMatches, err := h.Datasource.GetMatchHistory(ctx, region, puuid)
-
-	v := &HistoryEntryData{
-		Date:      start,
-		Matchlist: []HistoryCardData{},
+	v := MatchDetailBoxData{
+		Date:     storeMatch.Date,
+		Duration: storeMatch.Duration,
+		BlueSide: MatchTeamListData{
+			Participants: []MatchParticipantCardData{},
+		},
+		RedSide: MatchTeamListData{
+			Participants: []MatchParticipantCardData{},
+		},
 	}
 
-	for _, match := range storeMatches {
-		path, data := makeGetMatchDetailRequest(req.Region, match.MatchID)
-
-		kda := float32(match.Kills+match.Assists) / float32(match.Deaths)
-
-		v.Matchlist = append(v.Matchlist, HistoryCardData{
-			ChampionID:     match.ChampionID,
-			ChampionLevel:  match.ChampionLevel,
-			SummonerIDs:    match.SummonerIDs,
-			Kills:          match.Kills,
-			Deaths:         match.Deaths,
-			Assists:        match.Assists,
-			KillDeathRatio: kda,
-			CS:             match.CreepScore,
-			CSPerMinute:    match.CreepScorePerMinute,
-			RunePage:       match.Runes,
-			Items:          match.Items,
-			VisionScore:    match.VisionScore,
-			RankChange:     nil,
-			LPChange:       nil,
-			Win:            match.Win,
-		})
+	for i := range 5 {
+		v.BlueSide.Participants = append(v.BlueSide.Participants, *NewMatchParticipantCardData(storeMatch.Participants[i]))
 	}
 
-	c := HistoryEntry(ctx, *v)
+	for i := range 5 {
+		v.RedSide.Participants = append(v.RedSide.Participants, *NewMatchParticipantCardData(storeMatch.Participants[5+i]))
+	}
 
-	if err := c.Render(ctx, w); err != nil {
+	c := MatchDetailBox(r.Context(), v)
+
+	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		frontend.LogError(r, errors.New("templ error"))
 		return
 	}
 }

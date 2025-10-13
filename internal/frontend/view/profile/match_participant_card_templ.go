@@ -56,7 +56,7 @@ func MatchParticipantCard(ctx context.Context, data MatchParticipantCardData) te
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = ZChampionWidget(ctx, ChampionWidgetData{
+		templ_7745c5c3_Err = ChampionWidget(ctx, ChampionWidgetData{
 			ChampionID:    data.ChampionID,
 			ChampionLevel: data.ChampionLevel,
 			SummonerIDs:   data.SummonerIDs,
@@ -81,13 +81,19 @@ func MatchParticipantCard(ctx context.Context, data MatchParticipantCardData) te
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		kda := KDAWidget{Kills: data.Kills, Deaths: data.Deaths, Assists: data.Assists}
-		templ_7745c5c3_Err = kda.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = KDAWidget(ctx, KDAWidgetData{
+			Kills:          data.Kills,
+			Deaths:         data.Deaths,
+			Assists:        data.Assists,
+			KillDeathRatio: data.KillDeathRatio,
+		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		cs := CSWidget{CS: data.CS, CSPerMinute: data.CSPerMinute}
-		templ_7745c5c3_Err = cs.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = CSWidget(ctx, CSWidgetData{
+			CS:          data.CS,
+			CSPerMinute: data.CSPerMinute,
+		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -95,13 +101,13 @@ func MatchParticipantCard(ctx context.Context, data MatchParticipantCardData) te
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = ZRuneWidget(ctx, ZRuneWidgetData{
+		templ_7745c5c3_Err = RuneWidget(ctx, RuneWidgetData{
 			RunePage: data.RunePage,
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = ZItemWidget(ctx, ZItemWidgetData{
+		templ_7745c5c3_Err = ItemWidget(ctx, ItemWidgetData{
 			Items:       data.Items,
 			VisionScore: data.VisionScore,
 		}).Render(ctx, templ_7745c5c3_Buffer)

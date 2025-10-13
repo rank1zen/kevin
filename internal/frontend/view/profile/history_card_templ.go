@@ -81,27 +81,27 @@ func HistoryCard(ctx context.Context, data HistoryCardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = ChampionWidget{
+				templ_7745c5c3_Err = ChampionWidget(ctx, ChampionWidgetData{
 					ChampionID:    data.ChampionID,
 					ChampionLevel: data.ChampionLevel,
 					SummonerIDs:   data.SummonerIDs,
-				}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = KDAWidget{
+				templ_7745c5c3_Err = KDAWidget(ctx, KDAWidgetData{
 					Kills:          data.Kills,
 					Deaths:         data.Deaths,
 					Assists:        data.Assists,
 					KillDeathRatio: data.KillDeathRatio,
-				}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = CSWidget{
+				templ_7745c5c3_Err = CSWidget(ctx, CSWidgetData{
 					CS:          data.CS,
 					CSPerMinute: data.CSPerMinute,
-				}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -125,11 +125,16 @@ func HistoryCard(ctx context.Context, data HistoryCardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = RuneWidget(data.RunePage).ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = RuneWidget(ctx, RuneWidgetData{
+					RunePage: data.RunePage,
+				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = ItemWidget{Items: data.Items, VisionScore: data.VisionScore}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = ItemWidget(ctx, ItemWidgetData{
+					Items:       data.Items,
+					VisionScore: data.VisionScore,
+				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

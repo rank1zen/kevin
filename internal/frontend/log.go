@@ -3,6 +3,7 @@ package frontend
 import (
 	"context"
 	"log/slog"
+	"net/http"
 )
 
 type ctxKey struct{}
@@ -28,4 +29,9 @@ func LoggerFromContext(parent context.Context) *slog.Logger {
 	}
 
 	return slog.Default()
+}
+
+func LogError(r *http.Request, err error) {
+	logger := LoggerFromContext(r.Context())
+	logger.Error("[http] error", "method", r.Method, "path", r.URL.Path, "error", err)
 }

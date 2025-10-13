@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -11,22 +12,35 @@ import (
 type HistoryEntryHandler frontend.Handler
 
 func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := frontend.LoggerFromContext(ctx)
+	req := frontend.GetMatchHistoryRequest{}
 
-	puuid := riot.PUUID("aaa")
-	start := time.Now()
-	end := start.Add(12 * time.Second)
+	switch r.Header.Get("Content-type") {
+	default:
+		req.Region = new(riot.Region)
+		*req.Region = frontend.StrToRiotRegion(r.FormValue("region"))
 
-	storeMatches, err := h.Datasource.GetMatchHistory(ctx, riot.RegionNA1, puuid, start, end)
+		req.PUUID = riot.PUUID(r.FormValue("puuid"))
+
+		if start, err := time.Parse(time.RFC3339, r.FormValue("start")); err == nil {
+			req.StartTS = &start
+		}
+
+		if end, err := time.Parse(time.RFC3339, r.FormValue("end")); err == nil {
+			req.EndTS = &end
+		}
+	}
+
+	profileService := (*frontend.ProfileService)(h)
+
+	storeMatches, err := profileService.GetMatchHistory(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		logger.Debug("datasource failed", "err", err)
+		frontend.LogError(r, errors.New("service failure"))
 		return
 	}
 
 	v := &HistoryEntryData{
-		Date:      start,
+		Date:      *req.StartTS,
 		Matchlist: []HistoryCardData{},
 	}
 
@@ -53,10 +67,11 @@ func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		})
 	}
 
-	c := HistoryEntry(ctx, *v)
+	c := HistoryEntry(r.Context(), *v)
 
-	if err := c.Render(ctx, w); err != nil {
+	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		frontend.LogError(r, errors.New("templ error"))
 		return
 	}
 }

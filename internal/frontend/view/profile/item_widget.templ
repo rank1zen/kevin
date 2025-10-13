@@ -5,12 +5,12 @@ import (
 	"fmt"
 )
 
-type ZItemWidgetData struct {
+type ItemWidgetData struct {
 	Items       [7]int
 	VisionScore int
 }
 
-templ ZItemWidget(ctx context.Context, data ZItemWidgetData) {
+templ ItemWidget(ctx context.Context, data ItemWidgetData) {
 	<div class="flex flex-none h-9 items-center pl-1 gap-x-1 bg-gray-100 rounded-lg dark:bg-neutral-100/20">
 		// for i := range 6 {
 		// if id := data.Items[i]; id != 0 {

@@ -26,7 +26,7 @@ type MatchParticipantCardData struct {
 templ MatchParticipantCard(ctx context.Context, data MatchParticipantCardData) {
 	<div class="@container px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between @3xl:flex-nowrap bg-white border-b border-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 first:rounded-t-2xl last:rounded-b-2xl last:border-none">
 		<div class="flex gap-x-2 flex-1 min-w-0 max-w-60">
-			@ZChampionWidget(ctx, ChampionWidgetData{
+			@ChampionWidget(ctx, ChampionWidgetData{
 				ChampionID:    data.ChampionID,
 				ChampionLevel: data.ChampionLevel,
 				SummonerIDs:   data.SummonerIDs,
@@ -41,16 +41,22 @@ templ MatchParticipantCard(ctx context.Context, data MatchParticipantCardData) {
 			</div>
 		</div>
 		<div class="flex gap-x-4">
-			{{ kda := KDAWidget{Kills: data.Kills, Deaths: data.Deaths, Assists: data.Assists} }}
-			@kda.ToTempl(ctx)
-			{{ cs := CSWidget{CS: data.CS, CSPerMinute: data.CSPerMinute} }}
-			@cs.ToTempl(ctx)
+			@KDAWidget(ctx, KDAWidgetData{
+				Kills:          data.Kills,
+				Deaths:         data.Deaths,
+				Assists:        data.Assists,
+				KillDeathRatio: data.KillDeathRatio,
+			})
+			@CSWidget(ctx, CSWidgetData{
+				CS:          data.CS,
+				CSPerMinute: data.CSPerMinute,
+			})
 		</div>
 		<div class="flex gap-x-2 w-full justify-between @3xl:w-auto">
-			@ZRuneWidget(ctx, ZRuneWidgetData{
+			@RuneWidget(ctx, RuneWidgetData{
 				RunePage: data.RunePage,
 			})
-			@ZItemWidget(ctx, ZItemWidgetData{
+			@ItemWidget(ctx, ItemWidgetData{
 				Items:       data.Items,
 				VisionScore: data.VisionScore,
 			})

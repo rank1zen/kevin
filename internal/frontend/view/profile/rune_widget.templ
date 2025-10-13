@@ -7,11 +7,11 @@ import (
 	"path"
 )
 
-type ZRuneWidgetData struct {
+type RuneWidgetData struct {
 	RunePage internal.RunePage
 }
 
-templ ZRuneWidget(ctx context.Context, data ZRuneWidgetData) {
+templ RuneWidget(ctx context.Context, data RuneWidgetData) {
 	<div class="flex flex-none bg-gray-100 rounded-lg dark:bg-neutral-900">
 		<div class="transition size-9 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-200">
 			{{ keystonePath := path.Join("/static/", ddragon.RuneMap[data.RunePage.PrimaryKeystone].IconPath) }}

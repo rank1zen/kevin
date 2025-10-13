@@ -13,9 +13,6 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/component"
-	"github.com/rank1zen/kevin/internal/component/live"
-	"github.com/rank1zen/kevin/internal/component/shared"
 )
 
 type LiveMatchModalData struct {
@@ -44,73 +41,6 @@ func LiveMatchModal(ctx context.Context, data LiveMatchModalData) templ.Componen
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-
-		blueSide, redSide := live.ParticipantList{}, live.ParticipantList{}
-		for i, p := range data.Participants {
-			card := live.Participant{
-				ChampionWidget: live.ChampionWidget{
-					ChampionID:  p.ChampionID,
-					SummonerIDs: p.SummonersIDs,
-				},
-				RuneWidget: live.RuneWidget(p.Runes),
-				Participant: live.ParticipantWidget{
-					Name: "XXX",
-					Tag:  "XXX",
-					Rank: shared.RankTag{},
-				},
-			}
-
-			if i < 5 {
-				blueSide = append(blueSide, card)
-			} else {
-				redSide = append(redSide, card)
-			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex sticky top-0 z-10 bg-gray-50 items-center px-2 h-13 justify-between gap-x-2 dark:bg-gray-950\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-
-		w := live.MatchWidget{
-			StartTimestamp: data.Date,
-			AverageRank:    shared.RankTag{},
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex items-center gap-x-2\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = w.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"flex items-center gap-x-2\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = component.ModalExitButton{}.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div><div class=\"px-2 md:px-9\"><div class=\"mt-3\"><h2 class=\"font-semibold text-gray-900/90 dark:text-gray-100/90\">Blue Side</h2><div class=\"mt-3\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = blueSide.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></div><div class=\"mt-3\"><h2 class=\"font-semibold text-gray-900/90 dark:text-gray-100/90\">Red Side</h2><div class=\"mt-3\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = redSide.ToTempl(ctx).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
 		return nil
 	})
 }

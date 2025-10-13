@@ -1,23 +1,26 @@
 package page
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type HomePageHandler frontend.Handler
 
 func (h *HomePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	region := frontend.StrToRiotRegion(r.FormValue("region"))
 
 	v := HomePageData{
-		Region: riot.RegionNA1,
+		Region: region,
 	}
 
-	if err := HomePage(ctx, v).Render(ctx, w); err != nil {
+	c := HomePage(r.Context(), v)
+
+	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		frontend.LogError(r, errors.New("templ render"))
 		return
 	}
 }

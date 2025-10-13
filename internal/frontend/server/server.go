@@ -7,6 +7,7 @@ import (
 
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 )
 
 type Server struct {
@@ -38,10 +39,10 @@ func New(handler *frontend.Handler, opts ...ServerOption) *Server {
 	router.Handle("GET /{riotID}/{$}", (*page.ProfilePageHandler)(handler))
 	router.Handle("GET /summoner/fetch/{$}", nil)
 
-	router.Handle("POST /summoner/matchlist", nil)
+	router.Handle("POST /summoner/matchlist", (*profile.HistoryEntryHandler)(handler))
 	router.Handle("POST /summoner/live", nil)
-	router.Handle("POST /summoner/champions", nil)
-	router.Handle("POST /match", nil)
+	router.Handle("POST /summoner/champions", (*profile.ChampionListHandler)(handler))
+	router.Handle("POST /match", (*profile.MatchDetailBoxHandler)(handler))
 
 	frontend.router = router
 
