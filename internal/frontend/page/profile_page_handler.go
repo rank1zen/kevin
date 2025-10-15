@@ -2,6 +2,7 @@ package page
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/frontend"
@@ -16,18 +17,15 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	storeProfile, err := h.Datasource.GetProfileDetailByRiotID(r.Context(), region, name, tag)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		frontend.LogError(r, errors.New("storage failure"))
+		frontend.LogError(r, fmt.Errorf("storage error: %w", err))
 		return
 	}
 
 	data := ProfilePageData{
-		PUUID:          storeProfile.PUUID,
-		Region:         region,
-		Name:           name,
-		Tag:            tag,
-		HistoryEntryCh: nil,
-		RankCardCh:     nil,
-		ChampionListCh: nil,
+		PUUID:  storeProfile.PUUID,
+		Region: region,
+		Name:   name,
+		Tag:    tag,
 	}
 
 	c := ProfilePage(r.Context(), data)

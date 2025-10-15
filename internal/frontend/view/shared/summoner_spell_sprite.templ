@@ -29,5 +29,7 @@ templ SummonerSpellSprite(ctx context.Context, data SummonerSpellSpriteData) {
 			Y:         pixelSize * y,
 		}
 	}}
-	@Sprite(ctx, spriteData)
+	<div class="rounded-xs overflow-hidden">
+		@Sprite(ctx, spriteData)
+	</div>
 }

@@ -47,6 +47,7 @@ func ChampionWidget(ctx context.Context, data ChampionWidgetData) templ.Componen
 		}
 		templ_7745c5c3_Err = shared.ChampionSprite(ctx, shared.ChampionSpriteData{
 			ChampionID: data.ChampionID,
+			Size:       1,
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -58,7 +59,7 @@ func ChampionWidget(ctx context.Context, data ChampionWidgetData) templ.Componen
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", data.ChampionLevel))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_widget.templ`, Line: 22, Col: 43}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/champion_widget.templ`, Line: 23, Col: 43}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {

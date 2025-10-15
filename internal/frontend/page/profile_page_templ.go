@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/rank1zen/kevin/internal/api"
+	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/component/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
@@ -26,12 +27,6 @@ type ProfilePageData struct {
 	Region riot.Region
 
 	Name, Tag string
-
-	HistoryEntryCh chan profile.HistoryEntryData
-
-	RankCardCh chan profile.RankCardData
-
-	ChampionListCh chan profile.ChampionListData
 }
 
 func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
@@ -114,7 +109,7 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s#%s", data.Name, data.Tag))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/page/profile_page.templ`, Line: 41, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/page/profile_page.templ`, Line: 36, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -124,23 +119,27 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = profile.HistoryList(ctx, profile.HistoryListData{
-					Async: data.HistoryEntryCh,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
+				days := frontend.GetDays(time.Now())
+				for i := range len(days) - 1 {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"py-7\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = profile.PartialHistoryEntry(ctx, profile.PartialHistoryEntryData{
+						Region:  &data.Region,
+						PUUID:   data.PUUID,
+						StartTS: &days[i+1],
+						EndTS:   &days[i],
+					}).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div><div class=\"w-2xs flex-none hidden md:block\"><div class=\"py-4 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Tier Graph</h3><div class=\"my-2\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = profile.AsyncRankCard(ctx, profile.AsyncRankCardData{
-					DataCh: data.RankCardCh,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><div class=\"my-2\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><div class=\"w-2xs flex-none hidden md:block\"><div class=\"py-4 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Tier Graph</h3><div class=\"my-2\"></div><div class=\"my-2\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -152,7 +151,7 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></div><div class=\"py-4 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Live Match</h3><div class=\"my-2\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div><div class=\"py-4 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Live Match</h3><div class=\"my-2\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -164,17 +163,7 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div><div class=\"py-3 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Past Week</h3><div class=\"my-2\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = profile.AsyncChampionList(ctx, profile.AsyncChampionListData{
-					DataCh: data.ChampionListCh,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div><div class=\"my-2\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div><div class=\"py-3 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Past Week</h3><div class=\"my-2\"></div><div class=\"my-2\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

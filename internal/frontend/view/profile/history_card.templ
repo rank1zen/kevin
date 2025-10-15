@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend/component/accordion"
-	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type HistoryCardData struct {
@@ -65,10 +64,10 @@ templ HistoryCard(ctx context.Context, data HistoryCardData) {
 			</div>
 		}
 		@accordion.Panel() {
-			@PartialMatchDetailBox(ctx, PartialMatchDetailBoxData{
-				Region:  riot.RegionNA1,
-				MatchID: data.MatchID,
-			})
+			// @PartialMatchDetailBox(ctx, PartialMatchDetailBoxData{
+			// 	Region:  riot.RegionNA1,
+			// 	MatchID: data.MatchID,
+			// })
 		}
 	}
 }

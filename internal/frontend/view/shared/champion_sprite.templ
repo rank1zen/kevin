@@ -50,5 +50,7 @@ templ ChampionSprite(ctx context.Context, data ChampionSpriteData) {
 			Y:         y*truePixelSize + extra,
 		}
 	}}
-	@Sprite(ctx, spriteData)
+	<div class="rounded-lg overflow-hidden">
+		@Sprite(ctx, spriteData)
+	</div>
 }

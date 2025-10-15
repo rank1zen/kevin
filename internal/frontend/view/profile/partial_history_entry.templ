@@ -1,0 +1,18 @@
+package profile
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend"
+)
+
+type PartialHistoryEntryData frontend.GetMatchHistoryRequest
+
+templ PartialHistoryEntry(ctx context.Context, data PartialHistoryEntryData) {
+	<div
+		hx-post="/partial/profile.HistoryEntry"
+		hx-swap="outerHTML"
+		hx-trigger="load"
+		hx-vals={ frontend.MarshalRequest(data) }
+		class="h-25 rounded-lg animate-pulse bg-gray-200 border border-gray-300 shadow-sm shadow-gray-200 rounded-2xl"
+	></div>
+}

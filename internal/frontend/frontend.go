@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"embed"
+	"encoding/json"
 	"strings"
 	"time"
 
@@ -65,4 +66,9 @@ var stringToRiotRegion = map[string]riot.Region{
 	"TR1":  riot.RegionTR1,
 	"TW2":  riot.RegionTW2,
 	"VN2":  riot.RegionVN2,
+}
+
+func MarshalRequest(v any) (string, error) {
+	data, err := json.Marshal(v)
+	return string(data), err
 }

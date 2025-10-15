@@ -2,8 +2,10 @@
 package server
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/page"
@@ -27,29 +29,49 @@ func WithLogger(logger *slog.Logger) ServerOption {
 }
 
 func New(handler *frontend.Handler, opts ...ServerOption) *Server {
-	frontend := Server{}
+	srvr := Server{}
 
 	for _, opt := range opts {
-		opt(&frontend)
+		opt(&srvr)
 	}
 
 	router := http.NewServeMux()
 
 	router.Handle("GET /{$}", (*page.HomePageHandler)(handler))
-	router.Handle("GET /{riotID}/{$}", (*page.ProfilePageHandler)(handler))
-	router.Handle("GET /summoner/fetch/{$}", nil)
+	router.Handle("GET /profile/{riotID}/{$}", (*page.ProfilePageHandler)(handler))
 
-	router.Handle("POST /summoner/matchlist", (*profile.HistoryEntryHandler)(handler))
-	router.Handle("POST /summoner/live", nil)
+	router.Handle("POST /partial/profile.HistoryEntry", (*profile.HistoryEntryHandler)(handler))
+	// router.Handle("POST /summoner/live", nil)
 	router.Handle("POST /summoner/champions", (*profile.ChampionListHandler)(handler))
 	router.Handle("POST /match", (*profile.MatchDetailBoxHandler)(handler))
 
-	frontend.router = router
+	loggedRouter := srvr.addLoggingMiddleware(router)
 
-	return &frontend
+	main := http.NewServeMux()
+	main.Handle("/", loggedRouter)
+	main.Handle("GET /static/", http.FileServer(http.FS(frontend.StaticAssets)))
+
+	srvr.router = main
+
+	return &srvr
+}
+
+func (f *Server) addLoggingMiddleware(handler http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		ts := time.Now()
+
+		requestLogger := f.Logger.With(slog.Group("request", "method", r.Method, "endpoint", r.URL))
+
+		r = r.WithContext(frontend.LoggerNewContext(r.Context(), requestLogger))
+
+		handler.ServeHTTP(w, r)
+
+		requestLogger.Info(fmt.Sprintf("request completed in %v", time.Since(ts)))
+	}
+
+	return http.HandlerFunc(fn)
 }
 
 func (s *Server) Open() error {
-	// err := http.ListenAndServe(s.Address, s)
-	return nil
+	return http.ListenAndServe("0.0.0.0:4001", s.router)
 }

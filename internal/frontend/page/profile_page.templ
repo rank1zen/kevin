@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/rank1zen/kevin/internal/api"
+	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/component/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
@@ -18,12 +19,6 @@ type ProfilePageData struct {
 	Region riot.Region
 
 	Name, Tag string
-
-	HistoryEntryCh chan profile.HistoryEntryData
-
-	RankCardCh chan profile.RankCardData
-
-	ChampionListCh chan profile.ChampionListData
 }
 
 templ ProfilePage(ctx context.Context, data ProfilePageData) {
@@ -44,9 +39,17 @@ templ ProfilePage(ctx context.Context, data ProfilePageData) {
 				</div>
 				<div class="flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6">
 					<div class="flex-1">
-						@profile.HistoryList(ctx, profile.HistoryListData{
-							Async: data.HistoryEntryCh,
-						})
+						{{ days := frontend.GetDays(time.Now()) }}
+						for i := range len(days) - 1 {
+							<div class="py-7">
+								@profile.PartialHistoryEntry(ctx, profile.PartialHistoryEntryData{
+									Region:  &data.Region,
+									PUUID:   data.PUUID,
+									StartTS: &days[i+1],
+									EndTS:   &days[i],
+								})
+							</div>
+						}
 					</div>
 					<div class="w-2xs flex-none hidden md:block">
 						<div class="py-4 border-b border-gray-200 dark:border-neutral-600">
@@ -54,9 +57,9 @@ templ ProfilePage(ctx context.Context, data ProfilePageData) {
 								Tier Graph
 							</h3>
 							<div class="my-2">
-								@profile.AsyncRankCard(ctx, profile.AsyncRankCardData{
-									DataCh: data.RankCardCh,
-								})
+								// @profile.AsyncRankCard(ctx, profile.AsyncRankCardData{
+								// 	DataCh: data.RankCardCh,
+								// })
 							</div>
 							<div class="my-2">
 								{{ bytes, _ := json.Marshal(api.UpdateSummonerRequest{Region: data.Region, Name: data.Name, Tag: data.Tag}) }}
@@ -83,9 +86,9 @@ templ ProfilePage(ctx context.Context, data ProfilePageData) {
 								Past Week
 							</h3>
 							<div class="my-2">
-								@profile.AsyncChampionList(ctx, profile.AsyncChampionListData{
-									DataCh: data.ChampionListCh,
-								})
+								// @profile.AsyncChampionList(ctx, profile.AsyncChampionListData{
+								// 	DataCh: data.ChampionListCh,
+								// })
 							</div>
 							<div class="my-2">
 								{{ bytes, _ = json.Marshal(api.GetSummonerChampionsRequest{Region: data.Region, PUUID: data.PUUID, Week: getCurrentWeek()}) }}

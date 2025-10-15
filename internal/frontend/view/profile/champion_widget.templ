@@ -17,6 +17,7 @@ templ ChampionWidget(ctx context.Context, data ChampionWidgetData) {
 		<div class="relative">
 			@shared.ChampionSprite(ctx, shared.ChampionSpriteData{
 				ChampionID: data.ChampionID,
+				Size:       1,
 			})
 			<span class="right-0 bottom-0 size-4 text-xs absolute text-white text-center font-medium">
 				{ fmt.Sprintf("%d", data.ChampionLevel) }

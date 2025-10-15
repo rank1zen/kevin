@@ -28,5 +28,7 @@ templ ItemSprite(ctx context.Context, data ItemSpriteData) {
 			Y:         y * 28,
 		}
 	}}
-	@Sprite(ctx, spriteData)
+	<div class="rounded overflow-hidden">
+		@Sprite(ctx, spriteData)
+	</div>
 }

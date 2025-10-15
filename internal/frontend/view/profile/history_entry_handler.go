@@ -16,16 +16,18 @@ func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	switch r.Header.Get("Content-type") {
 	default:
-		req.Region = new(riot.Region)
-		*req.Region = frontend.StrToRiotRegion(r.FormValue("region"))
+		if region := r.FormValue("region"); region != "" {
+			region := frontend.StrToRiotRegion(region)
+			req.Region = &region
+		}
 
 		req.PUUID = riot.PUUID(r.FormValue("puuid"))
 
-		if start, err := time.Parse(time.RFC3339, r.FormValue("start")); err == nil {
+		if start, err := time.Parse(time.RFC3339, r.FormValue("startTs")); err == nil {
 			req.StartTS = &start
 		}
 
-		if end, err := time.Parse(time.RFC3339, r.FormValue("end")); err == nil {
+		if end, err := time.Parse(time.RFC3339, r.FormValue("endTs")); err == nil {
 			req.EndTS = &end
 		}
 	}
@@ -39,8 +41,8 @@ func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	v := &HistoryEntryData{
-		Date:      *req.StartTS,
+	v := HistoryEntryData{
+		Date:      time.Now(), // TODO: GetMatchHistory should return this data
 		Matchlist: []HistoryCardData{},
 	}
 
@@ -67,7 +69,7 @@ func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		})
 	}
 
-	c := HistoryEntry(r.Context(), *v)
+	c := HistoryEntry(r.Context(), v)
 
 	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
