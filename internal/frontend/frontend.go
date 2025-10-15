@@ -28,6 +28,7 @@ func GetDays(ts time.Time) []time.Time {
 	return days
 }
 
+// ParseRiotID returns name and tag from riotID.
 func ParseRiotID(riotID string) (name, tag string) {
 	index := strings.Index(riotID, "-")
 	if index == -1 {

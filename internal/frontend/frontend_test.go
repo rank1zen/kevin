@@ -2,7 +2,6 @@ package frontend_test
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"log"
 	"os"
@@ -76,7 +75,6 @@ func TestParseRiotID(t *testing.T) {
 	for _, test := range []struct {
 		TestName string
 		RiotID   string
-		Err      error
 		Name     string
 		Tag      string
 	}{
@@ -87,31 +85,30 @@ func TestParseRiotID(t *testing.T) {
 			Tag:      "NA1",
 		},
 		{
-			TestName: "expects invalid error for missing tag",
+			TestName: "expects empty tag",
 			RiotID:   "orrange-",
-			Err:      errors.New("invalid riot id"),
+			Name:     "orrange",
+			Tag:      "",
 		},
 		{
-			TestName: "expects invalid error for missing tag",
+			TestName: "expects empty tag",
 			RiotID:   "orrange",
-			Err:      errors.New("invalid riot id"),
+			Name:     "orrange",
+			Tag:      "",
 		},
 		{
-			TestName: "expects invalid  error for two seperators",
+			TestName: "expects ignore on second separater",
 			RiotID:   "orrange-NA1-NA1",
-			Err:      errors.New("invalid riot id"),
+			Name:     "orrange",
+			Tag:      "NA1-NA1",
 		},
 	} {
 		t.Run(
 			test.TestName,
 			func(t *testing.T) {
-				name, tag, err := frontend.ParseRiotID(test.RiotID)
-				if test.Err != nil {
-					assert.ErrorIs(t, err, test.Err)
-				} else {
-					assert.Equal(t, test.Name, name)
-					assert.Equal(t, test.Tag, tag)
-				}
+				name, tag := frontend.ParseRiotID(test.RiotID)
+				assert.Equal(t, test.Name, name)
+				assert.Equal(t, test.Tag, tag)
 			},
 		)
 	}

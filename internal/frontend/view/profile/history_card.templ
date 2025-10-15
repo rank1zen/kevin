@@ -46,11 +46,11 @@ templ HistoryCard(ctx context.Context, data HistoryCardData) {
 					})
 				</div>
 				<div class="flex gap-x-2 lg:order-last">
-					@RankDeltaWidget{
+					@RankDeltaWidget(ctx, RankDeltaWidgetData{
 						RankChange: data.RankChange,
 						LPChange:   data.LPChange,
 						Win:        data.Win,
-					}.ToTempl(ctx)
+					})
 					@accordion.Trigger()
 				</div>
 				<div class="flex gap-x-2 w-full justify-between lg:w-auto">

@@ -11,6 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
+	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 )
 
 type ItemWidgetData struct {
@@ -39,20 +40,49 @@ func ItemWidget(ctx context.Context, data ItemWidgetData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none h-9 items-center pl-1 gap-x-1 bg-gray-100 rounded-lg dark:bg-neutral-100/20\"><div class=\"relative\"><span class=\"text-xs text-white font-medium left-1/2 -translate-x-1/2 bottom-0 absolute\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none h-9 items-center pl-1 gap-x-1 bg-gray-100 rounded-lg dark:bg-neutral-100/20\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		for i := range 6 {
+			if id := data.Items[i]; id != 0 {
+				templ_7745c5c3_Err = shared.ItemSprite(ctx, shared.ItemSpriteData{
+					ItemID: id,
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"size-7 rounded bg-gray-200 dark:bg-neutral-800\"></div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"relative\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = shared.ItemSprite(ctx, shared.ItemSpriteData{
+			ItemID: data.Items[6],
+		}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<span class=\"text-xs text-white font-medium left-1/2 -translate-x-1/2 bottom-0 absolute\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", data.VisionScore))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/item_widget.templ`, Line: 27, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/item_widget.templ`, Line: 30, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span></div><div class=\"transition h-9 w-6 rounded-lg hover:bg-gray-200\"></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</span></div><div class=\"transition h-9 w-6 rounded-lg hover:bg-gray-200\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

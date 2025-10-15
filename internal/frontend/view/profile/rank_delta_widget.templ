@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/component/shared"
 )
 
-type RankDeltaWidget struct {
+type RankDeltaWidgetData struct {
 	// RankWidget is the rank after the match. A nil value means the store
 	// did not record a rank after the match.
 	RankChange *internal.Rank
@@ -19,22 +18,22 @@ type RankDeltaWidget struct {
 	Win bool
 }
 
-templ (m RankDeltaWidget) ToTempl(ctx context.Context) {
+templ RankDeltaWidget(ctx context.Context, data RankDeltaWidgetData) {
 	<div class="h-9">
 		<div clas="flex justify-end">
-			if m.RankChange != nil {
-				@shared.RankTag(*m.RankChange).ToTempl(ctx)
+			if data.RankChange != nil {
+				// @shared.RankTag(*data.RankChange).ToTempl(ctx)
 			} else {
 				<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
 					Unknown
 				</div>
 			}
 		</div>
-		if m.Win {
+		if data.Win {
 			<div class="flex justify-end">
 				<div class="text-xs bg-green-500/80 text-white px-1 rounded">
-					if m.LPChange != nil {
-						{ fmt.Sprintf("WIN %+d", m.LPChange) }
+					if data.LPChange != nil {
+						{ fmt.Sprintf("WIN %+d", data.LPChange) }
 					} else {
 						{ fmt.Sprintf("WIN +??") }
 					}
@@ -43,8 +42,8 @@ templ (m RankDeltaWidget) ToTempl(ctx context.Context) {
 		} else {
 			<div class="flex justify-end">
 				<div class="text-xs bg-red-500/80 text-white px-1 rounded">
-					if m.LPChange != nil {
-						{ fmt.Sprintf("LOSS %+d", m.LPChange) }
+					if data.LPChange != nil {
+						{ fmt.Sprintf("LOSS %+d", data.LPChange) }
 					} else {
 						{ fmt.Sprintf("LOSS +??") }
 					}

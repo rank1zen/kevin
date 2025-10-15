@@ -1,0 +1,33 @@
+package shared
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/ddragon"
+)
+
+type SummonerSpellSpriteData struct {
+	SummonerID int
+
+	// NOTE: Size should be an enum. NOTE: currently not used.
+	Size int
+}
+
+templ SummonerSpellSprite(ctx context.Context, data SummonerSpellSpriteData) {
+	{{
+		summ := ddragon.SummonerMap[data.SummonerID]
+		x, y := summ.X/48, summ.Y/48
+
+		pixelSize := 16
+
+		spriteData := SpriteData{
+			SpriteMap: "/static/sprite/" + "tiny_" + summ.Sprite,
+			BGHeight:  pixelSize * 4,
+			BGWidth:   pixelSize * 10,
+			Height:    pixelSize,
+			Width:     pixelSize,
+			X:         pixelSize * x,
+			Y:         pixelSize * y,
+		}
+	}}
+	@Sprite(ctx, spriteData)
+}
