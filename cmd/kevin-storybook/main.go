@@ -35,8 +35,21 @@ type Config struct{}
 func (c *Config) Run(ctx context.Context) error {
 	http.Handle("/{$}", http.HandlerFunc(handleIndex))
 
-	// http.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(frontend.StaticAssets))))
 	http.Handle("GET /static/", http.FileServer(http.FS(frontend.StaticAssets)))
+
+	routes := []*Route{}
+
+	for _, route := range profileRoutes {
+		routes = append(routes, route)
+	}
+
+	for _, route := range pageRoutes {
+		routes = append(routes, route)
+	}
+
+	for _, route := range sharedRoutes {
+		routes = append(routes, route)
+	}
 
 	for _, route := range routes {
 		http.Handle(route.Path, route)
@@ -56,9 +69,25 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, `<body>`)
 	fmt.Fprintln(w, `<h2>wtf-storybook</h2>`)
 	fmt.Fprintln(w, `<ul>`)
+
+	routes := []*Route{}
+
+	for _, route := range profileRoutes {
+		routes = append(routes, route)
+	}
+
+	for _, route := range pageRoutes {
+		routes = append(routes, route)
+	}
+
+	for _, route := range sharedRoutes {
+		routes = append(routes, route)
+	}
+
 	for _, route := range routes {
 		fmt.Fprintf(w, `<li><a href="%s">%s</a></li>`+"\n", route.Path, route.Name)
 	}
+
 	fmt.Fprintln(w, `</ul>`)
 	fmt.Fprintln(w, `</body>`)
 	fmt.Fprintln(w, `</html>`)
@@ -76,19 +105,15 @@ func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler.ServeHTTP(w, r)
 }
 
-var routes = []*Route{
+var profileRoutes = []*Route{
 	{
 		Name: "profile.RankCard",
-		Path: "/profile-rank-card",
+		Path: "/profile.RankCard",
 		Renderer: profile.RankCard(context.Background(), profile.RankCardData{
 			RankDetail: &internal.RankDetail{
 				Wins:   41,
 				Losses: 67,
-				Rank: internal.Rank{
-					Tier:     riot.TierChallenger,
-					Division: riot.Division1,
-					LP:       41,
-				},
+				Rank:   sampleRank,
 			},
 		}),
 	},
@@ -100,7 +125,7 @@ var routes = []*Route{
 		}),
 	},
 	{
-		Name: "History card",
+		Name: "profile.HistoryCard",
 		Path: "/history-card",
 		Renderer: profile.HistoryCard(context.Background(), profile.HistoryCardData{
 			MatchID:        "",
@@ -114,7 +139,7 @@ var routes = []*Route{
 			CS:             41,
 			CSPerMinute:    6.7,
 			RunePage:       sampleRunePage,
-			Items:          sampleItem,
+			Items:          sampleItems,
 			VisionScore:    41,
 			RankChange:     nil,
 			LPChange:       nil,
@@ -144,13 +169,6 @@ var routes = []*Route{
 		}),
 	},
 	{
-		Name: "shared.Header",
-		Path: "/shared-header",
-		Renderer: shared.Header(context.Background(), shared.HeaderData{
-			Region: riot.RegionNA1,
-		}),
-	},
-	{
 		Name: "profile.MatchDetailBox",
 		Path: "/profile-match-detail-box",
 		Renderer: profile.MatchDetailBox(
@@ -175,7 +193,7 @@ var routes = []*Route{
 							CS:             410,
 							CSPerMinute:    4.1,
 							RunePage:       sampleRunePage,
-							Items:          sampleItem,
+							Items:          sampleItems,
 							VisionScore:    23,
 							Rank:           nil,
 						},
@@ -198,7 +216,7 @@ var routes = []*Route{
 							CS:             410,
 							CSPerMinute:    4.1,
 							RunePage:       sampleRunePage,
-							Items:          sampleItem,
+							Items:          sampleItems,
 							VisionScore:    23,
 							Rank:           nil,
 						},
@@ -217,7 +235,7 @@ var routes = []*Route{
 							CS:             420,
 							CSPerMinute:    4.2,
 							RunePage:       sampleRunePage,
-							Items:          sampleItem,
+							Items:          sampleItems,
 							VisionScore:    42,
 							Rank:           nil,
 						},
@@ -227,71 +245,10 @@ var routes = []*Route{
 		),
 	},
 	{
-		Name: "search.ResultCard",
-		Path: "/search-result-card",
-		Renderer: search.ResultCard(context.Background(), search.ResultCardData{
-			Name: "Bartholomew Montgomery",
-			Tag:  "NA1",
-			Rank: &internal.Rank{
-				Tier:     riot.TierBronze,
-				Division: riot.Division4,
-				LP:       67,
-			},
-		}),
-	},
-	{
-		Name: "search.ResultMenu",
-		Path: "/search-result-menu",
-		Renderer: search.ResultMenu(context.Background(), search.ResultMenuData{
-			Name: "T1 OK GOOD YES",
-			Tag:  "NA1",
-			ProfileResults: []search.ResultCardData{
-				{
-					Name: "Bartholomew Montgomery",
-					Tag:  "NA1",
-					Rank: &internal.Rank{
-						Tier:     riot.TierBronze,
-						Division: riot.Division4,
-						LP:       67,
-					},
-				},
-				{
-					Name: "Bartholomew",
-					Tag:  "NA1",
-					Rank: &internal.Rank{
-						Tier:     riot.TierBronze,
-						Division: riot.Division4,
-						LP:       67,
-					},
-				},
-			},
-		}),
-	},
-	{
 		Name: "profile.PartialHistoryEntry",
 		Path: "/profile.PartialHistoryEntry",
 		Renderer: profile.PartialHistoryEntry(context.Background(), profile.PartialHistoryEntryData{
 			PUUID: "bacon-egg-and-cheese",
-		}),
-	},
-	{
-		Name: "page.ProfilePage",
-		Path: "/page.ProfilePage",
-		Renderer: page.ProfilePage(context.Background(), page.ProfilePageData{
-			PUUID:  "bacon-egg-and-cheese",
-			Region: riot.RegionNA1,
-			Name:   "Bacon",
-			Tag:    "41",
-		}),
-	},
-	{
-		Name: "page.ProfileLiveMatchPage",
-		Path: "/page.ProfileLiveMatchPage",
-		Renderer: page.ProfileLiveMatchPage(context.Background(), page.ProfileLiveMatchPageData{
-			PUUID:  "bacon-egg-and-cheese",
-			Region: riot.RegionNA1,
-			Name:   "Bacon",
-			Tag:    "41",
 		}),
 	},
 	{
@@ -344,32 +301,80 @@ var routes = []*Route{
 	},
 }
 
+var pageRoutes = []*Route{
+	{
+		Name: "page.ProfilePage",
+		Path: "/page.ProfilePage",
+		Renderer: page.ProfilePage(context.Background(), page.ProfilePageData{
+			PUUID:  "bacon-egg-and-cheese",
+			Region: riot.RegionNA1,
+			Name:   "Bacon",
+			Tag:    "41",
+		}),
+	},
+	{
+		Name: "page.ProfileLiveMatchPage",
+		Path: "/page.ProfileLiveMatchPage",
+		Renderer: page.ProfileLiveMatchPage(context.Background(), page.ProfileLiveMatchPageData{
+			PUUID:  "bacon-egg-and-cheese",
+			Region: riot.RegionNA1,
+			Name:   "Bacon",
+			Tag:    "41",
+		}),
+	},
+}
+
+var sharedRoutes = []*Route{
+	{
+		Name: "shared.Header",
+		Path: "/shared-header",
+		Renderer: shared.Header(context.Background(), shared.HeaderData{
+			Region: riot.RegionNA1,
+		}),
+	},
+	{
+		Name: "search.ResultCard",
+		Path: "/search-result-card",
+		Renderer: search.ResultCard(context.Background(), search.ResultCardData{
+			Name: "Bartholomew Montgomery",
+			Tag:  "NA1",
+			Rank: &internal.Rank{
+				Tier:     riot.TierBronze,
+				Division: riot.Division4,
+				LP:       67,
+			},
+		}),
+	},
+	{
+		Name: "search.ResultMenu",
+		Path: "/search-result-menu",
+		Renderer: search.ResultMenu(context.Background(), search.ResultMenuData{
+			Name: "T1 OK GOOD YES",
+			Tag:  "NA1",
+			ProfileResults: []search.ResultCardData{
+				{
+					Name: "Bartholomew Montgomery",
+					Tag:  "NA1",
+					Rank: &internal.Rank{
+						Tier:     riot.TierBronze,
+						Division: riot.Division4,
+						LP:       67,
+					},
+				},
+				{
+					Name: "Bartholomew",
+					Tag:  "NA1",
+					Rank: &internal.Rank{
+						Tier:     riot.TierBronze,
+						Division: riot.Division4,
+						LP:       67,
+					},
+				},
+			},
+		}),
+	},
+}
+
 func aaa(x int) *int {
 	return &x
 }
-
-var sampleRunePage = internal.RunePage{
-	PrimaryTree:     8100,
-	PrimaryKeystone: 8112,
-	PrimaryA:        8143,
-	PrimaryB:        8140,
-	PrimaryC:        8135,
-	SecondaryTree:   8200,
-	SecondaryA:      8234,
-	SecondaryB:      8237,
-	MiniOffense:     5005,
-	MiniFlex:        5008,
-	MiniDefense:     5011,
-}
-
-var sampleItem = [7]int{
-	6698,
-	0,
-	3176,
-	0,
-	3134,
-	3814,
-	3364,
-}
-
-var sampleSpells = [2]int{4, 5}

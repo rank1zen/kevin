@@ -23,6 +23,8 @@ type ProfileLiveMatchPageData struct {
 	Region riot.Region
 
 	Name, Tag string
+
+	MatchID string
 }
 
 func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) templ.Component {
@@ -105,7 +107,7 @@ func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) te
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s#%s", data.Name, data.Tag))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/page/profile_live_match_page.templ`, Line: 31, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/page/profile_live_match_page.templ`, Line: 33, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -116,8 +118,9 @@ func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) te
 					return templ_7745c5c3_Err
 				}
 				templ_7745c5c3_Err = profile.UpdateProfileButton(ctx, profile.UpdateProfileButtonData{
-					Path: "/summoner/fetch",
-					Data: "",
+					Region: &data.Region,
+					Name:   data.Name,
+					Tag:    data.Tag,
 				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -126,7 +129,10 @@ func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) te
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = profile.PartialLiveMatchScoreboard(ctx, profile.PartialLiveMatchScoreboardData{}).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = profile.PartialLiveMatchScoreboard(ctx, profile.PartialLiveMatchScoreboardData{
+					Region:  data.Region,
+					MatchID: data.MatchID,
+				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

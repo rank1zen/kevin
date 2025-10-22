@@ -33,7 +33,7 @@ templ ProfilePage(ctx context.Context, data ProfilePageData) {
 						{ fmt.Sprintf("%s#%s", data.Name, data.Tag) }
 					</h1>
 					<div class="flex gap-x-4 mt-3">
-						@profile.ZUpdateProfileButton(ctx, profile.ZUpdateProfileButtonData{
+						@profile.UpdateProfileButton(ctx, profile.UpdateProfileButtonData{
 							Region: &data.Region,
 							Name:   data.Name,
 							Tag:    data.Tag,
