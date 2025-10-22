@@ -9,6 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "context"
+import "github.com/rank1zen/kevin/internal/frontend"
 
 type UpdateProfileButtonData struct {
 	Path string
@@ -43,13 +44,57 @@ func UpdateProfileButton(ctx context.Context, data UpdateProfileButtonData) temp
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Data)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/update_profile_button.templ`, Line: 16, Col: 21}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/update_profile_button.templ`, Line: 17, Col: 21}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"relative w-full flex items-center justify-center gap-x-2 h-9 cursor-pointer bg-gray-50 rounded-lg transition enabled:dark:hover:bg-gray-100/5 enabled:dark:active:bg-gray-100/10 enabled:hover:bg-gray-900/5 enabled:active:bg-gray-900/10 dark:bg-neutral-900 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90 disabled:text-gray-500/90\">Update Profile</span></button>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"flex items-center justify-center gap-x-2 h-9 w-36 cursor-pointer bg-gray-100 rounded-lg transition enabled:dark:hover:bg-gray-100/5 enabled:dark:active:bg-gray-100/10 enabled:hover:bg-gray-200 enabled:active:bg-gray-300 dark:bg-neutral-900 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90 disabled:text-gray-500/90\">Update Profile</span></button>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+type ZUpdateProfileButtonData frontend.UpdateProfileRequest
+
+func ZUpdateProfileButton(ctx context.Context, data ZUpdateProfileButtonData) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<button type=\"button\" hx-post=\"/summoner/live\" hx-disabled-elt=\"this\" hx-vals=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(frontend.MarshalRequest(data))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/update_profile_button.templ`, Line: 33, Col: 41}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" class=\"flex items-center justify-center gap-x-2 h-9 w-36 cursor-pointer bg-gray-100 rounded-lg transition enabled:dark:hover:bg-gray-100/5 enabled:dark:active:bg-gray-100/10 enabled:hover:bg-gray-200 enabled:active:bg-gray-300 dark:bg-neutral-900 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90 disabled:text-gray-500/90\">Update Profile</span></button>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -11,15 +11,13 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/component/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 	"github.com/rank1zen/kevin/internal/riot"
-	"time"
 )
 
-type ProfilePageData struct {
+type ProfileLiveMatchPageData struct {
 	PUUID riot.PUUID
 
 	Region riot.Region
@@ -27,7 +25,7 @@ type ProfilePageData struct {
 	Name, Tag string
 }
 
-func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
+func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -107,7 +105,7 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s#%s", data.Name, data.Tag))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/page/profile_page.templ`, Line: 33, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/page/profile_live_match_page.templ`, Line: 31, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -124,47 +122,15 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div><div class=\"flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6\"><div class=\"flex-1\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div><div class=\"px-2 max-w-7xl mx-auto md:px-6 py-10\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				days := frontend.GetDays(time.Now())
-				for i := range len(days) - 1 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"py-7\">")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = profile.PartialHistoryEntry(ctx, profile.PartialHistoryEntryData{
-						Region:  &data.Region,
-						PUUID:   data.PUUID,
-						StartTS: &days[i+1],
-						EndTS:   &days[i],
-					}).Render(ctx, templ_7745c5c3_Buffer)
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div><div class=\"w-2xs flex-none hidden md:block\"><div class=\"py-4 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Tier Graph</h3><div class=\"my-2\">")
+				templ_7745c5c3_Err = profile.PartialLiveMatchScoreboard(ctx, profile.PartialLiveMatchScoreboardData{}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = profile.PartialRankCard(ctx, profile.PartialRankCardData{}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div><div class=\"py-3 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Past Week</h3><div class=\"my-2\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = profile.PartialChampionList(ctx, profile.PartialChampionListData{}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></div></div></div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -174,7 +140,7 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -208,15 +174,6 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 		}
 		return nil
 	})
-}
-
-// getCurrentWeek returns the start of the day, 7 days ago. Currently returns
-// UTC time.
-func getCurrentWeek() time.Time {
-	now := time.Now().In(time.UTC)
-	y, m, d := now.Date()
-	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
-	return startOfDay.Add(-24 * 6 * time.Hour)
 }
 
 var _ = templruntime.GeneratedTemplate

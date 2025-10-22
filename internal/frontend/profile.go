@@ -30,6 +30,25 @@ func (s *ProfileService) GetSummonerPage(ctx context.Context, req GetSummonerPag
 	return &storeProfile, nil
 }
 
+type UpdateProfileRequest struct {
+	Region *riot.Region `json:"region"`
+	Name   string       `json:"name"`
+	Tag    string       `json:"tag"`
+}
+
+func (s *ProfileService) UpdateProfile(ctx context.Context, req UpdateProfileRequest) error {
+	if req.Region == nil {
+		req.Region = new(riot.Region)
+		*req.Region = riot.RegionNA1
+	}
+
+	if err := s.Datasource.UpdateProfileByRiotID(ctx, *req.Region, req.Name, req.Tag); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type GetMatchHistoryRequest struct {
 	Region  *riot.Region `json:"region"`
 	PUUID   riot.PUUID   `json:"puuid"`

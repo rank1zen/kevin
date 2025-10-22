@@ -10,6 +10,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/frontend/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/search"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
@@ -271,6 +272,74 @@ var routes = []*Route{
 		Path: "/profile.PartialHistoryEntry",
 		Renderer: profile.PartialHistoryEntry(context.Background(), profile.PartialHistoryEntryData{
 			PUUID: "bacon-egg-and-cheese",
+		}),
+	},
+	{
+		Name: "page.ProfilePage",
+		Path: "/page.ProfilePage",
+		Renderer: page.ProfilePage(context.Background(), page.ProfilePageData{
+			PUUID:  "bacon-egg-and-cheese",
+			Region: riot.RegionNA1,
+			Name:   "Bacon",
+			Tag:    "41",
+		}),
+	},
+	{
+		Name: "page.ProfileLiveMatchPage",
+		Path: "/page.ProfileLiveMatchPage",
+		Renderer: page.ProfileLiveMatchPage(context.Background(), page.ProfileLiveMatchPageData{
+			PUUID:  "bacon-egg-and-cheese",
+			Region: riot.RegionNA1,
+			Name:   "Bacon",
+			Tag:    "41",
+		}),
+	},
+	{
+		Name: "profile.LiveMatchScoreboard",
+		Path: "/profile.LiveMatchScoreboard",
+		Renderer: profile.LiveMatchScoreboard(context.Background(), profile.LiveMatchScoreboardData{
+			BlueSideParticipants: []profile.LiveMatchParticipantCardData{
+				{
+					MatchID:        "1",
+					Name:           "Bartholomew Montgomery",
+					Tag:            "NA1",
+					PUUID:          "1",
+					ChampionID:     42,
+					ChampionLevel:  18,
+					SummonerIDs:    sampleSpells,
+					Kills:          42,
+					Deaths:         42,
+					Assists:        67,
+					KillDeathRatio: 42.67,
+					CS:             420,
+					CSPerMinute:    4.2,
+					RunePage:       sampleRunePage,
+					Rank: &internal.Rank{
+						Tier:     riot.TierGrandmaster,
+						Division: riot.Division1,
+						LP:       900,
+					},
+				},
+			},
+			RedSideParticipants: []profile.LiveMatchParticipantCardData{
+				{
+					MatchID:        "1",
+					Name:           "Bartholomew Montgomery",
+					Tag:            "NA1",
+					PUUID:          "1",
+					ChampionID:     42,
+					ChampionLevel:  18,
+					SummonerIDs:    sampleSpells,
+					Kills:          42,
+					Deaths:         42,
+					Assists:        67,
+					KillDeathRatio: 42.67,
+					CS:             420,
+					CSPerMinute:    4.2,
+					RunePage:       sampleRunePage,
+					Rank:           nil,
+				},
+			},
 		}),
 	},
 }

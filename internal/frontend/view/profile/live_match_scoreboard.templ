@@ -1,0 +1,33 @@
+package profile
+
+import "context"
+
+type LiveMatchScoreboardData struct {
+	BlueSideParticipants []LiveMatchParticipantCardData
+	RedSideParticipants  []LiveMatchParticipantCardData
+}
+
+templ LiveMatchScoreboard(ctx context.Context, data LiveMatchScoreboardData) {
+	<div class="bg-gray-100 rounded-2xl px-5 py-4">
+		<h2 class="">
+			Blue Side
+		</h2>
+		<div class="mt-3">
+			for _, data := range data.BlueSideParticipants {
+				<div class="rounded-2xl border-gray-100 shadow-sm shadow-gray-100">
+					@LiveMatchParticipantCard(ctx, data)
+				</div>
+			}
+		</div>
+		<h2 class="mt-10">
+			Red Side
+		</h2>
+		<div class="mt-3">
+			for _, data := range data.RedSideParticipants {
+				<div class="rounded-2xl border-gray-100 shadow-sm shadow-gray-100">
+					@LiveMatchParticipantCard(ctx, data)
+				</div>
+			}
+		</div>
+	</div>
+}

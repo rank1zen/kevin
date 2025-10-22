@@ -10,12 +10,9 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "context"
 
-type LiveMatchButtonData struct {
-	Path string
-	Data string
-}
+type PartialRankCardData struct{}
 
-func LiveMatchButton(ctx context.Context, data LiveMatchButtonData) templ.Component {
+func PartialRankCard(ctx context.Context, data PartialRankCardData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -36,7 +33,7 @@ func LiveMatchButton(ctx context.Context, data LiveMatchButtonData) templ.Compon
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a href=\"live\" class=\"flex items-center justify-center gap-x-2 h-9 w-36 cursor-pointer bg-gray-100 rounded-lg transition enabled:dark:hover:bg-gray-100/5 enabled:dark:active:bg-gray-100/10 enabled:hover:bg-gray-200 enabled:active:bg-gray-300 dark:bg-neutral-900 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90 disabled:text-gray-500/90\">Live Match</span></a>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div hx-swap=\"outerHTML\" hx-trigger=\"load once\" class=\"h-40 rounded-lg animate-pulse bg-gray-50 border border-gray-200 shadow-sm shadow-gray-200\"></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

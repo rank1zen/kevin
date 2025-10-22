@@ -1,0 +1,13 @@
+package profile
+
+import "context"
+
+type PartialRankCardData struct{}
+
+templ PartialRankCard(ctx context.Context, data PartialRankCardData) {
+	<div
+		hx-swap="outerHTML"
+		hx-trigger="load once"
+		class="h-40 rounded-lg animate-pulse bg-gray-50 border border-gray-200 shadow-sm shadow-gray-200"
+	></div>
+}

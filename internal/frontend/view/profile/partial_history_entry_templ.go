@@ -49,7 +49,7 @@ func PartialHistoryEntry(ctx context.Context, data PartialHistoryEntryData) temp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"h-25 rounded-lg animate-pulse bg-gray-200 border border-gray-300 shadow-sm shadow-gray-200 rounded-2xl\"></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"h-25 rounded-lg animate-pulse bg-gray-50 border border-gray-200 shadow-sm shadow-gray-200\"></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -2,9 +2,7 @@ package page
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/api"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/component/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
@@ -30,11 +28,16 @@ templ ProfilePage(ctx context.Context, data ProfilePageData) {
 		}
 		@page.Body() {
 			<div>
-				<div class="max-w-7xl px-2 py-5 mx-auto flex items-center lg:px-6">
-					<div class="flex items-center gap-x-2">
-						<h1 class="font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
-							{ fmt.Sprintf("%s#%s", data.Name, data.Tag) }
-						</h1>
+				<div class="px-2 max-w-7xl mt-7 mx-auto md:px-6">
+					<h1 class="mt-7 font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
+						{ fmt.Sprintf("%s#%s", data.Name, data.Tag) }
+					</h1>
+					<div class="flex gap-x-4 mt-3">
+						@profile.ZUpdateProfileButton(ctx, profile.ZUpdateProfileButtonData{
+							Region: &data.Region,
+							Name:   data.Name,
+							Tag:    data.Tag,
+						})
 					</div>
 				</div>
 				<div class="flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6">
@@ -57,28 +60,7 @@ templ ProfilePage(ctx context.Context, data ProfilePageData) {
 								Tier Graph
 							</h3>
 							<div class="my-2">
-								// @profile.AsyncRankCard(ctx, profile.AsyncRankCardData{
-								// 	DataCh: data.RankCardCh,
-								// })
-							</div>
-							<div class="my-2">
-								{{ bytes, _ := json.Marshal(api.UpdateSummonerRequest{Region: data.Region, Name: data.Name, Tag: data.Tag}) }}
-								@profile.UpdateProfileButton(ctx, profile.UpdateProfileButtonData{
-									Path: "/summoner/fetch",
-									Data: string(bytes),
-								})
-							</div>
-						</div>
-						<div class="py-4 border-b border-gray-200 dark:border-neutral-600">
-							<h3 class="font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90">
-								Live Match
-							</h3>
-							<div class="my-2">
-								{{ bytes, _ = json.Marshal(api.LiveMatchRequest{Region: data.Region, PUUID: data.PUUID}) }}
-								@profile.LiveMatchButton(ctx, profile.LiveMatchButtonData{
-									Path: "/summoner/live",
-									Data: string(bytes),
-								})
+								@profile.PartialRankCard(ctx, profile.PartialRankCardData{})
 							</div>
 						</div>
 						<div class="py-3 border-b border-gray-200 dark:border-neutral-600">
@@ -86,16 +68,7 @@ templ ProfilePage(ctx context.Context, data ProfilePageData) {
 								Past Week
 							</h3>
 							<div class="my-2">
-								// @profile.AsyncChampionList(ctx, profile.AsyncChampionListData{
-								// 	DataCh: data.ChampionListCh,
-								// })
-							</div>
-							<div class="my-2">
-								{{ bytes, _ = json.Marshal(api.GetSummonerChampionsRequest{Region: data.Region, PUUID: data.PUUID, Week: getCurrentWeek()}) }}
-								@profile.ChampionButton(ctx, profile.ChampionButtonData{
-									FetchPath: "/summoner/champions",
-									Data:      string(bytes),
-								})
+								@profile.PartialChampionList(ctx, profile.PartialChampionListData{})
 							</div>
 						</div>
 					</div>

@@ -39,11 +39,14 @@ func New(handler *frontend.Handler, opts ...ServerOption) *Server {
 
 	router.Handle("GET /{$}", (*page.HomePageHandler)(handler))
 	router.Handle("GET /profile/{riotID}/{$}", (*page.ProfilePageHandler)(handler))
+	router.Handle("GET /profile/{riotID}/live/{$}", (*page.ProfileLiveMatchPageHandler)(handler))
 
 	router.Handle("POST /partial/profile.HistoryEntry", (*profile.HistoryEntryHandler)(handler))
-	// router.Handle("POST /summoner/live", nil)
-	router.Handle("POST /summoner/champions", (*profile.ChampionListHandler)(handler))
-	router.Handle("POST /match", (*profile.MatchDetailBoxHandler)(handler))
+	router.Handle("POST /partial/summoner/champions", (*profile.ChampionListHandler)(handler))
+	router.Handle("POST /partial/match", (*profile.MatchDetailBoxHandler)(handler))
+	router.Handle("POST /partial/profile.HistoryEntry", (*profile.HistoryEntryHandler)(handler))
+
+	router.Handle("POST /joe/profile.", (*profile.HistoryEntryHandler)(handler))
 
 	loggedRouter := srvr.addLoggingMiddleware(router)
 

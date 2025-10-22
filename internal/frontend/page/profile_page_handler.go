@@ -24,8 +24,8 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	data := ProfilePageData{
 		PUUID:  storeProfile.PUUID,
 		Region: region,
-		Name:   name,
-		Tag:    tag,
+		Name:   storeProfile.Name,
+		Tag:    storeProfile.Tagline,
 	}
 
 	c := ProfilePage(r.Context(), data)
