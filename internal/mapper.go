@@ -99,7 +99,7 @@ func (m RiotToParticipantMapper) Map() Participant {
 	riotParticipant := m.Participant
 
 	participant := Participant{
-		PUUID:                NewPUUIDFromString(riotParticipant.PUUID),
+		PUUID:                riot.PUUID(riotParticipant.PUUID),
 		MatchID:              m.MatchID,
 		TeamID:               riotParticipant.TeamID,
 		ChampionID:           riotParticipant.ChampionID,
@@ -161,7 +161,7 @@ func (m RiotToLiveMatchParticipantMapper) Map() LiveParticipant {
 	riotParticipant := m.Participant
 
 	liveparticipant := LiveParticipant{
-		PUUID:        NewPUUIDFromString(riotParticipant.PUUID),
+		PUUID:        riot.PUUID(riotParticipant.PUUID),
 		MatchID:      m.MatchID,
 		ChampionID:   m.Participant.ChampionID,
 		Runes:        NewRunePage(WithRiotSpectatorPerks(&riotParticipant.Perks)),
