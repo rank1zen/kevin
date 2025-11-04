@@ -19,7 +19,7 @@ func SetupDatasource(ctx context.Context, t testing.TB) *internal.Datasource {
 
 	store := postgres.NewStore(pool)
 
-	return internal.NewDatasource(client, &store)
+	return internal.NewDatasource(client, store)
 }
 
 var T1OKGOODYESNA1PUUID = riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
@@ -34,10 +34,6 @@ func findT1(tb testing.TB, match internal.MatchDetail) internal.ParticipantDetai
 
 	require.NotNil(tb, actualParticipant)
 	return *actualParticipant
-}
-
-func getEnvRiotAPIKey() string {
-	return os.Getenv("KEVIN_RIOT_API_KEY")
 }
 
 var DefaultPGInstance *postgres.PGInstance

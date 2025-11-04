@@ -14,14 +14,21 @@ import (
 // TODO: Datasource should be able to decide when to call the riot API, and
 // when to use cache. probably want to cache something.
 type Datasource struct {
-	*Store
+	match   MatchStore
+	profile ProfileStore
 
 	riot *riot.Client
 }
 
-func NewDatasource(client *riot.Client, store *Store) *Datasource {
+type Store interface {
+	MatchStore() MatchStore
+	ProfileStore() ProfileStore
+}
+
+func NewDatasource(client *riot.Client, store Store) *Datasource {
 	return &Datasource{
-		riot:  client,
-		Store: store,
+		riot:    client,
+		match:   store.MatchStore(),
+		profile: store.ProfileStore(),
 	}
 }

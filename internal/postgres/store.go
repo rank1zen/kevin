@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
@@ -48,6 +49,9 @@ func CreateListRankOption(history []Match) [][2]ListRankOption {
 type Store struct {
 	Pool *pgxpool.Pool
 }
+
+func (db *Store) MatchStore() internal.MatchStore     { return (*ZMatchStore)(db) }
+func (db *Store) ProfileStore() internal.ProfileStore { return (*ProfileStore)(db) }
 
 func NewStore(pool *pgxpool.Pool) *Store {
 	return &Store{Pool: pool}

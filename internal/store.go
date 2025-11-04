@@ -23,9 +23,3 @@ var (
 
 	ErrMatchMissingParticipants = errors.New("match missing participants")
 )
-
-// Store manages persistent data.
-type Store struct {
-	profile ProfileStore
-	match   MatchStore
-}
