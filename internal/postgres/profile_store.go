@@ -90,7 +90,7 @@ func (db *ProfileStore) GetProfile(ctx context.Context, puuid riot.PUUID) (m *in
 		return nil, err
 	}
 
-	status, detail, err := db.getMostRecentRank(ctx, puuid)
+	status, detail, err := (*Store)(db).getMostRecentRank(ctx, puuid)
 	if err != nil {
 		return nil, err
 	}
@@ -115,13 +115,13 @@ func (db *ProfileStore) SearchSummoner(ctx context.Context, q string) ([]interna
 
 	rankStore := RankStore{Tx: db.Pool}
 
-	results, err := summonerStore.SearchSummoner(ctx, q)
+	storeResults, err := summonerStore.SearchSummoner(ctx, q)
 	if err != nil {
 		return nil, err
 	}
 
 	mostRecentStatusIDs := []*int{}
-	for _, result := range results {
+	for _, result := range storeResults {
 		ids, err := rankStore.ListRankIDs(ctx, result.PUUID, ListRankOption{Limit: 1, Recent: true})
 		if err != nil {
 			return nil, err
@@ -157,16 +157,41 @@ func (db *ProfileStore) SearchSummoner(ctx context.Context, q string) ([]interna
 		detailList = append(detailList, &detail)
 	}
 
-	dada := []internal.SearchResult{}
-	for i := range len(results) {
-		s := PostgresSearchResult2{
-			Summoner: results[i],
-			Status:   statusList[i],
-			Detail:   detailList[i],
-		}
-
-		dada = append(dada, s.Convert())
+	results := []internal.SearchResult{}
+	for i := range len(storeResults) {
+		results = append(results, toSearchResult(storeResults[i], statusList[i], detailList[i]))
 	}
 
-	return dada, nil
+	return results, nil
+}
+
+func toSearchResult(summoner Summoner, status *RankStatus, detail *RankDetail) internal.SearchResult {
+	result := internal.SearchResult{
+		PUUID:   summoner.PUUID,
+		Name:    summoner.Name,
+		Tagline: summoner.Tagline,
+		Rank:    nil,
+	}
+
+	if status != nil {
+		result.Rank = &internal.RankStatus{
+			PUUID:         summoner.PUUID,
+			EffectiveDate: status.EffectiveDate,
+			Detail:        nil,
+		}
+
+		if detail != nil {
+			result.Rank.Detail = &internal.RankDetail{
+				Wins:   detail.Wins,
+				Losses: detail.Losses,
+				Rank: internal.Rank{
+					Tier:     riot.Tier(detail.Tier),
+					Division: riot.Division(detail.Division),
+					LP:       detail.LP,
+				},
+			}
+		}
+	}
+
+	return result
 }

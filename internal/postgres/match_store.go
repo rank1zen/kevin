@@ -109,11 +109,11 @@ func (db *ZMatchStore) GetMatchDetail(ctx context.Context, id string) (_ interna
 				return m, err
 			}
 
-			detail.Participants[i] = riot.PUUID(ParticipantDetailFromPG(participants[i], Summoner{PUUID: riot.PUUID(puuid)}, nil, nil, nil))
+			detail.Participants[i] = toParticipantDetail(participants[i], Summoner{PUUID: riot.PUUID(puuid)}, nil, nil, nil)
 			continue
 		}
 
-		detail.Participants[i] = riot.PUUID(ParticipantDetailFromPG(participants[i], summoner, nil, nil, nil))
+		detail.Participants[i] = toParticipantDetail(participants[i], summoner, nil, nil, nil)
 	}
 
 	return detail, nil
@@ -165,7 +165,7 @@ func (db *ZMatchStore) GetMatchlist(ctx context.Context, puuid riot.PUUID, start
 
 		id := chooseStatusID(statusIDs)
 		if id != nil {
-			status, detail, err := db.getRank(ctx, *id)
+			status, detail, err := (*Store)(db).getRank(ctx, *id)
 			if err != nil {
 				return nil, err
 			}
@@ -182,7 +182,7 @@ func (db *ZMatchStore) GetMatchlist(ctx context.Context, puuid riot.PUUID, start
 
 		id = chooseStatusID(statusIDs)
 		if id != nil {
-			status, detail, err := db.getRank(ctx, *id)
+			status, detail, err := (*Store)(db).getRank(ctx, *id)
 			if err != nil {
 				return nil, err
 			}
@@ -194,7 +194,7 @@ func (db *ZMatchStore) GetMatchlist(ctx context.Context, puuid riot.PUUID, start
 	}
 
 	for i := range ids {
-		match := internal.NewSummonerMatch(WithPostgresSummonerMatch(matchList[i], participantList[i], rankBeforeList[i], rankAfterList[i]))
+		match := toSummonerMatch(matchList[i], participantList[i], rankBeforeList[i], rankAfterList[i])
 		matchHistory = append(matchHistory, match)
 	}
 
@@ -210,4 +210,131 @@ func (db *ZMatchStore) GetChampions(ctx context.Context, puuid riot.PUUID, start
 	matchStore := MatchStore{Tx: db.Pool}
 
 	return matchStore.GetSummonerChampions(ctx, puuid, start, end)
+}
+
+func toSummonerMatch(match Match, participant Participant, rankBefore, rankAfter *RankFull) internal.SummonerMatch {
+	result := internal.SummonerMatch{
+		Participant: internal.Participant{
+			PUUID:                riot.PUUID(participant.PUUID),
+			MatchID:              match.ID,
+			TeamID:               participant.TeamID,
+			ChampionID:           participant.ChampionID,
+			ChampionLevel:        participant.ChampionLevel,
+			TeamPosition:         convertStringToTeamPosition(participant.TeamPosition),
+			SummonerIDs:          [2]int{},
+			Runes:                internal.RunePage{},
+			Items:                [7]int{},
+			Kills:                participant.Kills,
+			Deaths:               participant.Deaths,
+			Assists:              participant.Assists,
+			KillParticipation:    participant.KillParticipation,
+			CreepScore:           participant.CreepScore,
+			CreepScorePerMinute:  participant.CreepScorePerMinute,
+			DamageDealt:          participant.DamageDealt,
+			DamageTaken:          participant.DamageTaken,
+			DamageDeltaEnemy:     participant.DamageDeltaEnemy,
+			DamagePercentageTeam: participant.DamagePercentageTeam,
+			GoldEarned:           participant.GoldEarned,
+			GoldDeltaEnemy:       participant.GoldDeltaEnemy,
+			GoldPercentageTeam:   participant.GoldPercentageTeam,
+			VisionScore:          participant.VisionScore,
+			PinkWardsBought:      participant.PinkWardsBought,
+		},
+		Date:       match.Date,
+		Duration:   match.Duration,
+		Win:        false,
+		RankBefore: nil,
+		RankAfter:  nil,
+	}
+
+	if participant.TeamID == match.WinnerID {
+		result.Win = true
+	}
+
+	if rankBefore != nil {
+		rank := toRankStatus(rankBefore)
+		result.RankBefore = &rank
+	}
+
+	if rankAfter != nil {
+		rank := toRankStatus(rankAfter)
+		result.RankAfter = &rank
+	}
+
+	return result
+}
+
+func toParticipantDetail(participant Participant, summoner Summoner, currentRank, rankBefore, rankAfter *RankFull) internal.ParticipantDetail {
+	result := internal.ParticipantDetail{
+		Participant: internal.Participant{
+			PUUID:                riot.PUUID(participant.PUUID),
+			MatchID:              participant.MatchID,
+			TeamID:               participant.TeamID,
+			ChampionID:           participant.ChampionID,
+			ChampionLevel:        participant.ChampionLevel,
+			TeamPosition:         convertStringToTeamPosition(participant.TeamPosition),
+			SummonerIDs:          [2]int{},
+			Runes:                internal.RunePage{},
+			Items:                [7]int{},
+			Kills:                participant.Kills,
+			Deaths:               participant.Deaths,
+			Assists:              participant.Assists,
+			KillParticipation:    participant.KillParticipation,
+			CreepScore:           participant.CreepScore,
+			CreepScorePerMinute:  participant.CreepScorePerMinute,
+			DamageDealt:          participant.DamageDealt,
+			DamageTaken:          participant.DamageTaken,
+			DamageDeltaEnemy:     participant.DamageDeltaEnemy,
+			DamagePercentageTeam: participant.DamagePercentageTeam,
+			GoldEarned:           participant.GoldEarned,
+			GoldDeltaEnemy:       participant.GoldDeltaEnemy,
+			GoldPercentageTeam:   participant.GoldPercentageTeam,
+			VisionScore:          participant.VisionScore,
+			PinkWardsBought:      participant.PinkWardsBought,
+		},
+		Name:        summoner.Name,
+		Tag:         summoner.Tagline,
+		CurrentRank: nil,
+		RankBefore:  nil,
+		RankAfter:   nil,
+	}
+
+	if rankAfter != nil {
+		rank := toRankStatus(rankAfter)
+		result.RankAfter = &rank
+	}
+
+	if rankBefore != nil {
+		rank := toRankStatus(rankBefore)
+		result.RankBefore = &rank
+	}
+
+	if currentRank != nil {
+		rank := toRankStatus(currentRank)
+		result.CurrentRank = &rank
+	}
+
+	return result
+}
+
+func toRankStatus(rank *RankFull) internal.RankStatus {
+	result := internal.RankStatus{
+		PUUID:         riot.PUUID(rank.Status.PUUID),
+		EffectiveDate: rank.Status.EffectiveDate,
+		Detail:        nil,
+	}
+
+	if rank.Detail != nil {
+		result.Detail = &internal.RankDetail{
+			Wins:   rank.Detail.Wins,
+			Losses: rank.Detail.Losses,
+			Rank: internal.Rank{
+				Tier:     convertStringToRiotTier(rank.Detail.Tier),
+				Division: convertStringToRiotRank(rank.Detail.Division),
+				LP:       rank.Detail.LP,
+			},
+		}
+	}
+
+	return result
 }
