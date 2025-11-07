@@ -6,16 +6,11 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type ProfileStore Store
-
-func NewProfileStore(pool *pgxpool.Pool) *ProfileStore {
-	return &ProfileStore{Pool: pool}
-}
 
 func (db *ProfileStore) RecordProfile(ctx context.Context, summoner *internal.Profile) error {
 	tx, err := db.Pool.Begin(ctx)

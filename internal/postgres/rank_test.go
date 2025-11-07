@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/postgres"
+	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +18,7 @@ func TestRankStore_CreateRankDetail(t *testing.T) {
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 	store := postgres.RankStore{Tx: pool}
 
-	puuid := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
+	puuid := riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 
 	exampleStatus := postgres.RankStatus{
 		PUUID:         puuid.String(),
@@ -75,7 +75,7 @@ func TestRankStore_CreateRankStatus(t *testing.T) {
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 	store := postgres.RankStore{Tx: pool}
 
-	puuid := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
+	puuid := riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 
 	for _, tc := range []postgres.RankStatus{
 		{
@@ -95,7 +95,7 @@ func TestRankStore_GetRankDetail(t *testing.T) {
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 	store := postgres.RankStore{Tx: pool}
 
-	puuid := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
+	puuid := riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 
 	exampleID, err := store.CreateRankStatus(ctx, postgres.RankStatus{
 		PUUID:         puuid.String(),
@@ -152,7 +152,7 @@ func TestRankStore_ListRankIDs(t *testing.T) {
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 	store := postgres.RankStore{Tx: pool}
 
-	puuid := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
+	puuid := riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 
 	ids := []int{}
 

@@ -20,7 +20,7 @@ func TestMatchStore_ListMatchHistoryIDs(t *testing.T) {
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 	store := postgres.MatchStore{Tx: pool}
 
-	puuid := internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
+	puuid := riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 
 	for _, tc := range []struct {
 		Match       postgres.Match
@@ -299,7 +299,7 @@ func TestMatchStore_GetSummonerChampions(t *testing.T) {
 		}
 
 		match := mapper.Map()
-		err := store.RecordMatch(ctx, match)
+		err := store.MatchStore().RecordMatch(ctx, match)
 		require.NoError(t, err)
 	}
 

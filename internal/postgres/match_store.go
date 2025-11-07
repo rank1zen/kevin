@@ -12,6 +12,7 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+// TODO: should rename this to something else
 type ZMatchStore Store
 
 func NewZMatchStore(pool *pgxpool.Pool) *ZMatchStore {
