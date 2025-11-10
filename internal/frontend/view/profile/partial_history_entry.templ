@@ -2,10 +2,11 @@ package profile
 
 import (
 	"context"
+	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 )
 
-type PartialHistoryEntryData frontend.GetMatchHistoryRequest
+type PartialHistoryEntryData internal.GetMatchlistRequest
 
 templ PartialHistoryEntry(ctx context.Context, data PartialHistoryEntryData) {
 	<div

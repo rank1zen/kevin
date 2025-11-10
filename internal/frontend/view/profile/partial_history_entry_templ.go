@@ -10,10 +10,11 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
+	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 )
 
-type PartialHistoryEntryData frontend.GetMatchHistoryRequest
+type PartialHistoryEntryData internal.GetMatchlistRequest
 
 func PartialHistoryEntry(ctx context.Context, data PartialHistoryEntryData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -43,7 +44,7 @@ func PartialHistoryEntry(ctx context.Context, data PartialHistoryEntryData) temp
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(frontend.MarshalRequest(data))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/partial_history_entry.templ`, Line: 15, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/profile/partial_history_entry.templ`, Line: 16, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {

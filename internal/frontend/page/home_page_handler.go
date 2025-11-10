@@ -4,10 +4,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 )
 
-type HomePageHandler frontend.Handler
+type HomePageHandler internal.Datasource
 
 func (h *HomePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	region := frontend.StrToRiotRegion(r.FormValue("region"))

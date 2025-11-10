@@ -48,16 +48,6 @@ func SetupDatasource(ctx context.Context, t testing.TB) *internal.Datasource {
 	return internal.NewDatasource(client, store)
 }
 
-func SetupHandler(ctx context.Context, t testing.TB) *frontend.Handler {
-	pool := DefaultPGInstance.SetupConn(ctx, t)
-
-	client := riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY"))
-
-	store := postgres.NewStore(pool)
-
-	return internal.NewDatasource(client, store)
-}
-
 func TestGetDay(t *testing.T) {
 	timezone, err := time.LoadLocation("America/Toronto")
 	require.NoError(t, err)

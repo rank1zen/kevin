@@ -2,10 +2,11 @@ package profile
 
 import (
 	"context"
+	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 )
 
-type UpdateProfileButtonData frontend.UpdateProfileRequest
+type UpdateProfileButtonData internal.UpdateProfileRequest
 
 templ UpdateProfileButton(ctx context.Context, data UpdateProfileButtonData) {
 	<button

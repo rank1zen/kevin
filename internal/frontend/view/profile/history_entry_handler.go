@@ -5,14 +5,15 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-type HistoryEntryHandler frontend.Handler
+type HistoryEntryHandler internal.Datasource
 
 func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := frontend.GetMatchHistoryRequest{}
+	req := internal.GetMatchlistRequest{}
 
 	switch r.Header.Get("Content-type") {
 	default:
@@ -32,9 +33,7 @@ func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	profileService := (*frontend.ProfileService)(h)
-
-	storeMatches, err := profileService.GetMatchHistory(r.Context(), req)
+	storeMatches, err := (*internal.MatchService)(h).GetMatchlist(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, errors.New("service failure"))

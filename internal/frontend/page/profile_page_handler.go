@@ -5,16 +5,22 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
-type ProfilePageHandler frontend.Handler
+type ProfilePageHandler internal.Datasource
 
 func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	region := frontend.StrToRiotRegion(r.FormValue("region"))
-	name, tag := frontend.ParseRiotID(r.PathValue("riotID"))
+	req := internal.GetProfileRequest{}
 
-	storeProfile, err := h.Datasource.GetProfileDetailByRiotID(r.Context(), region, name, tag)
+	req.Region = new(riot.Region)
+	*req.Region = frontend.StrToRiotRegion(r.FormValue("region"))
+
+	req.Name, req.Tag = frontend.ParseRiotID(r.PathValue("riotID"))
+
+	storeProfile, err := (*internal.ProfileService)(h).GetProfile(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, fmt.Errorf("storage error: %w", err))
@@ -23,7 +29,7 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	data := ProfilePageData{
 		PUUID:  storeProfile.PUUID,
-		Region: region,
+		Region: *req.Region,
 		Name:   storeProfile.Name,
 		Tag:    storeProfile.Tagline,
 	}

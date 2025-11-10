@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
@@ -28,7 +29,7 @@ func WithLogger(logger *slog.Logger) ServerOption {
 	}
 }
 
-func New(handler *frontend.Handler, opts ...ServerOption) *Server {
+func New(handler *internal.Datasource, opts ...ServerOption) *Server {
 	srvr := Server{}
 
 	for _, opt := range opts {
