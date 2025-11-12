@@ -224,6 +224,25 @@ func (s *MatchService) GetMatchDetail(ctx context.Context, req GetMatchDetailReq
 		*req.Region = riot.RegionNA1
 	}
 
+	newIDS, err := s.match.GetNewMatchIDs(ctx, []string{req.MatchID})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(newIDS) == 1 {
+		riotMatch, err := s.riot.Match.GetMatch(ctx, *req.Region, req.MatchID)
+		if err != nil {
+			return nil, err
+		}
+
+		match := RiotToMatchMapper{Match: *riotMatch}.Map()
+
+		err = s.match.RecordMatch(ctx, match)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	storeMatch, err := s.match.GetMatchDetail(ctx, req.MatchID)
 	if err != nil {
 		return nil, err

@@ -74,14 +74,14 @@ func (s *ProfileService) GetProfile(ctx context.Context, req GetProfileRequest) 
 		Tagline: account.TagLine,
 		Rank: RankStatus{
 			PUUID:         account.PUUID,
-			EffectiveDate: time.Time{},
+			EffectiveDate: time.Now().In(time.UTC),
 			Detail: &RankDetail{
 				Wins:   soloq.Wins,
 				Losses: soloq.Losses,
 				Rank: Rank{
-					Tier:     "",
-					Division: "",
-					LP:       0,
+					Tier:     soloq.Tier,
+					Division: soloq.Division,
+					LP:       soloq.LeaguePoints,
 				},
 			},
 		},

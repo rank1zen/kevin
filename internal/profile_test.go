@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestProfileService_GetProfile(t *testing.T) {
@@ -15,13 +17,15 @@ func TestProfileService_GetProfile(t *testing.T) {
 
 	ctx := context.Background()
 	ds := SetupDatasource(ctx, t)
-	service := (*internal.ProfileService)(ds)
 
 	req := internal.GetProfileRequest{
 		Name: "T1 OK GOOD YES",
 		Tag:  "NA1",
 	}
 
-	_, err := service.GetProfile(ctx, req)
-	assert.NoError(t, err)
+	profile, err := (*internal.ProfileService)(ds).GetProfile(ctx, req)
+	require.NoError(t, err)
+
+	assert.Equal(t, riot.RegionNA1, *req.Region)
+	assert.EqualValues(t, profile.PUUID, "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
 }
