@@ -11,7 +11,6 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/server"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
@@ -86,7 +85,7 @@ func (c *Config) Run(ctx context.Context) error {
 
 	datasource := internal.NewDatasource(client, store)
 
-	srvr := server.New(&frontend.Handler{Datasource: datasource}, server.WithLogger(logger))
+	srvr := server.New(datasource, server.WithLogger(logger))
 
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer cancel()

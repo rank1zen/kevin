@@ -45,7 +45,6 @@ func New(handler *internal.Datasource, opts ...ServerOption) *Server {
 	router.Handle("POST /partial/profile.HistoryEntry", (*profile.HistoryEntryHandler)(handler))
 	router.Handle("POST /partial/profile.ChampionList", (*profile.ChampionListHandler)(handler))
 	router.Handle("POST /partial/profile.MatchDetailBox", (*profile.MatchDetailBoxHandler)(handler))
-	router.Handle("POST /partial/profile.HistoryEntry", (*profile.HistoryEntryHandler)(handler))
 	router.Handle("POST /partial/profile.UpdateProfile", (*profile.UpdateProfileHandler)(handler))
 
 	loggedRouter := srvr.addLoggingMiddleware(router)
