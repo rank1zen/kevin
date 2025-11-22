@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"flag"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,95 +10,77 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/config"
 	"github.com/rank1zen/kevin/internal/frontend/server"
+	"github.com/rank1zen/kevin/internal/log"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 )
 
 func main() {
-	config := Config{
-		RiotAPIKey:         os.Getenv("KEVIN_RIOT_API_KEY"),
-		PostgresConnection: os.Getenv("KEVIN_POSTGRES_CONNECTION"),
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		slog.Default().Error("failed to load configuration", "err", err)
+		os.Exit(1)
 	}
 
-	flag.BoolVar(&config.DevelopmentMode, "development-mode", false, "set mode to development")
+	log.InitLogger(cfg.Environment) // Initialize logger with environment from config
 
-	flag.StringVar(&config.Address, "address", "0.0.0.0:4001", "set server address")
-
-	flag.Parse()
+	// Initialize OpenTelemetry
+	tp, err := initTelemetry(context.Background(), cfg.IsProduction())
+	if err != nil {
+		slog.Default().Error("failed to initialize OpenTelemetry", "err", err)
+		os.Exit(1)
+	}
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			slog.Default().Error("Error shutting down tracer provider", "err", err)
+		}
+	}()
 
 	ctx := context.Background()
 
-	if err := config.Run(ctx); err != nil {
-		fmt.Fprintln(os.Stderr, "ERROR:", err)
+	if err := run(ctx, cfg); err != nil {
+		slog.Default().Error("application exited with error", "err", err)
 		os.Exit(1)
 	}
 
 	os.Exit(0)
 }
 
-type Config struct {
-	// PostgresConnection is used to connect to postgres. Format is
-	// specified by [pgxpool.ParseConfig].
-	PostgresConnection string
-
-	// RiotAPIKey is required to access riot.
-	RiotAPIKey string
-
-	Address string
-
-	DevelopmentMode bool
-}
-
-func (c *Config) Run(ctx context.Context) error {
-	if c.RiotAPIKey == "" {
-		return errors.New("riot api key not provided")
-	}
-
-	if c.PostgresConnection == "" {
-		return errors.New("postgres connection not provided")
-	}
-
-	address := "0.0.0.0:4001"
-	if c.Address != "" {
-		address = c.Address
-	}
-
-	var logHandlerOptions slog.HandlerOptions
-	if c.DevelopmentMode {
-		logHandlerOptions.Level = slog.LevelDebug
-	}
-
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &logHandlerOptions)).With("dev", c.DevelopmentMode)
-
-	pool, err := connectPostgres(ctx, c.PostgresConnection)
+// run contains the main application logic.
+func run(ctx context.Context, cfg *config.Config) error {
+	pool, err := connectPostgres(ctx, cfg.PostgresConnection)
 	if err != nil {
-		return err
+		return errors.New("failed to connect to postgres")
 	}
-
 	defer pool.Close()
 
 	store := postgres.NewStore(pool)
-
-	client := riot.NewClient(c.RiotAPIKey)
-
+	client := riot.NewClient(cfg.RiotAPIKey)
 	datasource := internal.NewDatasource(client, store)
 
-	srvr := server.New(datasource, server.WithLogger(logger))
+	srvr := server.New(datasource, server.WithLogger(slog.Default()), server.WithAddress(cfg.Address))
 
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer cancel()
 
 	go func() {
 		err := srvr.Open()
-		logger.Error("error starting server", "err", err)
+		slog.Default().Error("error starting server", "err", err)
 	}()
 
-	logger.Info("start server", "addr", address)
+	slog.Default().Info("server started", "address", cfg.Address, "environment", cfg.Environment)
 
 	<-ctx.Done()
 
-	logger.Info("stop server")
+	slog.Default().Info("shutting down server")
 
 	return nil
 }
@@ -107,13 +88,60 @@ func (c *Config) Run(ctx context.Context) error {
 func connectPostgres(ctx context.Context, connString string) (*pgxpool.Pool, error) {
 	cfg, err := pgxpool.ParseConfig(connString)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse postgres config: %w", err)
 	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create postgres connection pool: %w", err)
 	}
 
 	return pool, nil
+}
+
+func initTelemetry(ctx context.Context, isProduction bool) (*trace.TracerProvider, error) {
+	var exporter trace.SpanExporter
+	var err error
+
+	if isProduction {
+		// In a production environment, you would typically use an OTLP exporter
+		// to send traces to a collector (e.g., Jaeger, Tempo).
+		// For example:
+		// exporter, err = otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure())
+		// if err != nil {
+		// 	return nil, fmt.Errorf("failed to create OTLP trace exporter: %w", err)
+		// }
+		// For now, we'll use stdouttrace even in production for simplicity in this exercise.
+		// In a real scenario, this would be an OTLP exporter.
+		exporter, err = stdouttrace.New(
+			stdouttrace.WithPrettyPrint(),
+			stdouttrace.WithoutTimestamps(),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create stdout trace exporter: %w", err)
+		}
+	} else {
+		// For development, print traces to stdout
+		exporter, err = stdouttrace.New(
+			stdouttrace.WithPrettyPrint(),
+			stdouttrace.WithoutTimestamps(),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create stdout trace exporter: %w", err)
+		}
+	}
+
+	tp := trace.NewTracerProvider(
+		trace.WithBatcher(exporter),
+		trace.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName("kevin-frontend"),
+			semconv.ServiceVersion("0.1.0"), // TODO: Get version from build info
+		)),
+	)
+	otel.SetTracerProvider(tp)
+	// otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{})) // For context propagation
+
+	slog.Default().Info("OpenTelemetry initialized", "exporter", "stdouttrace", "isProduction", isProduction)
+	return tp, nil
 }

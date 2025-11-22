@@ -1,7 +1,7 @@
 package page
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal"
@@ -21,7 +21,7 @@ func (h *HomePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		frontend.LogError(r, errors.New("templ render"))
+		frontend.LogError(r, fmt.Errorf("failed to render home page template: %w", err))
 		return
 	}
 }

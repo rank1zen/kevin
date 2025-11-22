@@ -1,7 +1,7 @@
 package page
 
 import (
-	"errors"
+	// "errors" // No longer needed directly
 	"fmt"
 	"net/http"
 
@@ -23,7 +23,7 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	storeProfile, err := (*internal.ProfileService)(h).GetProfile(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		frontend.LogError(r, fmt.Errorf("storage error: %w", err))
+		frontend.LogError(r, fmt.Errorf("failed to get profile for profile page: %w", err))
 		return
 	}
 
@@ -38,7 +38,7 @@ func (h *ProfilePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		frontend.LogError(r, errors.New("templ render"))
+		frontend.LogError(r, fmt.Errorf("failed to render profile page template: %w", err))
 		return
 	}
 }

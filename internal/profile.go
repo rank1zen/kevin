@@ -148,3 +148,58 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, req UpdateProfileReq
 
 	return nil
 }
+
+type GetRankHistoryRequest struct {
+	Region *riot.Region `json:"region"`
+	Name   string       `json:"name"`
+	Tag    string       `json:"tag"`
+}
+
+func (s *ProfileService) GetRankHistory(ctx context.Context, req GetRankHistoryRequest) (*Profile, error) {
+	if req.Region == nil {
+		req.Region = new(riot.Region)
+		*req.Region = riot.RegionNA1
+	}
+
+	account, err := s.riot.Account.GetAccountByRiotID(ctx, *req.Region, req.Name, req.Tag)
+	if err != nil {
+		return nil, err
+	}
+
+	entries, err := s.riot.League.GetLeagueEntriesByPUUID(ctx, *req.Region, account.PUUID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	soloq := findSoloQLeagueEntry(entries)
+
+	profile := Profile{
+		PUUID:   account.PUUID,
+		Name:    account.GameName,
+		Tagline: account.TagLine,
+		Rank: RankStatus{
+			PUUID:         account.PUUID,
+			EffectiveDate: time.Now().In(time.UTC),
+			Detail: &RankDetail{
+				Wins:   soloq.Wins,
+				Losses: soloq.Losses,
+				Rank: Rank{
+					Tier:     soloq.Tier,
+					Division: soloq.Division,
+					LP:       soloq.LeaguePoints,
+				},
+			},
+		},
+	}
+
+	if err = s.profile.RecordProfile(ctx, &profile); err != nil {
+		return nil, err
+	}
+
+	storeProfile, err := s.profile.GetProfile(ctx, account.PUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	return storeProfile, nil
+}
