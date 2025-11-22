@@ -10,7 +10,7 @@ Deploy Kevin locally using Docker for early testing and development:
 
 ### Prerequisites
 
-*   **[Docker](https://docs.docker.com/get-docker/)**: Installed and running on your machine.
+*   **[Docker](https://docs.docker.com/get-started/get-docker/)**: Installed and running on your machine.
 *   **[Go (1.20+)](https://go.dev/doc/install)**: Installed locally if you want to run database migrations directly from your host.
 
 ### 1. Obtain a Riot Games API Key
