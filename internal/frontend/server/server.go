@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+	"github.com/rank1zen/kevin/internal/service"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -38,7 +38,7 @@ func WithAddress(addr string) ServerOption {
 	}
 }
 
-func New(handler *internal.Datasource, opts ...ServerOption) *Server {
+func New(handler *service.Service, opts ...ServerOption) *Server {
 	srvr := Server{
 		Logger:  slog.Default(),
 		Address: "0.0.0.0:4001", // Default address

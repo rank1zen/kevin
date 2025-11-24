@@ -1,8 +1,6 @@
 package internal
 
-import (
-	"errors"
-)
+import "errors"
 
 var (
 	// ErrUnknownStoreError is a generic store error.

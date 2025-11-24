@@ -10,11 +10,11 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/service"
 )
 
-type PartialHistoryEntryData internal.GetMatchlistRequest
+type PartialHistoryEntryData service.GetMatchlistRequest
 
 func PartialHistoryEntry(ctx context.Context, data PartialHistoryEntryData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

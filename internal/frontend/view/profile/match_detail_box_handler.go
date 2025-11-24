@@ -4,22 +4,22 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/service"
 )
 
-type MatchDetailBoxHandler internal.Datasource
+type MatchDetailBoxHandler service.Service
 
 func (h *MatchDetailBoxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := internal.GetMatchDetailRequest{}
+	req := service.GetMatchDetailRequest{}
 
 	req.Region = new(riot.Region)
 	*req.Region = frontend.StrToRiotRegion(r.FormValue("region"))
 
 	req.MatchID = r.FormValue("matchID")
 
-	storeMatch, err := (*internal.MatchService)(h).GetMatchDetail(r.Context(), req)
+	storeMatch, err := (*service.MatchService)(h).GetMatchDetail(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, errors.New("storage failure"))

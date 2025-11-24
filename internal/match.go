@@ -7,6 +7,19 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
+type MatchStore interface {
+	RecordMatch(ctx context.Context, match Match) error
+
+	GetMatchlist(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch, error)
+
+	GetMatchDetail(ctx context.Context, id string) (MatchDetail, error)
+
+	// GetNewMatchIDs returns the ids of matches not in store.
+	GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error)
+
+	GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerChampion, error)
+}
+
 // Match represents a record of a ranked match.
 type Match struct {
 	ID           string
@@ -132,154 +145,4 @@ type SummonerChampion struct {
 	AverageVisionScorePerGame float32
 
 	AveragePinkWardsBoughtPerGame float32
-}
-
-type MatchStore interface {
-	RecordMatch(ctx context.Context, match Match) error
-
-	GetMatchlist(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerMatch, error)
-
-	GetMatchDetail(ctx context.Context, id string) (MatchDetail, error)
-
-	// GetNewMatchIDs returns the ids of matches not in store.
-	GetNewMatchIDs(ctx context.Context, ids []string) (newIDs []string, err error)
-
-	GetChampions(ctx context.Context, puuid riot.PUUID, start, end time.Time) ([]SummonerChampion, error)
-}
-
-type MatchService Datasource
-
-type GetMatchlistRequest struct {
-	Region  *riot.Region `json:"region"`
-	PUUID   riot.PUUID   `json:"puuid"`
-	StartTS *time.Time   `json:"startTs"`
-	EndTS   *time.Time   `json:"endTs"`
-}
-
-func (s *MatchService) GetMatchlist(ctx context.Context, req GetMatchlistRequest) ([]SummonerMatch, error) {
-	if req.Region == nil {
-		req.Region = new(riot.Region)
-		*req.Region = riot.RegionNA1
-	}
-
-	currTime := time.Now().In(time.UTC)
-
-	if req.StartTS == nil {
-		req.StartTS = new(time.Time)
-		*req.StartTS = currTime.AddDate(0, 0, -1)
-	}
-
-	if req.EndTS == nil {
-		req.EndTS = new(time.Time)
-		*req.EndTS = currTime
-	}
-
-	options := soloQMatchFilter(*req.StartTS, *req.EndTS)
-	ids, err := s.riot.Match.GetMatchList(ctx, *req.Region, req.PUUID.String(), options)
-	if err != nil {
-		return nil, err
-	}
-
-	matchIDs := []string{}
-	for _, id := range ids {
-		matchIDs = append(matchIDs, id)
-	}
-
-	newIDs, err := s.match.GetNewMatchIDs(ctx, matchIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: put these in batch
-	for _, id := range newIDs {
-		riotMatch, err := s.riot.Match.GetMatch(ctx, *req.Region, id)
-		if err != nil {
-			return nil, err
-		}
-
-		match := RiotToMatchMapper{Match: *riotMatch}.Map()
-
-		err = s.match.RecordMatch(ctx, match)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	storeMatches, err := s.match.GetMatchlist(ctx, req.PUUID, *req.StartTS, *req.EndTS)
-	if err != nil {
-		return nil, err
-	}
-
-	return storeMatches, nil
-}
-
-type GetMatchDetailRequest struct {
-	Region  *riot.Region `json:"region"`
-	MatchID string       `json:"matchId"`
-}
-
-func (s *MatchService) GetMatchDetail(ctx context.Context, req GetMatchDetailRequest) (*MatchDetail, error) {
-	if req.Region == nil {
-		req.Region = new(riot.Region)
-		*req.Region = riot.RegionNA1
-	}
-
-	newIDS, err := s.match.GetNewMatchIDs(ctx, []string{req.MatchID})
-	if err != nil {
-		return nil, err
-	}
-
-	if len(newIDS) == 1 {
-		riotMatch, err := s.riot.Match.GetMatch(ctx, *req.Region, req.MatchID)
-		if err != nil {
-			return nil, err
-		}
-
-		match := RiotToMatchMapper{Match: *riotMatch}.Map()
-
-		err = s.match.RecordMatch(ctx, match)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	storeMatch, err := s.match.GetMatchDetail(ctx, req.MatchID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &storeMatch, nil
-}
-
-type GetSummonerChampionsRequest struct {
-	Region  *riot.Region `json:"region"`
-	PUUID   riot.PUUID   `json:"puuid"`
-	StartTS *time.Time   `json:"startTs"`
-	EndTS   *time.Time   `json:"endTs"`
-}
-
-func (s *ProfileService) GetSummonerChampions(ctx context.Context, req GetSummonerChampionsRequest) ([]SummonerChampion, error) {
-	if req.Region == nil {
-		req.Region = new(riot.Region)
-		*req.Region = riot.RegionNA1
-	}
-
-	currTime := time.Now().In(time.UTC)
-
-	if req.StartTS == nil {
-		req.StartTS = new(time.Time)
-		*req.StartTS = currTime.AddDate(0, 0, -7)
-	}
-
-	if req.EndTS == nil {
-		req.EndTS = new(time.Time)
-		*req.EndTS = currTime
-	}
-
-	storeChamps, err := s.match.GetChampions(ctx, req.PUUID, *req.StartTS, *req.EndTS)
-	if err != nil {
-		return nil, err
-	}
-
-	return storeChamps, nil
 }

@@ -1,11 +1,11 @@
-package internal_test
+package service_test
 
 import (
 	"context"
 	"testing"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,11 +18,11 @@ func TestMatchService_GetMatchDetail(t *testing.T) {
 	ctx := context.Background()
 	ds := SetupDatasource(ctx, t)
 
-	req := internal.GetMatchDetailRequest{
+	req := service.GetMatchDetailRequest{
 		MatchID: "NA1_5346312088",
 	}
 
-	match, err := (*internal.MatchService)(ds).GetMatchDetail(ctx, req)
+	match, err := (*service.MatchService)(ds).GetMatchDetail(ctx, req)
 	require.NoError(t, err)
 
 	T1 := findT1(t, *match)

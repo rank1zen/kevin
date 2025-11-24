@@ -10,11 +10,11 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/service"
 )
 
-type UpdateProfileButtonData internal.UpdateProfileRequest
+type UpdateProfileButtonData service.UpdateProfileRequest
 
 func UpdateProfileButton(ctx context.Context, data UpdateProfileButtonData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

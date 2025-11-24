@@ -60,7 +60,7 @@ func TestRiotToParticipantMapper(t *testing.T) {
 
 	var riotParticipant *riot.MatchParticipant
 	for _, p := range riotMatch.Info.Participants {
-		if p.PUUID == T1OKGOODYESNA1PUUID.String() {
+		if p.PUUID == "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg" {
 			riotParticipant = p
 		}
 	}
@@ -201,7 +201,7 @@ func TestRiotToProfileMapper(t *testing.T) {
 	}{
 		{
 			Name:     "expects correct puuid",
-			Expected: T1OKGOODYESNA1PUUID,
+			Expected: "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
 			Actual:   actual.PUUID,
 		},
 		{

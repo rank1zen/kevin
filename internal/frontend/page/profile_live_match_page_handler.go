@@ -5,22 +5,22 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/service"
 )
 
-type ProfileLiveMatchPageHandler internal.Datasource
+type ProfileLiveMatchPageHandler service.Service
 
 func (h *ProfileLiveMatchPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := internal.GetProfileRequest{}
+	req := service.GetProfileRequest{}
 
 	req.Region = new(riot.Region)
 	*req.Region = frontend.StrToRiotRegion(r.FormValue("region"))
 
 	req.Name, req.Tag = frontend.ParseRiotID(r.PathValue("riotID"))
 
-	storeProfile, err := (*internal.ProfileService)(h).GetProfile(r.Context(), req)
+	storeProfile, err := (*service.ProfileService)(h).GetProfile(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, fmt.Errorf("failed to get profile for live match page: %w", err))

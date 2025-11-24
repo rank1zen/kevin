@@ -1,11 +1,11 @@
-package internal_test
+package service_test
 
 import (
 	"context"
 	"testing"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,12 +18,12 @@ func TestProfileService_GetProfile(t *testing.T) {
 	ctx := context.Background()
 	ds := SetupDatasource(ctx, t)
 
-	req := internal.GetProfileRequest{
+	req := service.GetProfileRequest{
 		Name: "T1 OK GOOD YES",
 		Tag:  "NA1",
 	}
 
-	profile, err := (*internal.ProfileService)(ds).GetProfile(ctx, req)
+	profile, err := (*service.ProfileService)(ds).GetProfile(ctx, req)
 	require.NoError(t, err)
 
 	assert.Equal(t, riot.RegionNA1, *req.Region)

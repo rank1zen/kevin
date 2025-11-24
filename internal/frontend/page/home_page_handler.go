@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/service"
 )
 
-type HomePageHandler internal.Datasource
+type HomePageHandler service.Service
 
 func (h *HomePageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	region := frontend.StrToRiotRegion(r.FormValue("region"))

@@ -1,4 +1,4 @@
-package internal_test
+package service_test
 
 import (
 	"context"
@@ -9,17 +9,18 @@ import (
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/service"
 	"github.com/stretchr/testify/require"
 )
 
-func SetupDatasource(ctx context.Context, t testing.TB) *internal.Datasource {
+func SetupDatasource(ctx context.Context, t testing.TB) *service.Service {
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 
 	client := riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY"))
 
 	store := postgres.NewStore(pool)
 
-	return internal.NewDatasource(client, store)
+	return service.NewService(client, store)
 }
 
 var T1OKGOODYESNA1PUUID = riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")

@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -38,14 +38,14 @@ func TestMain(t *testing.M) {
 	os.Exit(code)
 }
 
-func SetupDatasource(ctx context.Context, t testing.TB) *internal.Datasource {
+func SetupDatasource(ctx context.Context, t testing.TB) *service.Service {
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 
 	client := riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY"))
 
 	store := postgres.NewStore(pool)
 
-	return internal.NewDatasource(client, store)
+	return service.NewService(client, store)
 }
 
 func TestGetDay(t *testing.T) {

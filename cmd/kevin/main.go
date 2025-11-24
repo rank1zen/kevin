@@ -9,12 +9,12 @@ import (
 	"os/signal"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/config"
 	"github.com/rank1zen/kevin/internal/frontend/server"
 	"github.com/rank1zen/kevin/internal/log"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/service"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -64,7 +64,7 @@ func run(ctx context.Context, cfg *config.Config) error {
 
 	store := postgres.NewStore(pool)
 	client := riot.NewClient(cfg.RiotAPIKey)
-	datasource := internal.NewDatasource(client, store)
+	datasource := service.NewService(client, store)
 
 	srvr := server.New(datasource, server.WithLogger(slog.Default()), server.WithAddress(cfg.Address))
 

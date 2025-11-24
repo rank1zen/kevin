@@ -4,14 +4,14 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/service"
 )
 
-type UpdateProfileHandler internal.Datasource
+type UpdateProfileHandler service.Service
 
 func (h *UpdateProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := internal.UpdateProfileRequest{}
+	req := service.UpdateProfileRequest{}
 
 	switch r.Header.Get("Content-type") {
 	default:
@@ -24,7 +24,7 @@ func (h *UpdateProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		req.Tag = r.FormValue("tag")
 	}
 
-	if err := (*internal.ProfileService)(h).UpdateProfile(r.Context(), req); err != nil {
+	if err := (*service.ProfileService)(h).UpdateProfile(r.Context(), req); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, errors.New("service failure"))
 		return

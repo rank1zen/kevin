@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/service"
 )
 
-type ChampionListHandler internal.Datasource
+type ChampionListHandler service.Service
 
 func (h *ChampionListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := internal.GetSummonerChampionsRequest{}
+	req := service.GetSummonerChampionsRequest{}
 
 	req.Region = new(riot.Region)
 	*req.Region = frontend.StrToRiotRegion(r.FormValue("region"))
@@ -28,7 +28,7 @@ func (h *ChampionListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		req.EndTS = &end
 	}
 
-	storeChamps, err := (*internal.ProfileService)(h).GetSummonerChampions(r.Context(), req)
+	storeChamps, err := (*service.ProfileService)(h).GetSummonerChampions(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, errors.New("storage failure"))
