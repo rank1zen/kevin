@@ -20,9 +20,15 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("ENVIRONMENT", "development")
 	viper.SetDefault("ADDRESS", "0.0.0.0:4001")
 
-	// Read environment variables
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("failed to read config: %w", err)
+	}
+
+	viper.SetEnvPrefix("KEVIN")
 	viper.AutomaticEnv()
-	viper.SetEnvPrefix("KEVIN") // KEVIN_ENVIRONMENT, KEVIN_POSTGRES_CONNECTION, etc.
 
 	cfg := &Config{}
 	if err := viper.Unmarshal(cfg); err != nil {
