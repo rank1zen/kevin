@@ -185,7 +185,7 @@ type GetSummonerChampionsRequest struct {
 }
 
 func (s *ProfileService) GetSummonerChampions(ctx context.Context, req GetSummonerChampionsRequest) ([]internal.SummonerChampion, error) {
-	champions, err := s.match.GetChampions(ctx, req.PUUID, *req.StartTS, *req.EndTS)
+	champions, err := s.summonerstats.GetChampions(ctx, req.PUUID, *req.StartTS, *req.EndTS)
 	if err != nil {
 		return nil, err
 	}

@@ -15,7 +15,6 @@ import (
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/rank1zen/kevin/internal/service"
-
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -30,23 +29,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.InitLogger(cfg.Environment) // Initialize logger with environment from config
+	log.InitLogger(cfg.Environment)
 
-	// Initialize OpenTelemetry
 	tp, err := initTelemetry(context.Background(), cfg.IsProduction())
 	if err != nil {
 		slog.Default().Error("failed to initialize OpenTelemetry", "err", err)
 		os.Exit(1)
 	}
+
 	defer func() {
 		if err := tp.Shutdown(context.Background()); err != nil {
 			slog.Default().Error("Error shutting down tracer provider", "err", err)
 		}
 	}()
 
-	ctx := context.Background()
-
-	if err := run(ctx, cfg); err != nil {
+	if err := run(context.Background(), cfg); err != nil {
 		slog.Default().Error("application exited with error", "err", err)
 		os.Exit(1)
 	}
@@ -54,7 +51,6 @@ func main() {
 	os.Exit(0)
 }
 
-// run contains the main application logic.
 func run(ctx context.Context, cfg *config.Config) error {
 	pool, err := connectPostgres(ctx, cfg.PostgresConnection)
 	if err != nil {
