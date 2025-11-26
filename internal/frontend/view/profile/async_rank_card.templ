@@ -1,0 +1,15 @@
+package profile
+
+import "context"
+
+type AsyncRankCardData struct {
+	DataCh <-chan RankCardData
+}
+
+templ AsyncRankCard(ctx context.Context, data AsyncRankCardData) {
+	for data := range data.DataCh {
+		@templ.Flush() {
+			@RankCard(ctx, data)
+		}
+	}
+}

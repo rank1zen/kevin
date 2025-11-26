@@ -1,0 +1,16 @@
+package profile
+
+import (
+	"context"
+	"time"
+
+	"github.com/rank1zen/kevin/internal"
+)
+
+type LiveMatchModalData struct {
+	Date         time.Time
+	Participants [10]internal.LiveParticipant
+}
+
+templ LiveMatchModal(ctx context.Context, data LiveMatchModalData) {
+}

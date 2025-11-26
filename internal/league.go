@@ -1,6 +1,10 @@
 package internal
 
-import "github.com/rank1zen/kevin/internal/riot"
+import (
+	"fmt"
+
+	"github.com/rank1zen/kevin/internal/riot"
+)
 
 // Rank is summoner rank.
 type Rank struct {
@@ -26,6 +30,23 @@ const (
 	TeamPositionBottom
 	TeamPositionSupport
 )
+
+var teamPositions = map[string]TeamPosition{
+	"TOP":     0,
+	"JUNGLE":  1,
+	"MIDDLE":  2,
+	"BOTTOM":  3,
+	"UTILITY": 4,
+}
+
+func convertRiotTeamPosition(s string) TeamPosition {
+	pos, ok := teamPositions[s]
+	if !ok {
+		panic(fmt.Sprintf("team position %s is not valid", s))
+	}
+
+	return pos
+}
 
 // RunePage is the set of runes chosen by a summoner in a match.
 type RunePage struct {

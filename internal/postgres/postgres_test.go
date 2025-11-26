@@ -5,15 +5,20 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/postgres"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 var DefaultPGInstance *postgres.PGInstance
 
+var Toronto *time.Location
+
 func TestMain(t *testing.M) {
 	ctx := context.Background()
+
+	Toronto, _ = time.LoadLocation("America/Toronto")
 
 	DefaultPGInstance = postgres.NewPGInstance(context.Background(), "../../migrations")
 
@@ -26,4 +31,4 @@ func TestMain(t *testing.M) {
 	os.Exit(code)
 }
 
-var T1OKGOODYESNA1PUUID = internal.NewPUUIDFromString("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
+var T1OKGOODYESNA1PUUID = riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")

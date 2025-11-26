@@ -28,7 +28,7 @@ func (mapper PostgresToSummonerMatchMapper) Map() internal.SummonerMatch {
 
 	result := internal.SummonerMatch{
 		Participant: internal.Participant{
-			PUUID:                internal.NewPUUIDFromString(p.PUUID),
+			PUUID:                riot.PUUID(p.PUUID),
 			MatchID:              p.MatchID,
 			TeamID:               p.TeamID,
 			ChampionID:           p.ChampionID,
@@ -89,7 +89,7 @@ func (mapper PostgresToRankStatus) Map() internal.RankStatus {
 	detail := mapper.Detail
 
 	result := internal.RankStatus{
-		PUUID:         internal.NewPUUIDFromString(status.PUUID),
+		PUUID:         riot.PUUID(status.PUUID),
 		EffectiveDate: status.EffectiveDate,
 		Detail:        nil,
 	}

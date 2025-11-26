@@ -1,0 +1,28 @@
+package shared
+
+import (
+	"context"
+	"fmt"
+)
+
+type SpriteData struct {
+	SpriteMap string
+	BGHeight  int
+	BGWidth   int
+	Height    int
+	Width     int
+	X         int
+	Y         int
+}
+
+templ Sprite(ctx context.Context, data SpriteData) {
+	<div class={ sprite(data) }></div>
+}
+
+css sprite(sprite SpriteData) {
+	background-image: { fmt.Sprintf("url(%s)", sprite.SpriteMap) };
+	background-position: { fmt.Sprintf("-%dpx -%dpx", sprite.X, sprite.Y) };
+	background-size: { fmt.Sprintf("%dpx %dpx", sprite.BGWidth, sprite.BGHeight) };
+	width: { fmt.Sprintf("%dpx", sprite.Width) };
+	height: { fmt.Sprintf("%dpx", sprite.Height) };
+}

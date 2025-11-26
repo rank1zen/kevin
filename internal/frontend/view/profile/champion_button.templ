@@ -1,0 +1,24 @@
+package profile
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend/component/modal"
+)
+
+type ChampionButtonData struct {
+	FetchPath string
+	Data      string
+}
+
+templ ChampionButton(ctx context.Context, data ChampionButtonData) {
+	@modal.Modal() {
+		@modal.Trigger() {
+			<span class="text-sm font-bold text-gray-900/90 dark:text-neutral-100/90 disabled:text-gray-500/90">
+				Summoner Champions
+			</span>
+		}
+		@modal.LazyPanel(data.FetchPath, data.Data) {
+			Spinner
+		}
+	}
+}

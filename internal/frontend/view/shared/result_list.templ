@@ -1,0 +1,17 @@
+package shared
+
+import "context"
+
+type ResultListData struct {
+	Cards []ResultCardData
+}
+
+templ ResultList(ctx context.Context, data ResultListData) {
+	<ul>
+		for _, data := range data.Cards {
+			<li>
+				@ResultCard(ctx, data)
+			</li>
+		}
+	</ul>
+}

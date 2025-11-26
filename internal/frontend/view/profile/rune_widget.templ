@@ -1,0 +1,26 @@
+package profile
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/ddragon"
+	"path"
+)
+
+type RuneWidgetData struct {
+	RunePage internal.RunePage
+}
+
+templ RuneWidget(ctx context.Context, data RuneWidgetData) {
+	<div class="flex flex-none bg-gray-100 rounded-lg dark:bg-neutral-900">
+		<div class="transition size-9 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-200">
+			{{ keystonePath := path.Join("/static/", ddragon.RuneMap[data.RunePage.PrimaryKeystone].IconPath) }}
+			<img class="size-9" src={ keystonePath }/>
+		</div>
+		<div class="transition h-9 w-6 flex items-center justify-center rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-200">
+			{{ secondaryTree := path.Join("/static/", ddragon.RuneMap[data.RunePage.SecondaryTree].IconPath) }}
+			<img class="size-4" src={ secondaryTree }/>
+		</div>
+		<div class="transition h-9 w-6 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-200"></div>
+	</div>
+}

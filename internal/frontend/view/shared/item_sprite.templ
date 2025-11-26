@@ -1,0 +1,34 @@
+package shared
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/ddragon"
+)
+
+type ItemSpriteData struct {
+	ItemID int
+
+	// NOTE: Size should be an enum. NOTE: currently not used.
+	Size int
+}
+
+templ ItemSprite(ctx context.Context, data ItemSpriteData) {
+	{{
+		item := ddragon.ItemsMap[data.ItemID]
+
+		x, y := item.X/48, item.Y/48
+
+		spriteData := SpriteData{
+			SpriteMap: "/static/sprite/" + "small_" + item.Sprite,
+			BGHeight:  280,
+			BGWidth:   280,
+			Height:    28,
+			Width:     28,
+			X:         x * 28,
+			Y:         y * 28,
+		}
+	}}
+	<div class="rounded overflow-hidden">
+		@Sprite(ctx, spriteData)
+	</div>
+}

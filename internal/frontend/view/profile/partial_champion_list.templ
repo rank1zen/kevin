@@ -1,0 +1,13 @@
+package profile
+
+import "context"
+
+type PartialChampionListData struct{}
+
+templ PartialChampionList(ctx context.Context, data PartialChampionListData) {
+	<div
+		hx-swap="outerHTML"
+		hx-trigger="load once"
+		class="h-70 rounded-lg animate-pulse bg-gray-50 border border-gray-200 shadow-sm shadow-gray-200"
+	></div>
+}

@@ -1,0 +1,91 @@
+package page
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/frontend/component/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+	"github.com/rank1zen/kevin/internal/frontend/view/shared"
+	"github.com/rank1zen/kevin/internal/riot"
+	"time"
+)
+
+type ProfilePageData struct {
+	PUUID riot.PUUID
+
+	Region riot.Region
+
+	Name, Tag string
+}
+
+templ ProfilePage(ctx context.Context, data ProfilePageData) {
+	@page.Page(fmt.Sprintf("%s#%s - Kevin", data.Name, data.Tag)) {
+		@page.Header() {
+			@shared.Header(ctx, shared.HeaderData{
+				Region: data.Region,
+			})
+		}
+		@page.Body() {
+			<div>
+				<div class="px-2 max-w-7xl mt-7 mx-auto md:px-6">
+					<h1 class="mt-7 font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
+						{ fmt.Sprintf("%s#%s", data.Name, data.Tag) }
+					</h1>
+					<div class="flex gap-x-4 mt-3">
+						@profile.UpdateProfileButton(ctx, profile.UpdateProfileButtonData{
+							Region: &data.Region,
+							Name:   data.Name,
+							Tag:    data.Tag,
+						})
+					</div>
+				</div>
+				<div class="flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6">
+					<div class="flex-1">
+						{{ days := frontend.GetDays(time.Now()) }}
+						for i := range len(days) - 1 {
+							<div class="py-7">
+								@profile.PartialHistoryEntry(ctx, profile.PartialHistoryEntryData{
+									Region:  &data.Region,
+									PUUID:   data.PUUID,
+									StartTS: &days[i+1],
+									EndTS:   &days[i],
+								})
+							</div>
+						}
+					</div>
+					<div class="w-2xs flex-none hidden md:block">
+						<div class="py-4 border-b border-gray-200 dark:border-neutral-600">
+							<h3 class="font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90">
+								Tier Graph
+							</h3>
+							<div class="my-2">
+								@profile.PartialRankCard(ctx, profile.PartialRankCardData{})
+							</div>
+						</div>
+						<div class="py-3 border-b border-gray-200 dark:border-neutral-600">
+							<h3 class="font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90">
+								Past Week
+							</h3>
+							<div class="my-2">
+								@profile.PartialChampionList(ctx, profile.PartialChampionListData{})
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+		@page.Footer() {
+			@shared.PageFooter(ctx, shared.PageFooterData{})
+		}
+	}
+}
+
+// getCurrentWeek returns the start of the day, 7 days ago. Currently returns
+// UTC time.
+func getCurrentWeek() time.Time {
+	now := time.Now().In(time.UTC)
+	y, m, d := now.Date()
+	startOfDay := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
+	return startOfDay.Add(-24 * 6 * time.Hour)
+}

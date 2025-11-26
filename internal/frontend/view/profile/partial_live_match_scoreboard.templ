@@ -1,0 +1,19 @@
+package profile
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+type PartialLiveMatchScoreboardData struct {
+	Region  riot.Region
+	MatchID string
+}
+
+templ PartialLiveMatchScoreboard(ctx context.Context, data PartialLiveMatchScoreboardData) {
+	<div
+		hx-post="/profile.LiveMatchScoreboard"
+		hx-swap="outerHTML"
+		class="h-40 rounded-lg animate-pulse bg-gray-50 border border-gray-200 shadow-sm shadow-gray-200"
+	></div>
+}
