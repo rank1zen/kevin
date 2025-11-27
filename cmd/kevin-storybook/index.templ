@@ -1,0 +1,34 @@
+package main
+
+import "fmt"
+import "context"
+
+type IndexData struct {
+	Routes []*Route
+}
+
+templ Index(ctx context.Context, data IndexData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<link rel="stylesheet" href="/static/output.css"/>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		</head>
+		<body class="bg-white dark:bg-black p-4">
+			<h2>
+				kevin-storybook
+			</h2>
+			<ul>
+				for _, route := range data.Routes {
+					<li>
+						<a href={ templ.URL(fmt.Sprintf("/%s", route.Name)) }>
+							{ route.Name }
+						</a>
+					</li>
+				}
+			</ul>
+		</body>
+	</html>
+}
