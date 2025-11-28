@@ -17,21 +17,17 @@ type Config struct {
 
 // LoadConfig loads configuration from environment variables.
 func LoadConfig() (*Config, error) {
-	viper.SetDefault("ENVIRONMENT", "development")
-	viper.SetDefault("ADDRESS", "0.0.0.0:4001")
+	v := viper.New()
 
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
+	v.SetDefault("ENVIRONMENT", "development")
+	v.SetDefault("ADDRESS", "0.0.0.0:4001")
 
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("failed to read config: %w", err)
-	}
-
-	viper.SetEnvPrefix("KEVIN")
-	viper.AutomaticEnv()
+	v.SetEnvPrefix("KEVIN")
+	v.BindEnv("RIOT_API_KEY")
+	v.BindEnv("POSTGRES_CONNECTION")
 
 	cfg := &Config{}
-	if err := viper.Unmarshal(cfg); err != nil {
+	if err := v.Unmarshal(cfg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
