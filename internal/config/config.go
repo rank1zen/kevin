@@ -9,22 +9,23 @@ import (
 
 // Config holds all application-level configurations.
 type Config struct {
-	Environment        string `mapstructure:"ENVIRONMENT"`
-	PostgresConnection string `mapstructure:"POSTGRES_CONNECTION"`
-	RiotAPIKey         string `mapstructure:"RIOT_API_KEY"`
-	Address            string `mapstructure:"ADDRESS"`
+	Environment        string `mapstructure:"KEVIN_ENVIRONMENT"`
+	PostgresConnection string `mapstructure:"KEVIN_POSTGRES_CONNECTION"`
+	RiotAPIKey         string `mapstructure:"KEVIN_RIOT_API_KEY"`
+	Port               int    `mapstructure:"PORT"`
 }
 
 // LoadConfig loads configuration from environment variables.
 func LoadConfig() (*Config, error) {
 	v := viper.New()
 
-	v.SetDefault("ENVIRONMENT", "development")
-	v.SetDefault("ADDRESS", "0.0.0.0:4001")
+	v.SetDefault("KEVIN_ENVIRONMENT", "development")
+	v.SetDefault("PORT", 8080)
 
-	v.SetEnvPrefix("KEVIN")
-	v.BindEnv("RIOT_API_KEY")
-	v.BindEnv("POSTGRES_CONNECTION")
+	_ = v.BindEnv("KEVIN_ENVIRONMENT")
+	_ = v.BindEnv("KEVIN_POSTGRES_CONNECTION")
+	_ = v.BindEnv("KEVIN_RIOT_API_KEY")
+	_ = v.BindEnv("PORT")
 
 	cfg := &Config{}
 	if err := v.Unmarshal(cfg); err != nil {
