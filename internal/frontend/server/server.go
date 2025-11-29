@@ -2,6 +2,7 @@
 package server
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -32,16 +33,10 @@ func WithLogger(logger *slog.Logger) ServerOption {
 	}
 }
 
-func WithAddress(addr string) ServerOption {
-	return func(s *Server) {
-		s.Address = addr
-	}
-}
-
-func New(handler *service.Service, opts ...ServerOption) *Server {
+func New(handler *service.Service, port int, opts ...ServerOption) *Server {
 	srvr := Server{
 		Logger:  slog.Default(),
-		Address: "0.0.0.0:4001", // Default address
+		Address: fmt.Sprintf(":%d", port),
 	}
 
 	for _, opt := range opts {

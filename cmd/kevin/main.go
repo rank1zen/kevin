@@ -62,7 +62,7 @@ func run(ctx context.Context, cfg *config.Config) error {
 	client := riot.NewClient(cfg.RiotAPIKey)
 	datasource := service.NewService(client, store)
 
-	srvr := server.New(datasource, server.WithLogger(slog.Default()), server.WithAddress(cfg.Address))
+	srvr := server.New(datasource, cfg.Port, server.WithLogger(slog.Default()))
 
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer cancel()
@@ -72,7 +72,7 @@ func run(ctx context.Context, cfg *config.Config) error {
 		slog.Default().Error("error starting server", "err", err)
 	}()
 
-	slog.Default().Info("server started", "address", cfg.Address, "environment", cfg.Environment)
+	slog.Default().Info("server started", "address", cfg.Port, "environment", cfg.Environment)
 
 	<-ctx.Done()
 
