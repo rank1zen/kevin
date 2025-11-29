@@ -45,7 +45,7 @@ func SetupDatasource(ctx context.Context, t testing.TB) *service.Service {
 
 	store := postgres.NewStore(pool)
 
-	return service.NewService(client, store)
+	return service.NewService(client, store, pool)
 }
 
 func TestGetDay(t *testing.T) {

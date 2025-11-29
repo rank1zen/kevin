@@ -23,10 +23,9 @@ func TestMatchStore_RecordMatch(t *testing.T) {
 	mapper := internal.RiotToMatchMapper{
 		Match: sample.WithSampleMatch(),
 	}
-
-	err := store.MatchStore().RecordMatch(ctx, mapper.Map())
+	err := store.Match.RecordMatch(ctx, mapper.Map())
 	if assert.NoError(t, err) {
-		_, err = store.MatchStore().GetMatchDetail(ctx, "NA1_5304757838")
+		_, err = store.Match.GetMatchDetail(ctx, "NA1_5304757838")
 		assert.NoError(t, err)
 	}
 }
@@ -46,10 +45,10 @@ func TestMatchStore_GetMatchDetail(t *testing.T) {
 
 	match := mapper.Map()
 
-	err := store.MatchStore().RecordMatch(ctx, match)
+	err := store.Match.RecordMatch(ctx, match)
 	require.NoError(t, err)
 
-	actual, err := store.MatchStore().GetMatchDetail(ctx, "NA1_5304757838")
+	actual, err := store.Match.GetMatchDetail(ctx, "NA1_5304757838")
 	require.NoError(t, err)
 
 	for _, tc := range []struct {
@@ -110,7 +109,7 @@ func TestMatchStore_GetMatchHistory(t *testing.T) {
 		}
 
 		match := mapper.Map()
-		err := store.MatchStore().RecordMatch(ctx, match)
+		err := store.Match.RecordMatch(ctx, match)
 		require.NoError(t, err)
 	}
 
@@ -122,7 +121,7 @@ func TestMatchStore_GetMatchHistory(t *testing.T) {
 	_, err = rankStore.CreateRankStatus(ctx, postgres.RankStatus{PUUID: T1OKGOODYESNA1PUUID.String(), EffectiveDate: time.Date(2025, time.August, 15, 21, 0, 0, 0, time.UTC)})
 	require.NoError(t, err)
 
-	actual, err := store.MatchStore().GetMatchlist(ctx, T1OKGOODYESNA1PUUID, time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, time.September, 1, 0, 0, 0, 0, time.UTC))
+	actual, err := store.Match.GetMatchlist(ctx, T1OKGOODYESNA1PUUID, time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, time.September, 1, 0, 0, 0, 0, time.UTC))
 	require.NoError(t, err)
 
 	order := []string{}

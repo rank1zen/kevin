@@ -49,7 +49,7 @@ func (s *MatchService) GetMatchlist(ctx context.Context, req GetMatchlistRequest
 		matchIDs = append(matchIDs, id)
 	}
 
-	newIDs, err := s.match.GetNewMatchIDs(ctx, matchIDs)
+	newIDs, err := s.store.Match.GetNewMatchIDs(ctx, matchIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -63,13 +63,13 @@ func (s *MatchService) GetMatchlist(ctx context.Context, req GetMatchlistRequest
 
 		match := mapRiotMatchToModelMatch(*riotMatch)
 
-		err = s.match.RecordMatch(ctx, match)
+		err = s.store.Match.RecordMatch(ctx, match)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	storeMatches, err := s.match.GetMatchlist(ctx, req.PUUID, *req.StartTS, *req.EndTS)
+	storeMatches, err := s.store.Match.GetMatchlist(ctx, req.PUUID, *req.StartTS, *req.EndTS)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (s *MatchService) GetMatchDetail(ctx context.Context, req GetMatchDetailReq
 		*req.Region = riot.RegionNA1 // Default to NA1 if not specified
 	}
 
-	newIDS, err := s.match.GetNewMatchIDs(ctx, []string{req.MatchID})
+	newIDS, err := s.store.Match.GetNewMatchIDs(ctx, []string{req.MatchID})
 	if err != nil {
 		return nil, err
 	}
@@ -103,13 +103,13 @@ func (s *MatchService) GetMatchDetail(ctx context.Context, req GetMatchDetailReq
 
 		match := mapRiotMatchToModelMatch(*riotMatch)
 
-		err = s.match.RecordMatch(ctx, match)
+		err = s.store.Match.RecordMatch(ctx, match)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	storeMatch, err := s.match.GetMatchDetail(ctx, req.MatchID)
+	storeMatch, err := s.store.Match.GetMatchDetail(ctx, req.MatchID)
 	if err != nil {
 		return nil, err
 	}

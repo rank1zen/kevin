@@ -60,7 +60,7 @@ func run(ctx context.Context, cfg *config.Config) error {
 
 	store := postgres.NewStore(pool)
 	client := riot.NewClient(cfg.RiotAPIKey)
-	datasource := service.NewService(client, store)
+	datasource := service.NewService(client, store, pool)
 
 	srvr := server.New(datasource, cfg.Port, server.WithLogger(slog.Default()))
 

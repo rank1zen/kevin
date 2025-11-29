@@ -25,10 +25,10 @@ func TestProfileStore_RecordProfile(t *testing.T) {
 		Rank:    internal.RankStatus{PUUID: T1OKGOODYESNA1PUUID, EffectiveDate: time.Date(2025, time.April, 4, 0, 0, 0, 0, time.UTC), Detail: nil},
 	}
 
-	err := store.ProfileStore().RecordProfile(ctx, &profile)
+	err := store.Profile.RecordProfile(ctx, &profile)
 	assert.NoError(t, err)
 
-	_, err = store.ProfileStore().GetProfile(ctx, T1OKGOODYESNA1PUUID)
+	_, err = store.Profile.GetProfile(ctx, T1OKGOODYESNA1PUUID)
 	assert.NoError(t, err)
 }
 
@@ -46,10 +46,10 @@ func TestProfileStore_GetProfile(t *testing.T) {
 		Rank:    internal.RankStatus{PUUID: T1OKGOODYESNA1PUUID, EffectiveDate: time.Date(2025, time.April, 4, 0, 0, 0, 0, time.UTC), Detail: nil},
 	}
 
-	err := store.ProfileStore().RecordProfile(ctx, &profile)
+	err := store.Profile.RecordProfile(ctx, &profile)
 	require.NoError(t, err)
 
-	actual, err := store.ProfileStore().GetProfile(ctx, T1OKGOODYESNA1PUUID)
+	actual, err := store.Profile.GetProfile(ctx, T1OKGOODYESNA1PUUID)
 	require.NoError(t, err)
 
 	for _, tc := range []struct {
@@ -78,7 +78,7 @@ func TestProfileStore_GetProfile(t *testing.T) {
 	t.Run(
 		"expects ErrSummonerNotFound",
 		func(t *testing.T) {
-			_, err := store.ProfileStore().GetProfile(ctx, "0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q")
+			_, err := store.Profile.GetProfile(ctx, "0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q")
 			assert.ErrorIs(t, err, internal.ErrSummonerNotFound)
 		},
 	)
