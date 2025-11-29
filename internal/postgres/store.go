@@ -50,11 +50,12 @@ type Store struct {
 	Pool *pgxpool.Pool
 }
 
-func (db *Store) MatchStore() internal.MatchStore     { return (*ZMatchStore)(db) }
-func (db *Store) ProfileStore() internal.ProfileStore { return (*ProfileStore)(db) }
-
-func NewStore(pool *pgxpool.Pool) *Store {
-	return &Store{Pool: pool}
+func NewStore(pool *pgxpool.Pool) *internal.Store {
+	return &internal.Store{
+		Profile:       &ProfileStore{Pool: pool},
+		Match:         &ZMatchStore{Pool: pool},
+		SummonerStats: &SummonerStatsStore{Pool: pool},
+	}
 }
 
 // chooseStatusID chooses some id that is suitable.

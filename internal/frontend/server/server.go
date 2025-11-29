@@ -68,6 +68,7 @@ func New(handler *service.Service, port int, opts ...ServerOption) *Server {
 	main := http.NewServeMux()
 	main.Handle("/", otelRouter) // Use the OpenTelemetry wrapped handler
 	main.Handle("GET /static/", http.FileServer(http.FS(frontend.StaticAssets)))
+	main.Handle("GET /ready", (*ReadyHandler)(handler))
 
 	srvr.router = main
 

@@ -299,7 +299,7 @@ func TestMatchStore_GetSummonerChampions(t *testing.T) {
 		}
 
 		match := mapper.Map()
-		err := store.MatchStore().RecordMatch(ctx, match)
+		err := store.Match.RecordMatch(ctx, match)
 		require.NoError(t, err)
 	}
 

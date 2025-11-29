@@ -17,12 +17,9 @@ import (
 // TODO: Service should be able to decide when to call the riot API, and
 // when to use cache. probably want to cache something.
 type Service struct {
-	store         internal.Store
-	match         internal.MatchStore
-	profile       internal.ProfileStore
-	summonerstats internal.SummonerStatsStore
-
-	riot *riot.Client
+	riot  *riot.Client
+	store *internal.Store
+	db    internal.DB
 }
 
 func (s *Service) CheckHealth(ctx context.Context) error {
@@ -30,22 +27,17 @@ func (s *Service) CheckHealth(ctx context.Context) error {
 		return err
 	}
 
-	if err := s.store.Ping(ctx); err != nil {
+	if err := s.db.Ping(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-type Store interface {
-	MatchStore() internal.MatchStore
-	ProfileStore() internal.ProfileStore
-}
-
-func NewService(client *riot.Client, store Store) *Service {
+func NewService(client *riot.Client, store *internal.Store, db internal.DB) *Service {
 	return &Service{
-		riot:    client,
-		match:   store.MatchStore(),
-		profile: store.ProfileStore(),
+		riot:  client,
+		store: store,
+		db:    db,
 	}
 }

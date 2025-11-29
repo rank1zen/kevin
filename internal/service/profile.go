@@ -56,11 +56,11 @@ func (s *ProfileService) GetProfile(ctx context.Context, req GetProfileRequest) 
 		},
 	}
 
-	if err = s.profile.RecordProfile(ctx, &profile); err != nil {
+	if err = s.store.Profile.RecordProfile(ctx, &profile); err != nil {
 		return nil, err
 	}
 
-	storeProfile, err := s.profile.GetProfile(ctx, account.PUUID)
+	storeProfile, err := s.store.Profile.GetProfile(ctx, account.PUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, req UpdateProfileReq
 		},
 	}
 
-	if err = s.profile.RecordProfile(ctx, &profile); err != nil {
+	if err = s.store.Profile.RecordProfile(ctx, &profile); err != nil {
 		return err
 	}
 
@@ -165,11 +165,11 @@ func (s *ProfileService) GetRankHistory(ctx context.Context, req GetRankHistoryR
 		},
 	}
 
-	if err = s.profile.RecordProfile(ctx, &profile); err != nil {
+	if err = s.store.Profile.RecordProfile(ctx, &profile); err != nil {
 		return nil, err
 	}
 
-	storeProfile, err := s.profile.GetProfile(ctx, account.PUUID)
+	storeProfile, err := s.store.Profile.GetProfile(ctx, account.PUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ type GetSummonerChampionsRequest struct {
 }
 
 func (s *ProfileService) GetSummonerChampions(ctx context.Context, req GetSummonerChampionsRequest) ([]internal.SummonerChampion, error) {
-	champions, err := s.summonerstats.GetChampions(ctx, req.PUUID, *req.StartTS, *req.EndTS)
+	champions, err := s.store.SummonerStats.GetChampions(ctx, req.PUUID, *req.StartTS, *req.EndTS)
 	if err != nil {
 		return nil, err
 	}

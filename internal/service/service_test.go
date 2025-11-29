@@ -20,7 +20,7 @@ func SetupDatasource(ctx context.Context, t testing.TB) *service.Service {
 
 	store := postgres.NewStore(pool)
 
-	return service.NewService(client, store)
+	return service.NewService(client, store, pool)
 }
 
 var T1OKGOODYESNA1PUUID = riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg")
