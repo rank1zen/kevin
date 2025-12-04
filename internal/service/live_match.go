@@ -62,6 +62,7 @@ func (s *LiveMatchService) GetLiveMatchByID(ctx context.Context, req GetLiveMatc
 	}
 
 	result := LiveMatchDetail{
+		Region:       storeStatus.Region,
 		ID:           storeLiveMatch.ID,
 		Date:         storeLiveMatch.Date,
 		Participants: [10]LiveParticipantDetail{},
@@ -86,6 +87,8 @@ func (s *LiveMatchService) GetLiveMatchByID(ctx context.Context, req GetLiveMatc
 
 // LiveMatchDetail represents details of a live match.
 type LiveMatchDetail struct {
+	Region riot.Region
+
 	ID string
 
 	Date time.Time
