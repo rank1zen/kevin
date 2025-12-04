@@ -86,6 +86,8 @@ func (s *LiveMatchService) GetLiveMatchByID(ctx context.Context, req GetLiveMatc
 
 // LiveMatchDetail represents details of a live match.
 type LiveMatchDetail struct {
+	Region riot.Region
+
 	ID string
 
 	Date time.Time
