@@ -1,10 +1,20 @@
 package internal
 
 import (
+	"context"
 	"time"
 
 	"github.com/rank1zen/kevin/internal/riot"
 )
+
+// LiveMatchStore handles live match records.
+type LiveMatchStore interface {
+	CreateLiveMatch(ctx context.Context, match *LiveMatch) error
+
+	GetLiveMatch(ctx context.Context, id string) (*LiveMatch, error)
+
+	GetUserLiveMatch(ctx context.Context, puuid riot.PUUID) (*LiveMatch, error)
+}
 
 type LiveMatch struct {
 	ID string

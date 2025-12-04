@@ -4,9 +4,11 @@ import "context"
 
 // Store represents a collection of data stores.
 type Store struct {
-	Profile       ProfileStore
-	Match         MatchStore
-	SummonerStats SummonerStatsStore
+	Profile         ProfileStore
+	Match           MatchStore
+	SummonerStats   SummonerStatsStore
+	LiveMatch       LiveMatchStore
+	LiveMatchStatus LiveMatchStatusStore
 }
 
 type DB interface {
