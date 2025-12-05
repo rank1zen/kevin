@@ -12,7 +12,15 @@ type LiveMatchStatusObjects struct{ Tx Tx }
 
 func (db *LiveMatchStatusObjects) Get(ctx context.Context, id string) (*LiveMatchStatus, error) {
 	rows, err := db.Tx.Query(ctx, `
-		SELECT * FROM live_match_status WHERE match_id = $1
+		SELECT
+			region,
+			match_id,
+			date,
+			expired
+		FROM
+		    LiveMatchStatus
+		WHERE
+			match_id = $1;
 	`, id)
 	if err != nil {
 		return nil, err
@@ -28,7 +36,7 @@ func (db *LiveMatchStatusObjects) Get(ctx context.Context, id string) (*LiveMatc
 
 func (db *LiveMatchStatusObjects) Create(ctx context.Context, status *LiveMatchStatus) error {
 	_, err := db.Tx.Exec(ctx, `
-		INSERT INTO live_match_status (region, match_id, date, expired)
+		INSERT INTO LiveMatchStatus (region, match_id, date, expired)
 		VALUES ($1, $2, $3, $4)
 	`, status.Region, status.ID, status.Date, status.Expired)
 	return err
@@ -36,7 +44,7 @@ func (db *LiveMatchStatusObjects) Create(ctx context.Context, status *LiveMatchS
 
 func (db *LiveMatchStatusObjects) Update(ctx context.Context, id string, update LiveMatchStatusUpdate) error {
 	_, err := db.Tx.Exec(ctx, `
-		UPDATE live_match_status SET expired = $1 WHERE match_id = $2;
+		UPDATE LiveMatchStatus SET expired = $1 WHERE match_id = $2;
 	`, update.Expired, id)
 	return err
 }
