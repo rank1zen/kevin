@@ -52,9 +52,11 @@ type Store struct {
 
 func NewStore(pool *pgxpool.Pool) *internal.Store {
 	return &internal.Store{
-		Profile:       &ProfileStore{Pool: pool},
-		Match:         &ZMatchStore{Pool: pool},
-		SummonerStats: &SummonerStatsStore{Pool: pool},
+		Profile:         &ProfileStore{Pool: pool},
+		Match:           &ZMatchStore{Pool: pool},
+		SummonerStats:   &SummonerStatsStore{Pool: pool},
+		LiveMatch:       &LiveMatchStore{Pool: pool},
+		LiveMatchStatus: &LiveMatchStatusStore{Pool: pool},
 	}
 }
 
