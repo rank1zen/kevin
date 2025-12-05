@@ -201,7 +201,7 @@ func TestRiotToProfileMapper(t *testing.T) {
 	}{
 		{
 			Name:     "expects correct puuid",
-			Expected: "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
+			Expected: riot.PUUID("44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg"),
 			Actual:   actual.PUUID,
 		},
 		{
