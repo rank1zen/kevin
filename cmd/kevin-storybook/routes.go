@@ -64,4 +64,8 @@ var routes = []*Route{
 		Name:     "search.ResultMenu",
 		Renderer: search.ResultMenu(context.Background(), searchResultMenuData),
 	},
+	{
+		Name:     "page.LivematchPage",
+		Renderer: page.LivematchPage(context.Background(), livematchPageData),
+	},
 }

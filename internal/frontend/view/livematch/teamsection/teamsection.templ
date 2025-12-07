@@ -1,0 +1,21 @@
+package teamsection
+
+import "context"
+
+type TeamsectionData struct {
+	TeamName     string
+	Participants []ParticipantCardData
+}
+
+templ Teamsection(ctx context.Context, data TeamsectionData) {
+	<div>
+		<h2 class="my-3">
+			{ data.TeamName }
+		</h2>
+		<div>
+			for _, participant := range data.Participants {
+				@ParticipantCard(ctx, participant)
+			}
+		</div>
+	</div>
+}

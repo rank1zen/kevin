@@ -5,6 +5,7 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/livematch/teamsection"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/search"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
@@ -27,7 +28,7 @@ var sampleRunePage = internal.RunePage{
 
 var sampleItems = [7]int{6698, 0, 3176, 0, 3134, 3814, 3364}
 
-var sampleSpells = [2]int{4, 5}
+var sampleSpells = [2]int{4, 6}
 
 var sampleRank = internal.Rank{
 	Tier:     riot.TierGrandmaster,
@@ -268,3 +269,42 @@ var (
 		},
 	}
 )
+
+var sampleTeamsectionParticipantCardData = teamsection.ParticipantCardData{
+	PUUID:            "bacon-egg-and-cheese",
+	Name:             "Bacon",
+	Tag:              "41",
+	MatchID:          "NA1_1234567890",
+	ChampionID:       41,
+	SummonerIDs:      sampleSpells,
+	RunePage:         sampleRunePage,
+	Rank:             &sampleRank,
+	BannedChampionID: 41,
+}
+
+var livematchPageData = page.LivematchPageData{
+	Region:  riot.RegionNA1,
+	MatchID: "NA1_1234567890",
+	Teams: []teamsection.TeamsectionData{
+		{
+			TeamName: "Blue Side",
+			Participants: []teamsection.ParticipantCardData{
+				sampleTeamsectionParticipantCardData,
+				sampleTeamsectionParticipantCardData,
+				sampleTeamsectionParticipantCardData,
+				sampleTeamsectionParticipantCardData,
+				sampleTeamsectionParticipantCardData,
+			},
+		},
+		{
+			TeamName: "Red Side",
+			Participants: []teamsection.ParticipantCardData{
+				sampleTeamsectionParticipantCardData,
+				sampleTeamsectionParticipantCardData,
+				sampleTeamsectionParticipantCardData,
+				sampleTeamsectionParticipantCardData,
+				sampleTeamsectionParticipantCardData,
+			},
+		},
+	},
+}
