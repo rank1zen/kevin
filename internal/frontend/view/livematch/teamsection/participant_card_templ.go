@@ -16,14 +16,15 @@ import (
 )
 
 type ParticipantCardData struct {
-	MatchID          string
-	Name, Tag        string
-	PUUID            riot.PUUID
-	ChampionID       int
-	SummonerIDs      [2]int
-	RunePage         internal.RunePage
-	Rank             *internal.Rank
-	BannedChampionID int
+	MatchID           string
+	Name, Tag         string
+	PUUID             riot.PUUID
+	ChampionID        int
+	SummonerIDs       [2]int
+	RunePage          internal.RunePage
+	Rank              *internal.Rank
+	BannedChampionID  int
+	WinsInLast20Games int
 }
 
 func ParticipantCard(ctx context.Context, data ParticipantCardData) templ.Component {
@@ -47,7 +48,7 @@ func ParticipantCard(ctx context.Context, data ParticipantCardData) templ.Compon
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"@container px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap justify-between @3xl:flex-nowrap bg-white border border-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 rounded-2xl\"><div class=\"flex gap-x-2 flex-1 min-w-0 max-w-60\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"@container\"><div class=\"px-4 py-3 gap-y-1 flex flex-col @3xl:flex-row gap-x-2 bg-white border border-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 rounded-2xl\"><div class=\"flex gap-x-2 justify-between items-start w-full @3xl:w-1/2\"><div class=\"flex gap-x-2 items-start\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -58,20 +59,15 @@ func ParticipantCard(ctx context.Context, data ParticipantCardData) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex-1 min-w-0\"><div class=\"text-sm font-semibold text-gray-900/90 whitespace-nowrap truncate dark:text-gray-100/90\">")
+		templ_7745c5c3_Err = livematch.SummonerWidget(ctx, livematch.SummonerWidgetData{
+			Name: data.Name,
+			Tag:  data.Tag,
+			Rank: data.Rank,
+		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Name + "#" + data.Tag)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/livematch/teamsection/participant_card.templ`, Line: 30, Col: 33}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"text-xs font-semibold text-gray-900/90 dark:text-gray-100/90\">Unknown</div></div></div><div class=\"flex gap-x-2 w-full justify-between @3xl:w-auto\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -81,7 +77,7 @@ func ParticipantCard(ctx context.Context, data ParticipantCardData) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div>13 Wins / Last 20 Games</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"flex gap-x-2 justify-between w-full @3xl:w-1/2\"><div>13 Wins / Last 20 Games</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -91,7 +87,7 @@ func ParticipantCard(ctx context.Context, data ParticipantCardData) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

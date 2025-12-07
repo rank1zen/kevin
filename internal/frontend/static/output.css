@@ -1055,9 +1055,19 @@
       flex-wrap: nowrap;
     }
   }
+  .\@3xl\:w-1\/2 {
+    @container (width >= 48rem) {
+      width: calc(1/2 * 100%);
+    }
+  }
   .\@3xl\:w-auto {
     @container (width >= 48rem) {
       width: auto;
+    }
+  }
+  .\@3xl\:flex-row {
+    @container (width >= 48rem) {
+      flex-direction: row;
     }
   }
   .\@3xl\:flex-nowrap {
