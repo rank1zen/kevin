@@ -1,0 +1,31 @@
+package searchmenu
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend/view/search"
+)
+
+type SearchMenuData struct {
+	Name, Tag      string
+	ProfileResults []search.ResultCardData
+}
+
+templ SearchMenu(ctx context.Context, data SearchMenuData) {
+	<div class="p-2">
+		<div class="py-2 border-b border-gray-200 first:pt-0 last:pb-0 last:border-none">
+			@search.NotFoundCard(ctx, search.NotFoundCardData{
+				Name: data.Name,
+				Tag:  data.Tag,
+			})
+		</div>
+		if len(data.ProfileResults) > 0 {
+			<div class="py-2 border-b border-gray-200 first:pt-0 last:pb-0 last:border-none">
+				<ul>
+					for _, data := range data.ProfileResults {
+						@search.ResultCard(ctx, data)
+					}
+				</ul>
+			</div>
+		}
+	</div>
+}

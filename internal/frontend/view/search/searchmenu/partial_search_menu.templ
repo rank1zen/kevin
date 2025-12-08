@@ -1,0 +1,14 @@
+package searchmenu
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend/view/search"
+)
+
+type PartialSearchMenuData struct {
+	Name, Tag      string
+	ProfileResults []search.ResultCardData
+}
+
+templ PartialSearchMenu(ctx context.Context, data PartialSearchMenuData) {
+}
