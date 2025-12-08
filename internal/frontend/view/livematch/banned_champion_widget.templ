@@ -1,0 +1,17 @@
+package livematch
+
+import "github.com/rank1zen/kevin/internal/frontend/view/shared"
+import "context"
+
+type BannedChampionWidgetData struct {
+	ChampionID int
+}
+
+templ BannedChampionWidget(ctx context.Context, data BannedChampionWidgetData) {
+	<div class="flex flex-none inset-ring-2 inset-ring-red-500">
+		@shared.ChampionSprite(ctx, shared.ChampionSpriteData{
+			ChampionID: data.ChampionID,
+			Size:       1,
+		})
+	</div>
+}

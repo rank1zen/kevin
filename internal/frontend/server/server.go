@@ -50,8 +50,11 @@ func New(handler *service.Service, port int, opts ...ServerOption) *Server {
 	}
 
 	handleFunc("GET /{$}", (*page.HomePageHandler)(handler))
+
 	handleFunc("GET /profile/{riotID}/{$}", (*page.ProfilePageHandler)(handler))
 	handleFunc("GET /profile/{riotID}/live/{$}", (*page.ProfileLiveMatchPageHandler)(handler))
+
+	handleFunc("GET /livematch/{matchID}/{$}", (*page.LivematchPageHandler)(handler))
 
 	handleFunc("POST /partial/profile.HistoryEntry", (*profile.HistoryEntryHandler)(handler))
 	handleFunc("POST /partial/profile.ChampionList", (*profile.ChampionListHandler)(handler))

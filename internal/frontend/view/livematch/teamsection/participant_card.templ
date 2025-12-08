@@ -1,0 +1,51 @@
+package teamsection
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/frontend/view/livematch"
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+type ParticipantCardData struct {
+	MatchID           string
+	Name, Tag         string
+	PUUID             riot.PUUID
+	ChampionID        int
+	SummonerIDs       [2]int
+	RunePage          internal.RunePage
+	Rank              *internal.Rank
+	BannedChampionID  int
+	WinsInLast20Games int
+}
+
+templ ParticipantCard(ctx context.Context, data ParticipantCardData) {
+	<div class="@container">
+		<div class="px-4 py-3 gap-y-1 flex flex-col @3xl:flex-row gap-x-2 bg-white border border-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 rounded-2xl">
+			<div class="flex gap-x-2 justify-between items-start w-full @3xl:w-1/2">
+				<div class="flex gap-x-2 items-start">
+					@livematch.ChampionWidget(ctx, livematch.ChampionWidgetData{
+						ChampionID:  data.ChampionID,
+						SummonerIDs: data.SummonerIDs,
+					})
+					@livematch.SummonerWidget(ctx, livematch.SummonerWidgetData{
+						Name: data.Name,
+						Tag:  data.Tag,
+						Rank: data.Rank,
+					})
+				</div>
+				@livematch.RunesWidget(ctx, livematch.RunesWidgetData{
+					RunePage: data.RunePage,
+				})
+			</div>
+			<div class="flex gap-x-2 justify-between w-full @3xl:w-1/2">
+				<div>
+					13 Wins / Last 20 Games
+				</div>
+				@livematch.BannedChampionWidget(ctx, livematch.BannedChampionWidgetData{
+					ChampionID: data.BannedChampionID,
+				})
+			</div>
+		</div>
+	</div>
+}
