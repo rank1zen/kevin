@@ -2,13 +2,18 @@ package searchmenu
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal/frontend/view/search"
+	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/service"
 )
 
-type PartialSearchMenuData struct {
-	Name, Tag      string
-	ProfileResults []search.ResultCardData
-}
+type PartialSearchMenuData service.SearchProfileRequest
 
 templ PartialSearchMenu(ctx context.Context, data PartialSearchMenuData) {
+	<div
+		hx-post="/partial/search/searchmenu/search_menu"
+		hx-swap="outerHTML"
+		hx-trigger="load"
+		hx-vals={ frontend.MarshalRequest(data) }
+		class="h-25 rounded-lg animate-pulse bg-gray-50 border border-gray-200 shadow-sm shadow-gray-200"
+	></div>
 }
