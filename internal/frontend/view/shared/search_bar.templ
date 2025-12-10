@@ -26,7 +26,7 @@ templ (m SearchBar) ToTempl(ctx context.Context) {
 			placeholder="Search summoner..."
 			x-model="query"
 			@input="open = true"
-			hx-post="/search"
+			hx-post="/partial/searchmenu.SearchMenu"
 			hx-trigger="input changed delay:250ms, keyup[key=='Enter']"
 			hx-include="[name='region']"
 			hx-target="#results"

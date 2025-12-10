@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
@@ -35,26 +36,7 @@ func (s *ProfileService) GetProfile(ctx context.Context, req GetProfileRequest) 
 		return nil, err
 	}
 
-	soloq := findSoloQLeagueEntry(entries)
-
-	profile := internal.Profile{
-		PUUID:   account.PUUID,
-		Name:    account.GameName,
-		Tagline: account.TagLine,
-		Rank: internal.RankStatus{
-			PUUID:         account.PUUID,
-			EffectiveDate: time.Now().In(time.UTC),
-			Detail: &internal.RankDetail{
-				Wins:   soloq.Wins,
-				Losses: soloq.Losses,
-				Rank: internal.Rank{
-					Tier:     soloq.Tier,
-					Division: soloq.Division,
-					LP:       soloq.LeaguePoints,
-				},
-			},
-		},
-	}
+	profile := createProfile(*account, entries)
 
 	if err = s.store.Profile.RecordProfile(ctx, &profile); err != nil {
 		return nil, err
@@ -79,7 +61,7 @@ type UpdateProfileRequest struct {
 func (s *ProfileService) UpdateProfile(ctx context.Context, req UpdateProfileRequest) error {
 	if req.Region == nil {
 		req.Region = new(riot.Region)
-		*req.Region = riot.RegionNA1 // Default to NA1
+		*req.Region = riot.RegionNA1
 	}
 
 	account, err := s.riot.Account.GetAccountByRiotID(ctx, *req.Region, req.Name, req.Tag)
@@ -92,25 +74,28 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, req UpdateProfileReq
 		return err
 	}
 
-	soloq := findSoloQLeagueEntry(entries)
-
 	profile := internal.Profile{
 		PUUID:   account.PUUID,
 		Name:    account.GameName,
 		Tagline: account.TagLine,
 		Rank: internal.RankStatus{
 			PUUID:         account.PUUID,
-			EffectiveDate: time.Time{}, // Original had time.Time{} here
-			Detail: &internal.RankDetail{
-				Wins:   soloq.Wins,
-				Losses: soloq.Losses,
-				Rank: internal.Rank{
-					Tier:     "", // Original had "" here
-					Division: "", // Original had "" here
-					LP:       0,  // Original had 0 here
-				},
-			},
+			EffectiveDate: time.Now().In(time.UTC),
+			Detail:        nil,
 		},
+	}
+
+	soloq, err := findSoloQLeagueEntry(entries)
+	if err == nil {
+		profile.Rank.Detail = &internal.RankDetail{
+			Wins:   soloq.Wins,
+			Losses: soloq.Losses,
+			Rank: internal.Rank{
+				Tier:     soloq.Tier,
+				Division: soloq.Division,
+				LP:       soloq.LeaguePoints,
+			},
+		}
 	}
 
 	if err = s.store.Profile.RecordProfile(ctx, &profile); err != nil {
@@ -129,52 +114,7 @@ type GetRankHistoryRequest struct {
 
 // GetRankHistory retrieves a summoner's rank history.
 func (s *ProfileService) GetRankHistory(ctx context.Context, req GetRankHistoryRequest) (*internal.Profile, error) {
-	if req.Region == nil {
-		req.Region = new(riot.Region)
-		*req.Region = riot.RegionNA1 // Default to NA1
-	}
-
-	account, err := s.riot.Account.GetAccountByRiotID(ctx, *req.Region, req.Name, req.Tag)
-	if err != nil {
-		return nil, err
-	}
-
-	entries, err := s.riot.League.GetLeagueEntriesByPUUID(ctx, *req.Region, account.PUUID.String())
-	if err != nil {
-		return nil, err
-	}
-
-	soloq := findSoloQLeagueEntry(entries)
-
-	profile := internal.Profile{
-		PUUID:   account.PUUID,
-		Name:    account.GameName,
-		Tagline: account.TagLine,
-		Rank: internal.RankStatus{
-			PUUID:         account.PUUID,
-			EffectiveDate: time.Now().In(time.UTC),
-			Detail: &internal.RankDetail{
-				Wins:   soloq.Wins,
-				Losses: soloq.Losses,
-				Rank: internal.Rank{
-					Tier:     soloq.Tier,
-					Division: soloq.Division,
-					LP:       soloq.LeaguePoints,
-				},
-			},
-		},
-	}
-
-	if err = s.store.Profile.RecordProfile(ctx, &profile); err != nil {
-		return nil, err
-	}
-
-	storeProfile, err := s.store.Profile.GetProfile(ctx, account.PUUID)
-	if err != nil {
-		return nil, err
-	}
-
-	return storeProfile, nil
+	panic("not implemented")
 }
 
 type GetSummonerChampionsRequest struct {
@@ -193,14 +133,41 @@ func (s *ProfileService) GetSummonerChampions(ctx context.Context, req GetSummon
 	return champions, nil
 }
 
-// findSoloQLeagueEntry is a helper function to find the Solo Queue entry from a list of league entries.
-// This function was implicitly used in the original profile.go.
-func findSoloQLeagueEntry(entries []riot.LeagueEntry) riot.LeagueEntry {
+// findSoloQLeagueEntry is a helper function to find the solo queue entry from a
+// list of league entries. It will return an error if not found.
+func findSoloQLeagueEntry(entries []riot.LeagueEntry) (*riot.LeagueEntry, error) {
 	for _, entry := range entries {
 		if entry.QueueType == "RANKED_SOLO_5x5" {
-			return entry
+			return &entry, nil
 		}
 	}
-	// Return a zero-value entry if not found. Error handling for this case might be needed upstream.
-	return riot.LeagueEntry{}
+
+	return nil, errors.New("solo queue entry not found")
+}
+
+func createProfile(account riot.Account, ranks []riot.LeagueEntry) internal.Profile {
+	profile := internal.Profile{
+		PUUID:   account.PUUID,
+		Name:    account.GameName,
+		Tagline: account.TagLine,
+		Rank: internal.RankStatus{
+			PUUID:         account.PUUID,
+			EffectiveDate: time.Now().In(time.UTC),
+			Detail:        nil,
+		},
+	}
+
+	if soloq, err := findSoloQLeagueEntry(ranks); err == nil {
+		profile.Rank.Detail = &internal.RankDetail{
+			Wins:   soloq.Wins,
+			Losses: soloq.Losses,
+			Rank: internal.Rank{
+				Tier:     soloq.Tier,
+				Division: soloq.Division,
+				LP:       soloq.LeaguePoints,
+			},
+		}
+	}
+
+	return profile
 }

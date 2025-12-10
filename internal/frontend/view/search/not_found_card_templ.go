@@ -17,7 +17,6 @@ type NotFoundCardData struct {
 	Region    riot.Region
 	Name, Tag string
 	Path      string
-	Data      string
 }
 
 func NotFoundCard(ctx context.Context, data NotFoundCardData) templ.Component {
@@ -46,9 +45,9 @@ func NotFoundCard(ctx context.Context, data NotFoundCardData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 templ.SafeURL
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinURLErrs("/T1OKGOODYES-NA1")
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinURLErrs(data.Path)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/search/not_found_card.templ`, Line: 17, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/search/not_found_card.templ`, Line: 16, Col: 18}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -61,7 +60,7 @@ func NotFoundCard(ctx context.Context, data NotFoundCardData) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(data.Name + "#" + data.Tag)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/search/not_found_card.templ`, Line: 21, Col: 31}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/view/search/not_found_card.templ`, Line: 20, Col: 31}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
