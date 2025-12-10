@@ -10,6 +10,7 @@ import (
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+	"github.com/rank1zen/kevin/internal/frontend/view/search/searchmenu"
 	"github.com/rank1zen/kevin/internal/service"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -60,6 +61,7 @@ func New(handler *service.Service, port int, opts ...ServerOption) *Server {
 	handleFunc("POST /partial/profile.ChampionList", (*profile.ChampionListHandler)(handler))
 	handleFunc("POST /partial/profile.MatchDetailBox", (*profile.MatchDetailBoxHandler)(handler))
 	handleFunc("POST /partial/profile.UpdateProfile", (*profile.UpdateProfileHandler)(handler))
+	handleFunc("POST /partial/searchmenu.SearchMenu", (*searchmenu.SearchMenuHandler)(handler))
 
 	// Wrap with logging middleware
 	loggedRouter := srvr.addLoggingMiddleware(router)
