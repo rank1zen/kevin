@@ -135,11 +135,11 @@ func (m *LeagueService) GetLeagueEntriesByPUUID(ctx context.Context, region Regi
 // GetChallengerLeague returns the challenger league for a given queue.
 //
 // Riot API docs: https://developer.riotgames.com/apis#league-v4/GET_getChallengerLeague
-func (m *LeagueService) GetChallengerLeague(ctx context.Context, region Region, queue string) (*LeagueList2, error) {
+func (m *LeagueService) GetChallengerLeague(ctx context.Context, region string, queue string) (*LeagueList2, error) {
 	endpoint := fmt.Sprintf("/lol/league/v4/challengerleagues/by-queue/%s", queue)
 
 	req := &internal.Request{
-		BaseURL:  region.host(),
+		BaseURL:  regionHost(region),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}
