@@ -14,7 +14,7 @@ type GetLeaderboardRequest struct {
 // GetLeaderboard retrieves the leaderboard for ranked solo queue in a given region.
 //
 // NOTE: Only gets challenger league for now.
-func (s *LeaderboardService) GetLeaderboard(ctx context.Context, req GetLeaderboardRequest) ([]LeaderboardEntry, error) {
+func (s *LeaderboardService) GetLeaderboard(ctx context.Context, req GetLeaderboardRequest) (*Leaderboard, error) {
 	if req.Region == "" {
 		req.Region = "NA1"
 	}
@@ -24,10 +24,13 @@ func (s *LeaderboardService) GetLeaderboard(ctx context.Context, req GetLeaderbo
 		return nil, fmt.Errorf("failed to get challenger league: %w", err)
 	}
 
-	result := []LeaderboardEntry{}
+	result := Leaderboard{
+		Region:  req.Region,
+		Entries: []LeaderboardEntry{},
+	}
 
 	for _, entry := range riotEntries.Entries {
-		result = append(result, LeaderboardEntry{
+		result.Entries = append(result.Entries, LeaderboardEntry{
 			PUUID:    entry.PUUID,
 			Name:     "TODO: No name",
 			Tag:      "TODO: No tag",
@@ -39,7 +42,14 @@ func (s *LeaderboardService) GetLeaderboard(ctx context.Context, req GetLeaderbo
 		})
 	}
 
-	return result, nil
+	return &result, nil
+}
+
+type Leaderboard struct {
+	// Region is the region the request was executed in.
+	Region string
+
+	Entries []LeaderboardEntry
 }
 
 // LeaderboardEntry is an entry for a player in a leaderboard.
