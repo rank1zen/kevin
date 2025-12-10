@@ -131,3 +131,48 @@ func (m *LeagueService) GetLeagueEntriesByPUUID(ctx context.Context, region Regi
 
 	return entries, nil
 }
+
+// GetChallengerLeague returns the challenger league for a given queue.
+//
+// Riot API docs: https://developer.riotgames.com/apis#league-v4/GET_getChallengerLeague
+func (m *LeagueService) GetChallengerLeague(ctx context.Context, region Region, queue string) (*LeagueList2, error) {
+	endpoint := fmt.Sprintf("/lol/league/v4/challengerleagues/by-queue/%s", queue)
+
+	req := &internal.Request{
+		BaseURL:  region.host(),
+		Endpoint: endpoint,
+		APIKey:   m.client.apiKey,
+	}
+
+	if m.client.baseURL != "" {
+		req.BaseURL = m.client.baseURL
+	}
+
+	var entries LeagueList2
+	if err := m.client.internals.DispatchRequest(ctx, req, &entries); err != nil {
+		return nil, err
+	}
+
+	return &entries, nil
+}
+
+type LeagueList2 struct {
+	LeagueID string       `json:"leagueId"`
+	Entries  []LeagueItem `json:"entries"`
+	Tier     string       `json:"tier"`
+	Name     string       `json:"name"`
+	Queue    string       `json:"queue"`
+}
+
+type LeagueItem struct {
+	FreshBlood   bool              `json:"freshBlood"`
+	HotStreak    bool              `json:"hotStreak"`
+	Inactive     bool              `json:"inactive"`
+	Rank         string            `json:"rank"`
+	LeaguePoints int               `json:"leaguePoints"`
+	Losses       int               `json:"losses"`
+	MiniSeries   *LeagueMiniSeries `json:"miniSeries"`
+	Veteran      bool              `json:"veteran"`
+	Wins         int               `json:"wins"`
+	PUUID        string            `json:"puuid"`
+}
