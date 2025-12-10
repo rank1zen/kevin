@@ -66,7 +66,7 @@ func TestLeagueGetLeagueEntriesByPUUID(t *testing.T) {
 func TestLeagueGetChallengerLeague(t *testing.T) {
 	ctx := context.Background()
 
-	client, server := MakeTestClient(t, http.StatusOK, "sample/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5",
+	client, server := MakeTestClient(t, http.StatusOK, "sample/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5.json",
 		func(r *http.Request) {
 			for _, tc := range []struct {
 				Name     string
