@@ -7,6 +7,7 @@ import (
 
 type SearchMenuData struct {
 	Name, Tag      string
+	Path           string
 	ProfileResults []search.ResultCardData
 }
 
@@ -16,6 +17,7 @@ templ SearchMenu(ctx context.Context, data SearchMenuData) {
 			@search.NotFoundCard(ctx, search.NotFoundCardData{
 				Name: data.Name,
 				Tag:  data.Tag,
+				Path: data.Path,
 			})
 		</div>
 		if len(data.ProfileResults) > 0 {

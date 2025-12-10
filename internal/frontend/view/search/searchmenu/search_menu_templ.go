@@ -15,6 +15,7 @@ import (
 
 type SearchMenuData struct {
 	Name, Tag      string
+	Path           string
 	ProfileResults []search.ResultCardData
 }
 
@@ -46,6 +47,7 @@ func SearchMenu(ctx context.Context, data SearchMenuData) templ.Component {
 		templ_7745c5c3_Err = search.NotFoundCard(ctx, search.NotFoundCardData{
 			Name: data.Name,
 			Tag:  data.Tag,
+			Path: data.Path,
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

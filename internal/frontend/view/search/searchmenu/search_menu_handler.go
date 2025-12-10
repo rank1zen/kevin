@@ -23,7 +23,7 @@ func (h *SearchMenuHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	req.Query = r.FormValue("q")
 
-	results, err := (*service.SearchService)(h).SearchProfile(r.Context(), req)
+	result, err := (*service.SearchService)(h).SearchProfile(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, fmt.Errorf("failed to search profile: %w", err))
@@ -31,14 +31,15 @@ func (h *SearchMenuHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := SearchMenuData{
-		Name:           "",
-		Tag:            "",
+		Name:           result.Name,
+		Tag:            result.Tag,
+		Path:           fmt.Sprintf("/profile/%s-%s", result.Name, result.Tag),
 		ProfileResults: []search.ResultCardData{},
 	}
 
-	for _, result := range results {
+	for _, profile := range result.Profiles {
 		var rank *internal.Rank
-		if r := result.Rank; r != nil {
+		if r := profile.Rank; r != nil {
 			if rr := r.Detail; rr != nil {
 				rank = &internal.Rank{
 					Tier:     rr.Rank.Tier,
@@ -48,10 +49,10 @@ func (h *SearchMenuHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		v.ProfileResults = append(v.ProfileResults, search.ResultCardData{
-			Name: result.Name,
-			Tag:  result.Tagline,
+			Name: profile.Name,
+			Tag:  profile.Tag,
 			Rank: rank,
-			Path: "",
+			Path: fmt.Sprintf("/profile/%s-%s", profile.Name, profile.Tag),
 		})
 	}
 

@@ -28,6 +28,7 @@ func (s *SearchService) SearchProfile(ctx context.Context, req SearchProfileRequ
 		tag = req.Query[index+1:]
 	} else {
 		name = req.Query
+		tag = string(*req.Region)
 	}
 
 	storeResults, err := s.store.Profile.SearchSummoner(ctx, req.Query)
