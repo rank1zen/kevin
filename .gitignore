@@ -1,10 +1,14 @@
+Session.vim
+
 .envrc
+
+.devenv*
+devenv.local.nix
+devenv.local.yaml
 
 .direnv
 
-Session.vim
-
-tern.conf
+.pre-commit-config.yaml
 
 .zed
 
