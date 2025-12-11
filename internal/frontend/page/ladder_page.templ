@@ -1,0 +1,31 @@
+package page
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend/component/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/shared"
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+type LadderPageData struct {
+	Region string
+}
+
+templ LadderPage(ctx context.Context, data LadderPageData) {
+	@page.Page("Ladder - Kevin") {
+		@page.Header() {
+			@shared.Header(ctx, shared.HeaderData{
+				Region: riot.Region(data.Region),
+			})
+		}
+		@page.Body() {
+			<div>
+				<h1>Ladder Page</h1>
+				<p>Welcome to the ladder page!</p>
+			</div>
+		}
+		@page.Footer() {
+			@shared.PageFooter(ctx, shared.PageFooterData{})
+		}
+	}
+}
