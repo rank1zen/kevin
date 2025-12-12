@@ -1,0 +1,39 @@
+package ladder
+
+import (
+	"context"
+	"fmt"
+)
+
+type RowData struct {
+	Place        int
+	Name, Tag    string
+	Tier         string
+	Division     string
+	LP           int
+	Wins, Losses int
+	WinRate      float32
+}
+
+templ Row(ctx context.Context, data RowData) {
+	<tr class="hover:bg-gray-100 even:bg-gray-50">
+		<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+			{ data.Place }
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+			{ fmt.Sprintf("%s#%s", data.Name, data.Tag) }
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+			{ data.Tier }
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+			{ data.Wins }
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+			{ data.Losses }
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+			{ data.WinRate }
+		</td>
+	</tr>
+}
