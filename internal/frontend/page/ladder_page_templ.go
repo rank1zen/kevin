@@ -11,12 +11,14 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/frontend/component/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/ladder"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type LadderPageData struct {
-	Region string
+	Region  string
+	Entries []ladder.RowData
 }
 
 func LadderPage(ctx context.Context, data LadderPageData) templ.Component {
@@ -93,6 +95,13 @@ func LadderPage(ctx context.Context, data LadderPageData) templ.Component {
 				}
 				ctx = templ.InitializeContext(ctx)
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div><h1>Ladder Page</h1><p>Welcome to the ladder page!</p></div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = ladder.Table(ctx, ladder.TableData{
+					Region: data.Region,
+					Rows:   data.Entries,
+				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
