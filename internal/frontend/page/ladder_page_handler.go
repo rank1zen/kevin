@@ -30,15 +30,15 @@ func (h *LadderPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	for i, entry := range result.Entries {
 		data.Entries = append(data.Entries, ladder.RowData{
-			Place:    i,
-			Name:     entry.Name,
-			Tag:      entry.Tag,
-			Wins:     entry.Wins,
-			Losses:   entry.Losses,
-			WinRate:  0.5,
-			Tier:     entry.Tier,
-			Division: entry.Division,
-			LP:       entry.LP,
+			Place:         i,
+			Name:          entry.Name,
+			Tag:           entry.Tag,
+			Wins:          entry.Wins,
+			Losses:        entry.Losses,
+			WinPercentage: 50,
+			Tier:          entry.Tier,
+			Division:      entry.Division,
+			LP:            entry.LP,
 		})
 	}
 

@@ -6,13 +6,13 @@ import (
 )
 
 type RowData struct {
-	Place        int
-	Name, Tag    string
-	Tier         string
-	Division     string
-	LP           int
-	Wins, Losses int
-	WinRate      float32
+	Place         int
+	Name, Tag     string
+	Tier          string
+	Division      string
+	LP            int
+	Wins, Losses  int
+	WinPercentage int
 }
 
 templ Row(ctx context.Context, data RowData) {
@@ -27,13 +27,7 @@ templ Row(ctx context.Context, data RowData) {
 			{ data.Tier }
 		</td>
 		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-			{ data.Wins }
-		</td>
-		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-			{ data.Losses }
-		</td>
-		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-			{ data.WinRate }
+			{ fmt.Sprintf("%d%%, %d-%d", data.WinPercentage, data.Wins, data.Losses) }
 		</td>
 	</tr>
 }
