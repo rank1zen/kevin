@@ -68,4 +68,8 @@ var routes = []*Route{
 		Name:     "page.LivematchPage",
 		Renderer: page.LivematchPage(context.Background(), livematchPageData),
 	},
+	{
+		Name:     "page.LadderPage",
+		Renderer: page.LadderPage(context.Background(), ladderPageData),
+	},
 }

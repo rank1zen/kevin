@@ -5,6 +5,7 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/frontend/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/ladder"
 	"github.com/rank1zen/kevin/internal/frontend/view/livematch/teamsection"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/search"
@@ -305,6 +306,34 @@ var livematchPageData = page.LivematchPageData{
 				sampleTeamsectionParticipantCardData,
 				sampleTeamsectionParticipantCardData,
 			},
+		},
+	},
+}
+
+var ladderPageData = page.LadderPageData{
+	Region: "NA1",
+	Entries: []ladder.RowData{
+		{
+			Name:     "Josh",
+			Tag:      "67",
+			Wins:     41,
+			Losses:   12,
+			Place:    1,
+			Tier:     "Challenger",
+			Division: "I",
+			LP:       1653,
+			WinRate:  0.68,
+		},
+		{
+			Name:     "Jerry",
+			Tag:      "41",
+			Wins:     16,
+			Losses:   12,
+			Place:    2,
+			Tier:     "Grandmaster",
+			Division: "I",
+			LP:       1653,
+			WinRate:  0.68,
 		},
 	},
 }
