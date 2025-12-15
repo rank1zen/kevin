@@ -31,17 +31,17 @@ func main() {
 
 	log.InitLogger(cfg.Environment)
 
-	tp, err := initTelemetry(context.Background(), cfg.IsProduction())
-	if err != nil {
-		slog.Default().Error("failed to initialize OpenTelemetry", "err", err)
-		os.Exit(1)
-	}
+	// tp, err := initTelemetry(context.Background(), cfg.IsProduction())
+	// if err != nil {
+	// 	slog.Default().Error("failed to initialize OpenTelemetry", "err", err)
+	// 	os.Exit(1)
+	// }
 
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			slog.Default().Error("Error shutting down tracer provider", "err", err)
-		}
-	}()
+	// defer func() {
+	// 	if err := tp.Shutdown(context.Background()); err != nil {
+	// 		slog.Default().Error("Error shutting down tracer provider", "err", err)
+	// 	}
+	// }()
 
 	if err := run(context.Background(), cfg); err != nil {
 		slog.Default().Error("application exited with error", "err", err)
