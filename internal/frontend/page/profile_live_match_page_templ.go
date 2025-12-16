@@ -125,7 +125,7 @@ func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) te
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div><div class=\"px-2 max-w-7xl mx-auto md:px-6 py-10\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div><div class=\"px-2 max-w-7xl mx-auto py-10 md:px-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
