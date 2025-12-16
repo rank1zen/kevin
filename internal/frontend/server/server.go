@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/httplog/v3"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/service"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type Server struct {
@@ -33,7 +33,7 @@ func WithLogger(logger *slog.Logger) ServerOption {
 	}
 }
 
-func New(handler *service.Service, port int, opts ...ServerOption) *Server {
+func New(s *service.Service, port int, opts ...ServerOption) *Server {
 	srvr := Server{
 		Logger:  slog.Default(),
 		Address: fmt.Sprintf(":%d", port),
@@ -45,33 +45,45 @@ func New(handler *service.Service, port int, opts ...ServerOption) *Server {
 
 	router := http.NewServeMux()
 
-	handleFunc := func(pattern string, handler http.Handler) {
-		router.Handle(pattern, otelhttp.WithRouteTag(pattern, handler))
+	router.Handle("GET /{$}", (*page.HomePageHandler)(s))
+
+	router.Handle("GET /profile/{riotID}/{$}", (*page.ProfilePageHandler)(s))
+	router.Handle("GET /profile/{riotID}/live/{$}", (*page.ProfileLiveMatchPageHandler)(s))
+
+	router.Handle("GET /livematch/{matchID}/{$}", (*page.LivematchPageHandler)(s))
+
+	router.Handle("POST /partial/profile.HistoryEntry", (*profile.HistoryEntryHandler)(s))
+	router.Handle("POST /partial/profile.ChampionList", (*profile.ChampionListHandler)(s))
+	router.Handle("POST /partial/profile.MatchDetailBox", (*profile.MatchDetailBoxHandler)(s))
+	router.Handle("POST /partial/profile.UpdateProfile", (*profile.UpdateProfileHandler)(s))
+
+	middlewares := []func(http.Handler) http.Handler{
+		httplog.RequestLogger(nil, &httplog.Options{
+			Level:         0,
+			Schema:        httplog.SchemaGCP,
+			RecoverPanics: true,
+
+			LogRequestHeaders:  []string{},
+			LogResponseHeaders: []string{},
+
+			LogRequestBody: func(req *http.Request) bool {
+				return req.Header.Get("Debug") == "reveal-body-logs"
+			},
+			LogResponseBody: func(req *http.Request) bool {
+				return req.Header.Get("Debug") == "reveal-body-logs"
+			},
+		}),
 	}
 
-	handleFunc("GET /{$}", (*page.HomePageHandler)(handler))
-
-	handleFunc("GET /profile/{riotID}/{$}", (*page.ProfilePageHandler)(handler))
-	handleFunc("GET /profile/{riotID}/live/{$}", (*page.ProfileLiveMatchPageHandler)(handler))
-
-	handleFunc("GET /livematch/{matchID}/{$}", (*page.LivematchPageHandler)(handler))
-
-	handleFunc("POST /partial/profile.HistoryEntry", (*profile.HistoryEntryHandler)(handler))
-	handleFunc("POST /partial/profile.ChampionList", (*profile.ChampionListHandler)(handler))
-	handleFunc("POST /partial/profile.MatchDetailBox", (*profile.MatchDetailBoxHandler)(handler))
-	handleFunc("POST /partial/profile.UpdateProfile", (*profile.UpdateProfileHandler)(handler))
-
-	// Wrap with logging middleware
-	loggedRouter := srvr.addLoggingMiddleware(router)
-
-	// Wrap with OpenTelemetry HTTP instrumentation
-	// otelhttp.WithRouteTag provides a cleaner span name than the full URL path.
-	otelRouter := otelhttp.NewHandler(loggedRouter, "HTTP Server")
+	var h http.Handler = router
+	for _, middleware := range middlewares {
+		h = middleware(h)
+	}
 
 	main := http.NewServeMux()
-	main.Handle("/", otelRouter) // Use the OpenTelemetry wrapped handler
+	main.Handle("/", h) // Use the OpenTelemetry wrapped handler
 	main.Handle("GET /static/", http.FileServer(http.FS(frontend.StaticAssets)))
-	main.Handle("GET /ready", (*ReadyHandler)(handler))
+	main.Handle("GET /ready", (*ReadyHandler)(s))
 
 	srvr.router = main
 
