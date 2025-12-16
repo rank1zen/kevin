@@ -40,7 +40,7 @@ templ ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) {
 						})
 					</div>
 				</div>
-				<div class="px-2 max-w-7xl mx-auto md:px-6 py-10">
+				<div class="px-2 max-w-7xl mx-auto py-10 md:px-6">
 					@profile.PartialLiveMatchScoreboard(ctx, profile.PartialLiveMatchScoreboardData{
 						Region:  data.Region,
 						MatchID: data.MatchID,
