@@ -58,7 +58,7 @@ func New(s *service.Service, port int, opts ...ServerOption) *Server {
 	router.Handle("POST /partial/profile.UpdateProfile", (*profile.UpdateProfileHandler)(s))
 
 	middlewares := []func(http.Handler) http.Handler{
-		httplog.RequestLogger(nil, &httplog.Options{
+		httplog.RequestLogger(srvr.Logger, &httplog.Options{
 			Level:         0,
 			Schema:        httplog.SchemaGCP,
 			RecoverPanics: true,
