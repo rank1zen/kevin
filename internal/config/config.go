@@ -9,15 +9,10 @@ import (
 
 // Config holds all application-level configurations.
 type Config struct {
-	kevinPostgresConnection string `mapstructure:"KEVIN_POSTGRES_CONNECTION"`
-	kevinRiotAPIKey         string `mapstructure:"KEVIN_RIOT_API_KEY"`
-
-	// env is the environment the application is running in.
-	// Can be "dev" or "prod"; the default is "prod".
-	env string `mapstructure:"ENV"`
-
-	// port is the port number to listen on.
-	port int `mapstructure:"PORT"`
+	kevinPostgresConnection string
+	kevinRiotAPIKey         string
+	env                     string
+	port                    int
 }
 
 // LoadConfig loads configuration from environment variables.
@@ -37,16 +32,18 @@ func LoadConfig() (*Config, error) {
 	_ = v.BindEnv("ENV")
 	_ = v.BindEnv("PORT")
 
-	cfg := Config{}
-	if err := v.Unmarshal(&cfg); err != nil {
+	output := config{}
+	if err := v.Unmarshal(&output); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
+
+	cfg := output.ToConfig()
 
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %w", err)
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
 
 // IsDevelopment checks if the current environment is development.
@@ -76,4 +73,26 @@ func (c *Config) GetRiotAPIKey() string {
 
 func (c *Config) GetPostgresConnection() string {
 	return c.kevinPostgresConnection
+}
+
+// config is an unexported struct for unmarshaling from viper.
+type config struct {
+	KevinPostgresConnection string `mapstructure:"KEVIN_POSTGRES_CONNECTION"`
+	KevinRiotAPIKey         string `mapstructure:"KEVIN_RIOT_API_KEY"`
+
+	// env is the environment the application is running in.
+	// Can be "dev" or "prod"; the default is "prod".
+	Env string `mapstructure:"ENV"`
+
+	// port is the port number to listen on.
+	Port int `mapstructure:"PORT"`
+}
+
+func (c *config) ToConfig() *Config {
+	return &Config{
+		kevinPostgresConnection: c.KevinPostgresConnection,
+		kevinRiotAPIKey:         c.KevinRiotAPIKey,
+		env:                     c.Env,
+		port:                    c.Port,
+	}
 }
