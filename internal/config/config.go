@@ -22,9 +22,14 @@ func LoadConfig() (*Config, error) {
 	v.SetDefault("ENV", "prod")
 	v.SetDefault("PORT", 8080)
 
-	v.SetConfigFile(".env")
+	v.SetConfigName("kevin")
+	v.AddConfigPath(".")
+
 	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		} else {
+			return nil, fmt.Errorf("failed to read config file: %w", err)
+		}
 	}
 
 	_ = v.BindEnv("KEVIN_POSTGRES_CONNECTION")
