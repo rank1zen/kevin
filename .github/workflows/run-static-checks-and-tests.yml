@@ -92,7 +92,8 @@ jobs:
       - name: Install devenv.sh
         run: nix profile install nixpkgs#devenv
 
-      - name: check
+      - name: Run generated code checks in Justfile
+        shell: devenv shall bash -- -e {0}
         run: |
           just gen
           git diff --exit-code
