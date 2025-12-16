@@ -21,3 +21,13 @@ func InitLogger(env string) {
 	Logger = slog.New(handler)
 	slog.SetDefault(Logger) // Set as default logger for standard library
 }
+
+func New() *slog.Logger {
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})
+
+	logger := slog.New(handler)
+
+	return logger
+}
