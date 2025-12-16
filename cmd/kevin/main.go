@@ -37,7 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	pool, err := connectPostgres(ctx, cfg.PostgresConnection)
+	pool, err := connectPostgres(ctx, cfg.GetPostgresConnection())
 	if err != nil {
 		rt.Logger.Error("error starting server", "err", err)
 		os.Exit(1)
@@ -47,10 +47,10 @@ func main() {
 	defer pool.Close()
 
 	store := postgres.NewStore(pool)
-	client := riot.NewClient(cfg.RiotAPIKey)
+	client := riot.NewClient(cfg.GetRiotAPIKey())
 	datasource := service.NewService(client, store, pool)
 
-	srvr := server.New(datasource, cfg.Port, server.WithLogger(rt.Logger))
+	srvr := server.New(datasource, cfg.GetPort(), server.WithLogger(rt.Logger))
 
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer cancel()
@@ -60,7 +60,7 @@ func main() {
 		slog.Default().Error("error starting server", "err", err)
 	}()
 
-	rt.Logger.Info("server started", "address", cfg.Port, "environment", cfg.Environment)
+	rt.Logger.Info("server started", "address", cfg.GetPort(), "environment", "prod")
 
 	<-ctx.Done()
 
