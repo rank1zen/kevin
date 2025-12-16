@@ -20,8 +20,6 @@ type Runtime struct {
 	Logger       *slog.Logger
 	RiotClient   *riot.Client
 	PostgresConn *pgxpool.Pool
-
-	cfg *config.Config
 }
 
 func main() {

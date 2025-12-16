@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/httplog/v3"
 	"github.com/rank1zen/kevin/internal/frontend"
@@ -88,23 +87,6 @@ func New(s *service.Service, port int, opts ...ServerOption) *Server {
 	srvr.router = main
 
 	return &srvr
-}
-
-func (f *Server) addLoggingMiddleware(handler http.Handler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		ts := time.Now()
-
-		requestLogger := f.Logger.With(slog.Group("request", "method", r.Method, "endpoint", r.URL.Path))
-
-		// Set the logger in the context for downstream handlers
-		r = r.WithContext(frontend.LoggerNewContext(r.Context(), requestLogger))
-
-		handler.ServeHTTP(w, r)
-
-		requestLogger.Info("request completed", "duration", time.Since(ts))
-	}
-
-	return http.HandlerFunc(fn)
 }
 
 func (s *Server) Open() error {
