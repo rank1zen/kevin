@@ -10,24 +10,18 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"fmt"
 	"github.com/rank1zen/kevin/internal/frontend/component/page"
-	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+	"github.com/rank1zen/kevin/internal/frontend/view/ladder"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
-type ProfileLiveMatchPageData struct {
-	PUUID riot.PUUID
-
-	Region riot.Region
-
-	Name, Tag string
-
-	MatchID string
+type LadderPageData struct {
+	Region  string
+	Entries []ladder.RowData
 }
 
-func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) templ.Component {
+func LadderPage(ctx context.Context, data LadderPageData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -73,7 +67,7 @@ func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) te
 				}
 				ctx = templ.InitializeContext(ctx)
 				templ_7745c5c3_Err = shared.Header(ctx, shared.HeaderData{
-					Region: data.Region,
+					Region: riot.Region(data.Region),
 				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -100,43 +94,14 @@ func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) te
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div><div class=\"px-2 max-w-7xl mt-7 mx-auto md:px-6\"><h1 class=\"mt-7 font-bold text-2xl text-gray-900/90 dark:text-gray-100/90\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div><h1>Ladder Page</h1><p>Welcome to the ladder page!</p></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var5 string
-				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s#%s", data.Name, data.Tag))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/page/profile_live_match_page.templ`, Line: 33, Col: 49}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</h1><div class=\"flex gap-x-4 mt-3\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = profile.UpdateProfileButton(ctx, profile.UpdateProfileButtonData{
-					Region: &data.Region,
-					Name:   data.Name,
-					Tag:    data.Tag,
+				templ_7745c5c3_Err = ladder.Table(ctx, ladder.TableData{
+					Region: data.Region,
+					Rows:   data.Entries,
 				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div><div class=\"px-2 max-w-7xl mx-auto py-10 md:px-6\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = profile.PartialLiveMatchScoreboard(ctx, profile.PartialLiveMatchScoreboardData{
-					Region:  data.Region,
-					MatchID: data.MatchID,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -146,11 +111,11 @@ func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) te
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Var6 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+			templ_7745c5c3_Var5 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 				if !templ_7745c5c3_IsBuffer {
@@ -168,13 +133,13 @@ func ProfileLiveMatchPage(ctx context.Context, data ProfileLiveMatchPageData) te
 				}
 				return nil
 			})
-			templ_7745c5c3_Err = page.Footer().Render(templ.WithChildren(ctx, templ_7745c5c3_Var6), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = page.Footer().Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = page.Page(fmt.Sprintf("%s#%s - Kevin", data.Name, data.Tag)).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = page.Page("Ladder - Kevin").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
