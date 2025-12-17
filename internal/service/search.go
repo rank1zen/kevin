@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/rank1zen/kevin/internal"
@@ -31,9 +32,9 @@ func (s *SearchService) SearchProfile(ctx context.Context, req SearchProfileRequ
 		tag = string(*req.Region)
 	}
 
-	storeResults, err := s.store.Profile.SearchSummoner(ctx, req.Query)
+	storeResults, err := s.store.Profile.SearchByNameTag(ctx, name, tag)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("store error: %w", err)
 	}
 
 	result := SearchResult{
@@ -46,8 +47,8 @@ func (s *SearchService) SearchProfile(ctx context.Context, req SearchProfileRequ
 	for _, storeResult := range storeResults {
 		result.Profiles = append(result.Profiles, ProfileSearchResult{
 			Region: *req.Region,
-			Name:   name,
-			Tag:    tag,
+			Name:   storeResult.Name,
+			Tag:    storeResult.Tagline,
 			PUUID:  storeResult.PUUID,
 			Rank:   nil, // TODO: Implement rank fetching logic
 		})
