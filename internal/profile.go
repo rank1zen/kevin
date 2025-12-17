@@ -12,6 +12,10 @@ type ProfileStore interface {
 	GetProfile(ctx context.Context, puuid riot.PUUID) (*Profile, error)
 
 	SearchSummoner(ctx context.Context, q string) ([]SearchResult, error)
+
+	// SearchByNameTag searches for profiles by name and tag. It should return 10
+	// profiles.
+	SearchByNameTag(ctx context.Context, name, tag string) ([]Profile, error)
 }
 
 type Profile struct {

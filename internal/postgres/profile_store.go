@@ -106,9 +106,10 @@ func (db *ProfileStore) GetProfile(ctx context.Context, puuid riot.PUUID) (m *in
 }
 
 func (db *ProfileStore) SearchSummoner(ctx context.Context, q string) ([]internal.SearchResult, error) {
-	summonerStore := SummonerStore{Tx: db.Pool}
-
-	rankStore := RankStore{Tx: db.Pool}
+	var (
+		summonerStore = SummonerStore{Tx: db.Pool}
+		rankStore     = RankStore{Tx: db.Pool}
+	)
 
 	storeResults, err := summonerStore.SearchSummoner(ctx, q)
 	if err != nil {
@@ -158,6 +159,10 @@ func (db *ProfileStore) SearchSummoner(ctx context.Context, q string) ([]interna
 	}
 
 	return results, nil
+}
+
+func (db *ProfileStore) SearchByNameTag(ctx context.Context, name, tag string) ([]internal.Profile, error) {
+	panic("not implemented")
 }
 
 func toSearchResult(summoner Summoner, status *RankStatus, detail *RankDetail) internal.SearchResult {
