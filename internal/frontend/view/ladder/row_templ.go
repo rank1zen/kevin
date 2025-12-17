@@ -44,7 +44,7 @@ func Row(ctx context.Context, data RowData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<tr class=\"hover:bg-gray-100 even:bg-gray-50\"><td class=\"px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<tr class=\"even:bg-gray-50 hover:bg-gray-100\"><td class=\"px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
