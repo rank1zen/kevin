@@ -162,7 +162,23 @@ func (db *ProfileStore) SearchSummoner(ctx context.Context, q string) ([]interna
 }
 
 func (db *ProfileStore) SearchByNameTag(ctx context.Context, name, tag string) ([]internal.Profile, error) {
-	panic("not implemented")
+	summoner := SummonerStore{Tx: db.Pool}
+
+	result, err := summoner.SearchByNameTag(ctx, name, tag)
+	if err != nil {
+		return nil, err
+	}
+
+	profiles := []internal.Profile{}
+	for _, summoner := range result {
+		profiles = append(profiles, internal.Profile{
+			PUUID:   summoner.PUUID,
+			Name:    summoner.Name,
+			Tagline: summoner.Tagline,
+		})
+	}
+
+	return profiles, nil
 }
 
 func toSearchResult(summoner Summoner, status *RankStatus, detail *RankDetail) internal.SearchResult {
