@@ -10,73 +10,8 @@ on:
       - main
 
 jobs:
-  static-checks:
-    name: Run Static Checks
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.24.x"
-          check-latest: true
-
-      - name: Check go.mod is tidy
-        run: |
-          go mod tidy
-          git diff --exit-code
-
-      - name: Check *_templ.go files are up-to-date
-        run: |
-          go tool templ generate
-          git diff --exit-code
-
-      - uses: golangci/golangci-lint-action@v8
-        with:
-          version: v2.1
-
   go-test:
-    name: Run Go Tests
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.24.x"
-          check-latest: true
-
-      - name: Run all short tests
-        run: go test -short ./...
-
-  tailwind-checks:
-    name: Run Tailwind Checks
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-
-      # Not sure how to pin nixpkgs version so tailwind version is different than local
-      # - name: Check tailwind output is up-to-date
-      #   run: |
-      #     nix-shell -p tailwindcss_4 --run 'tailwindcss -i ./internal/frontend/static/input.css -o ./internal/frontend/static/output.css -m'
-      #     git diff --exit-code
-
-      - name: Check tailwind classes are sorted
-        run: |
-          nix-shell -p rustywind -- run `rustywind --check-formatted -output-css-file ./internal/frontend/static/output.css .`
-
-  generated-code-checks:
-    name: Run Generated Code Checks
+    name: Go Tests
 
     runs-on: ubuntu-latest
 
@@ -92,8 +27,41 @@ jobs:
       - name: Install devenv.sh
         run: nix profile install nixpkgs#devenv
 
-      - name: Run generated code checks in Justfile
+      - name: Run all short tests
         shell: devenv shell bash -- -e {0}
         run: |
-          just gen
+          go test -short ./...
+
+  static-go-checks:
+    name: Static Go Checks
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+
+      - uses: cachix/cachix-action@v16
+        with:
+          name: devenv
+
+      - name: Install devenv.sh
+        run: nix profile install nixpkgs#devenv
+
+      - name: Check go.mod is tidy
+        shell: devenv shell bash -- -e {0}
+        run: |
+          go mod tidy
           git diff --exit-code
+
+      - name: Check *_templ.go files are up-to-date
+        shell: devenv shell bash -- -e {0}
+        run: |
+          go tool templ generate
+          git diff --exit-code
+
+      - name: Run golangci-lint
+        shell: devenv shell bash -- -e {0}
+        run: |
+          golangci-lint run
