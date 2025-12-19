@@ -8,6 +8,7 @@ import (
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/riotmapper"
 	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,10 +21,9 @@ func TestMatchStore_RecordMatch(t *testing.T) {
 
 	store := postgres.NewStore(pool)
 
-	mapper := internal.RiotToMatchMapper{
-		Match: sample.WithSampleMatch(),
-	}
-	err := store.Match.RecordMatch(ctx, mapper.Map())
+	riotMatch := sample.WithSampleMatch()
+	match := riotmapper.MapMatch(&riotMatch)
+	err := store.Match.RecordMatch(ctx, *match)
 	if assert.NoError(t, err) {
 		_, err = store.Match.GetMatchDetail(ctx, "NA1_5304757838")
 		assert.NoError(t, err)
@@ -38,14 +38,9 @@ func TestMatchStore_GetMatchDetail(t *testing.T) {
 	store := postgres.NewStore(pool)
 
 	riotMatch := sample.WithSampleMatch()
+	match := riotmapper.MapMatch(&riotMatch)
 
-	mapper := internal.RiotToMatchMapper{
-		Match: riotMatch,
-	}
-
-	match := mapper.Map()
-
-	err := store.Match.RecordMatch(ctx, match)
+	err := store.Match.RecordMatch(ctx, *match)
 	require.NoError(t, err)
 
 	actual, err := store.Match.GetMatchDetail(ctx, "NA1_5304757838")
@@ -104,12 +99,8 @@ func TestMatchStore_GetMatchHistory(t *testing.T) {
 		sample.WithSampleMatch(),
 		sample.Match5346312088(),
 	} {
-		mapper := internal.RiotToMatchMapper{
-			Match: m,
-		}
-
-		match := mapper.Map()
-		err := store.Match.RecordMatch(ctx, match)
+		match := riotmapper.MapMatch(&m)
+		err := store.Match.RecordMatch(ctx, *match)
 		require.NoError(t, err)
 	}
 
