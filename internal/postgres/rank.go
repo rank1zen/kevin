@@ -219,6 +219,82 @@ func (db *RankStore) GetRankDetail(ctx context.Context, id int) (RankDetail, err
 	return m, nil
 }
 
+func (db *RankStore) ListRanks(ctx context.Context, region string, opt LeaderBoardOption) ([]RankFull, error) {
+	rows, err := db.Tx.Query(ctx, `
+		WITH recent_rank_status AS (
+			SELECT
+				*
+			FROM
+				RankStatus AS out
+			WHERE
+				effective_date = (
+					SELECT
+						MAX(effective_date)
+					FROM
+						RankStatus AS inn
+					WHERE
+						out.puuid = inn.puuid
+				)
+				AND
+				out.is_ranked = true
+		)
+		SELECT
+			recent_rank_status.puuid,
+			recent_rank_status.effective_date,
+			RankDetail.rank_status_id,
+			RankDetail.wins,
+			RankDetail.losses,
+			RankDetail.tier,
+			RankDetail.division,
+			RankDetail.lp
+		FROM
+			RankDetail
+		JOIN
+			recent_rank_status ON RankDetail.rank_status_id = recent_rank_status.rank_status_id
+		ORDER BY
+			tier DESC,
+			division DESC,
+			lp DESC
+		OFFSET
+			@start
+		LIMIT
+			@count
+	`,
+		pgx.NamedArgs{
+			"count": opt.Count,
+			"start": opt.Start,
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := pgx.CollectRows(
+		rows,
+		func(row pgx.CollectableRow) (result RankFull, _ error) {
+			result.Detail = &RankDetail{}
+			row.Scan(
+				&result.Status.PUUID,
+				&result.Status.EffectiveDate,
+				&result.Detail.RankStatusID,
+				&result.Detail.Wins,
+				&result.Detail.Losses,
+				&result.Detail.Tier,
+				&result.Detail.Division,
+				&result.Detail.LP,
+			)
+			return result, nil
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
 // RankStatus is always created when a rank request is made.
 type RankStatus struct {
 	PUUID string `db:"puuid"`
@@ -258,4 +334,9 @@ type ListRankOption struct {
 	Offset, Limit uint
 
 	Recent bool
+}
+
+type LeaderBoardOption struct {
+	Start int
+	Count int
 }

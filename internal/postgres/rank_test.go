@@ -227,3 +227,61 @@ func TestRankStore_ListRankIDs(t *testing.T) {
 		)
 	}
 }
+
+func TestRankStore_ListRanks(t *testing.T) {
+	ctx := context.Background()
+
+	pool := DefaultPGInstance.SetupConn(ctx, t)
+	store := postgres.RankStore{Tx: pool}
+
+	id, err := store.CreateRankStatus(ctx, postgres.RankStatus{
+		PUUID:         "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
+		EffectiveDate: time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC),
+		IsRanked:      true,
+	})
+	require.NoError(t, err)
+
+	err = store.CreateRankDetail(ctx, postgres.RankDetail{
+		RankStatusID: id,
+		Wins:         12,
+		Losses:       12,
+		Tier:         "Grandmaster",
+		Division:     "I",
+		LP:           800,
+	})
+	require.NoError(t, err)
+
+	id, err = store.CreateRankStatus(ctx, postgres.RankStatus{
+		PUUID:         "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
+		EffectiveDate: time.Date(2025, time.April, 2, 0, 0, 0, 0, time.UTC),
+		IsRanked:      false,
+	})
+	require.NoError(t, err)
+
+	id, err = store.CreateRankStatus(ctx, postgres.RankStatus{
+		PUUID:         "0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q",
+		EffectiveDate: time.Date(2025, time.April, 2, 0, 0, 0, 0, time.UTC),
+		IsRanked:      true,
+	})
+	require.NoError(t, err)
+
+	err = store.CreateRankDetail(ctx, postgres.RankDetail{
+		RankStatusID: id,
+		Wins:         12,
+		Losses:       12,
+		Tier:         "Grandmaster",
+		Division:     "I",
+		LP:           799,
+	})
+	require.NoError(t, err)
+
+	rankFull, err := store.ListRanks(ctx, "NA1", postgres.LeaderBoardOption{
+		Start: 0,
+		Count: 10,
+	})
+
+	require.NoError(t, err)
+	require.Len(t, rankFull, 1)
+
+	assert.Equal(t, "0bEBr8VSevIGuIyJRLw12BKo3Li4mxvHpy_7l94W6p5SRrpv00U3cWAx7hC4hqf_efY8J4omElP9-Q", rankFull[0].Status.PUUID)
+}
