@@ -2,13 +2,11 @@ package internal
 
 import (
 	"context"
-
-	"github.com/rank1zen/kevin/internal/riot"
 )
 
 // LeaderboardStore provides access to leaderboard data.
 type LeaderboardStore interface {
-	GetLeaderboard(ctx context.Context, region riot.Region, filter LeaderboardFilter) (*Leaderboard, error)
+	GetLeaderboard(ctx context.Context, region string, filter LeaderboardFilter) (*Leaderboard, error)
 }
 
 // Leaderboard is the top 500 players in a region
