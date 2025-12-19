@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
@@ -13,10 +14,17 @@ type MatchService Service
 
 // GetMatchlistRequest represents the request payload for retrieving a list of matches.
 type GetMatchlistRequest struct {
-	Region  *riot.Region `json:"region"`
-	PUUID   riot.PUUID   `json:"puuid"`
-	StartTS *time.Time   `json:"startTs"`
-	EndTS   *time.Time   `json:"endTs"`
+	Region *riot.Region `json:"region"`
+
+	PUUID riot.PUUID `json:"puuid"`
+
+	// StartTS is the start timestamp of the end of the game from which to include
+	// in the match list. Defaults to 1 day ago.
+	StartTS *time.Time `json:"startTs"`
+
+	// EndTS is the end timestamp of the end of the game from which to include in
+	// the match list. Defaults to now.
+	EndTS *time.Time `json:"endTs"`
 }
 
 // GetMatchlist retrieves a list of matches for a given summoner within a time range.
@@ -51,27 +59,27 @@ func (s *MatchService) GetMatchlist(ctx context.Context, req GetMatchlistRequest
 
 	newIDs, err := s.store.Match.GetNewMatchIDs(ctx, matchIDs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get new match IDs in store: %w", err)
 	}
 
 	// TODO: put these in batch
 	for _, id := range newIDs {
 		riotMatch, err := s.riot.Match.GetMatch(ctx, *req.Region, id)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get match details from Riot: %w", err)
 		}
 
 		match := mapRiotMatchToModelMatch(*riotMatch)
 
 		err = s.store.Match.RecordMatch(ctx, match)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to record match in store: %w", err)
 		}
 	}
 
 	storeMatches, err := s.store.Match.GetMatchlist(ctx, req.PUUID, *req.StartTS, *req.EndTS)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get matchlist from store: %w", err)
 	}
 
 	return storeMatches, nil
