@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
@@ -15,10 +14,6 @@ import (
 
 // TODO: should rename this to something else
 type MatchStore Store
-
-func NewZMatchStore(pool *pgxpool.Pool) *MatchStore {
-	return &MatchStore{Pool: pool}
-}
 
 func (db *MatchStore) RecordMatch(ctx context.Context, match internal.Match) error {
 	matchStore := postgres.MatchStore{Tx: db.Pool}
