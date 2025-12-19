@@ -15,35 +15,6 @@ var (
 	ErrInvalidRankStatuID = errors.New("invalid rank status id")
 )
 
-// RankStatus is always created when a rank request is made.
-type RankStatus struct {
-	PUUID string `db:"puuid"`
-
-	EffectiveDate time.Time `db:"effective_date"`
-
-	// IsRanked indicates that there exists a [RankDetail] for this status.
-	IsRanked bool `db:"is_ranked"`
-}
-
-type RankDetail struct {
-	RankStatusID int `db:"rank_status_id"`
-
-	Wins int `db:"wins"`
-
-	Losses int `db:"losses"`
-
-	Tier string `db:"tier"`
-
-	Division string `db:"division"`
-
-	LP int `db:"lp"`
-}
-
-type RankFull struct {
-	Status RankStatus
-	Detail *RankDetail
-}
-
 type RankStore struct{ Tx Tx }
 
 // CreateRankStatus creates a rank status and returns created id.
@@ -114,18 +85,6 @@ func (db *RankStore) CreateRankDetail(ctx context.Context, detail RankDetail) er
 	}
 
 	return nil
-}
-
-type ListRankOption struct {
-	// Start indicates an inclusive lower bound on the date.
-	Start *time.Time
-
-	// End indicates an exclusive upper bound on the date.
-	End *time.Time
-
-	Offset, Limit uint
-
-	Recent bool
 }
 
 func (db *RankStore) ListRankIDs(ctx context.Context, puuid riot.PUUID, option ListRankOption) ([]int, error) {
@@ -258,4 +217,129 @@ func (db *RankStore) GetRankDetail(ctx context.Context, id int) (RankDetail, err
 	}
 
 	return m, nil
+}
+
+func (db *RankStore) ListRanks(ctx context.Context, region string, opt LeaderBoardOption) ([]RankFull, error) {
+	rows, err := db.Tx.Query(ctx, `
+		WITH recent_rank_status AS (
+			SELECT
+				*
+			FROM
+				RankStatus AS out
+			WHERE
+				effective_date = (
+					SELECT
+						MAX(effective_date)
+					FROM
+						RankStatus AS inn
+					WHERE
+						out.puuid = inn.puuid
+				)
+				AND
+				out.is_ranked = true
+		)
+		SELECT
+			recent_rank_status.puuid,
+			recent_rank_status.effective_date,
+			RankDetail.rank_status_id,
+			RankDetail.wins,
+			RankDetail.losses,
+			RankDetail.tier,
+			RankDetail.division,
+			RankDetail.lp
+		FROM
+			RankDetail
+		JOIN
+			recent_rank_status ON RankDetail.rank_status_id = recent_rank_status.rank_status_id
+		ORDER BY
+			tier DESC,
+			division DESC,
+			lp DESC
+		OFFSET
+			@start
+		LIMIT
+			@count
+	`,
+		pgx.NamedArgs{
+			"count": opt.Count,
+			"start": opt.Start,
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := pgx.CollectRows(
+		rows,
+		func(row pgx.CollectableRow) (result RankFull, _ error) {
+			result.Detail = &RankDetail{}
+			err := row.Scan(
+				&result.Status.PUUID,
+				&result.Status.EffectiveDate,
+				&result.Detail.RankStatusID,
+				&result.Detail.Wins,
+				&result.Detail.Losses,
+				&result.Detail.Tier,
+				&result.Detail.Division,
+				&result.Detail.LP,
+			)
+			if err != nil {
+				return result, err
+			}
+			return result, nil
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
+// RankStatus is always created when a rank request is made.
+type RankStatus struct {
+	PUUID string `db:"puuid"`
+
+	EffectiveDate time.Time `db:"effective_date"`
+
+	// IsRanked indicates that there exists a [RankDetail] for this status.
+	IsRanked bool `db:"is_ranked"`
+}
+
+type RankDetail struct {
+	RankStatusID int `db:"rank_status_id"`
+
+	Wins int `db:"wins"`
+
+	Losses int `db:"losses"`
+
+	Tier string `db:"tier"`
+
+	Division string `db:"division"`
+
+	LP int `db:"lp"`
+}
+
+type RankFull struct {
+	Status RankStatus
+	Detail *RankDetail
+}
+
+type ListRankOption struct {
+	// Start indicates an inclusive lower bound on the date.
+	Start *time.Time
+
+	// End indicates an exclusive upper bound on the date.
+	End *time.Time
+
+	Offset, Limit uint
+
+	Recent bool
+}
+
+type LeaderBoardOption struct {
+	Start int
+	Count int
 }
