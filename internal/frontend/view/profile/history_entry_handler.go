@@ -1,7 +1,7 @@
 package profile
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -36,7 +36,7 @@ func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	storeMatches, err := (*service.MatchService)(h).GetMatchlist(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		frontend.LogError(r, errors.New("service failure"))
+		frontend.LogError(r, fmt.Errorf("service failure: %w", err))
 		return
 	}
 
@@ -72,7 +72,7 @@ func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		frontend.LogError(r, errors.New("templ error"))
+		frontend.LogError(r, fmt.Errorf("templ error: %w", err))
 		return
 	}
 }
