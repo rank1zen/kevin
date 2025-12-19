@@ -7,6 +7,7 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/riotmapper"
 )
 
 // ProfileService manages profile-related operations.
@@ -36,9 +37,18 @@ func (s *ProfileService) GetProfile(ctx context.Context, req GetProfileRequest) 
 		return nil, err
 	}
 
-	profile := createProfile(*account, entries)
+	var soloq *riot.LeagueEntry
+	if result, err := findSoloQLeagueEntry(entries); err == nil {
+		soloq = result
+	}
 
-	if err = s.store.Profile.RecordProfile(ctx, &profile); err != nil {
+	profile := riotmapper.MapProfile(&riotmapper.Profile{
+		Account:       *account,
+		Rank:          soloq,
+		EffectiveDate: time.Now().In(time.UTC),
+	})
+
+	if err = s.store.Profile.RecordProfile(ctx, profile); err != nil {
 		return nil, err
 	}
 
@@ -143,31 +153,4 @@ func findSoloQLeagueEntry(entries []riot.LeagueEntry) (*riot.LeagueEntry, error)
 	}
 
 	return nil, errors.New("solo queue entry not found")
-}
-
-func createProfile(account riot.Account, ranks []riot.LeagueEntry) internal.Profile {
-	profile := internal.Profile{
-		PUUID:   account.PUUID,
-		Name:    account.GameName,
-		Tagline: account.TagLine,
-		Rank: internal.RankStatus{
-			PUUID:         account.PUUID,
-			EffectiveDate: time.Now().In(time.UTC),
-			Detail:        nil,
-		},
-	}
-
-	if soloq, err := findSoloQLeagueEntry(ranks); err == nil {
-		profile.Rank.Detail = &internal.RankDetail{
-			Wins:   soloq.Wins,
-			Losses: soloq.Losses,
-			Rank: internal.Rank{
-				Tier:     soloq.Tier,
-				Division: soloq.Division,
-				LP:       soloq.LeaguePoints,
-			},
-		}
-	}
-
-	return profile
 }
