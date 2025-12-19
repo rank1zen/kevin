@@ -13,8 +13,12 @@ type MatchService service
 // MatchListOptions are parameters to send in a [MatchService.GetMatchList]
 // request.
 type MatchListOptions struct {
+	// StartTime is a unix timestamp in seconds. StartTime and EndTime together
+	// will filter the match list by the end timestamp of games.
 	StartTime *int64
 
+	// EndTime is a unix timestamp in seconds. StartTime and EndTime together will
+	// filter the match list by the end timestamp of games.
 	EndTime *int64
 
 	Queue *int
