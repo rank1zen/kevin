@@ -7,6 +7,7 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/riotmapper"
 )
 
 // MatchService manages match-related operations.
@@ -69,9 +70,9 @@ func (s *MatchService) GetMatchlist(ctx context.Context, req GetMatchlistRequest
 			return nil, fmt.Errorf("failed to get match details from Riot: %w", err)
 		}
 
-		match := internal.RiotToMatchMapper{Match: *riotMatch}.Map()
+		match := riotmapper.MapMatch(riotMatch)
 
-		err = s.store.Match.RecordMatch(ctx, match)
+		err = s.store.Match.RecordMatch(ctx, *match)
 		if err != nil {
 			return nil, fmt.Errorf("failed to record match in store: %w", err)
 		}
@@ -110,9 +111,9 @@ func (s *MatchService) GetMatchDetail(ctx context.Context, req GetMatchDetailReq
 			return nil, fmt.Errorf("failed to fetch match from Riot API: %w", err)
 		}
 
-		match := internal.RiotToMatchMapper{Match: *riotMatch}.Map()
+		match := riotmapper.MapMatch(riotMatch)
 
-		err = s.store.Match.RecordMatch(ctx, match)
+		err = s.store.Match.RecordMatch(ctx, *match)
 		if err != nil {
 			return nil, fmt.Errorf("failed to record match in store: %w", err)
 		}

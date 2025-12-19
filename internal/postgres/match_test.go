@@ -9,6 +9,7 @@ import (
 	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/riotmapper"
 	"github.com/rank1zen/kevin/internal/sample"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -294,12 +295,8 @@ func TestMatchStore_GetSummonerChampions(t *testing.T) {
 		sample.Match5347728946(),
 		sample.Match5346312088(),
 	} {
-		mapper := internal.RiotToMatchMapper{
-			Match: m,
-		}
-
-		match := mapper.Map()
-		err := store.Match.RecordMatch(ctx, match)
+		match := riotmapper.MapMatch(&m)
+		err := store.Match.RecordMatch(ctx, *match)
 		require.NoError(t, err)
 	}
 

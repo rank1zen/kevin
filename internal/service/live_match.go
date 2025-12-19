@@ -7,6 +7,7 @@ import (
 
 	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/riotmapper"
 )
 
 type LiveMatchService Service
@@ -31,9 +32,9 @@ func (s *LiveMatchService) GetLiveMatch(ctx context.Context, req GetLiveMatchReq
 		return nil, err
 	}
 
-	match := internal.RiotToLiveMatchMapper{Match: *riotGame}.Map()
+	match := riotmapper.MapLiveMatch(riotGame)
 
-	return &match, nil
+	return match, nil
 }
 
 type GetLiveMatchByIDRequest struct {
