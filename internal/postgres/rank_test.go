@@ -251,7 +251,7 @@ func TestRankStore_ListRanks(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	id, err = store.CreateRankStatus(ctx, postgres.RankStatus{
+	_, err = store.CreateRankStatus(ctx, postgres.RankStatus{
 		PUUID:         "44Js96gJP_XRb3GpJwHBbZjGZmW49Asc3_KehdtVKKTrq3MP8KZdeIn_27MRek9FkTD-M4_n81LNqg",
 		EffectiveDate: time.Date(2025, time.April, 2, 0, 0, 0, 0, time.UTC),
 		IsRanked:      false,

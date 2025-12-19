@@ -274,7 +274,7 @@ func (db *RankStore) ListRanks(ctx context.Context, region string, opt LeaderBoa
 		rows,
 		func(row pgx.CollectableRow) (result RankFull, _ error) {
 			result.Detail = &RankDetail{}
-			row.Scan(
+			err := row.Scan(
 				&result.Status.PUUID,
 				&result.Status.EffectiveDate,
 				&result.Detail.RankStatusID,
@@ -284,6 +284,9 @@ func (db *RankStore) ListRanks(ctx context.Context, region string, opt LeaderBoa
 				&result.Detail.Division,
 				&result.Detail.LP,
 			)
+			if err != nil {
+				return result, err
+			}
 			return result, nil
 		},
 	)
