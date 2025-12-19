@@ -14,7 +14,7 @@ import (
 func TestMapMatch(t *testing.T) {
 	riotMatch := sample.WithSampleMatch()
 
-	actualMatch := riotmapper.MapMatch(riotMatch)
+	actualMatch := riotmapper.MapMatch(&riotMatch)
 
 	for _, tc := range []struct {
 		Name     string

@@ -9,7 +9,7 @@ import (
 )
 
 // MapMatch maps riot.Match to internal.Match.
-func MapMatch(riotMatch riot.Match) internal.Match {
+func MapMatch(riotMatch *riot.Match) *internal.Match {
 	var winner int
 	if riotMatch.Info.Teams[0].Win {
 		winner = riotMatch.Info.Teams[0].TeamID
@@ -106,7 +106,7 @@ func MapMatch(riotMatch riot.Match) internal.Match {
 		match.Participants[i] = participant
 	}
 
-	return match
+	return &match
 }
 
 func computeCreepScore(p *riot.MatchParticipant) int {
