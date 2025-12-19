@@ -16,7 +16,7 @@ import (
 func SetupDatasource(ctx context.Context, t testing.TB) *service.Service {
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 
-	client := riot.NewClient(os.Getenv("KEVIN_RIOT_API_KEY"))
+	client := riot.NewClient("RGAPI-4bd06d26-4a55-4c92-adf5-a0aba99a5e35")
 
 	store := postgres.NewStore(pool)
 

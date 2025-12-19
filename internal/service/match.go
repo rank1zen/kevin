@@ -69,7 +69,7 @@ func (s *MatchService) GetMatchlist(ctx context.Context, req GetMatchlistRequest
 			return nil, fmt.Errorf("failed to get match details from Riot: %w", err)
 		}
 
-		match := mapRiotMatchToModelMatch(*riotMatch)
+		match := internal.RiotToMatchMapper{Match: *riotMatch}.Map()
 
 		err = s.store.Match.RecordMatch(ctx, match)
 		if err != nil {
@@ -100,26 +100,27 @@ func (s *MatchService) GetMatchDetail(ctx context.Context, req GetMatchDetailReq
 
 	newIDS, err := s.store.Match.GetNewMatchIDs(ctx, []string{req.MatchID})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to check match IDs in store: %w", err)
 	}
 
-	if len(newIDS) == 1 { // If the match is new, fetch it from Riot API and record it
+	if len(newIDS) == 1 {
+		// If the match is new, fetch it from Riot API and record it
 		riotMatch, err := s.riot.Match.GetMatch(ctx, *req.Region, req.MatchID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to fetch match from Riot API: %w", err)
 		}
 
-		match := mapRiotMatchToModelMatch(*riotMatch)
+		match := internal.RiotToMatchMapper{Match: *riotMatch}.Map()
 
 		err = s.store.Match.RecordMatch(ctx, match)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to record match in store: %w", err)
 		}
 	}
 
 	storeMatch, err := s.store.Match.GetMatchDetail(ctx, req.MatchID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get match detail from store: %w", err)
 	}
 
 	return &storeMatch, nil
@@ -140,19 +141,4 @@ func soloQMatchFilter(start, end time.Time) riot.MatchListOptions {
 	*options.EndTime = end.Unix()
 
 	return options
-}
-
-// mapRiotMatchToModelMatch converts a riot.Match struct to a model.Match struct.
-// This is a placeholder for the actual mapping logic, which might involve a dedicated mapper package.
-func mapRiotMatchToModelMatch(riotMatch riot.Match) internal.Match {
-	// A highly simplified placeholder for demonstration.
-	// Real implementation would involve mapping all relevant fields and nested structs.
-	return internal.Match{
-		ID:       riotMatch.Metadata.MatchID,
-		Date:     time.Unix(0, riotMatch.Info.GameEndTimestamp*int64(time.Millisecond)),
-		Duration: time.Duration(riotMatch.Info.GameDuration) * time.Second,
-		Version:  riotMatch.Info.GameVersion,
-		// WinnerID:      ... (requires mapping logic)
-		// Participants:  ... (requires mapping logic for each participant)
-	}
 }
