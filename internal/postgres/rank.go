@@ -15,35 +15,6 @@ var (
 	ErrInvalidRankStatuID = errors.New("invalid rank status id")
 )
 
-// RankStatus is always created when a rank request is made.
-type RankStatus struct {
-	PUUID string `db:"puuid"`
-
-	EffectiveDate time.Time `db:"effective_date"`
-
-	// IsRanked indicates that there exists a [RankDetail] for this status.
-	IsRanked bool `db:"is_ranked"`
-}
-
-type RankDetail struct {
-	RankStatusID int `db:"rank_status_id"`
-
-	Wins int `db:"wins"`
-
-	Losses int `db:"losses"`
-
-	Tier string `db:"tier"`
-
-	Division string `db:"division"`
-
-	LP int `db:"lp"`
-}
-
-type RankFull struct {
-	Status RankStatus
-	Detail *RankDetail
-}
-
 type RankStore struct{ Tx Tx }
 
 // CreateRankStatus creates a rank status and returns created id.
@@ -114,18 +85,6 @@ func (db *RankStore) CreateRankDetail(ctx context.Context, detail RankDetail) er
 	}
 
 	return nil
-}
-
-type ListRankOption struct {
-	// Start indicates an inclusive lower bound on the date.
-	Start *time.Time
-
-	// End indicates an exclusive upper bound on the date.
-	End *time.Time
-
-	Offset, Limit uint
-
-	Recent bool
 }
 
 func (db *RankStore) ListRankIDs(ctx context.Context, puuid riot.PUUID, option ListRankOption) ([]int, error) {
@@ -258,4 +217,45 @@ func (db *RankStore) GetRankDetail(ctx context.Context, id int) (RankDetail, err
 	}
 
 	return m, nil
+}
+
+// RankStatus is always created when a rank request is made.
+type RankStatus struct {
+	PUUID string `db:"puuid"`
+
+	EffectiveDate time.Time `db:"effective_date"`
+
+	// IsRanked indicates that there exists a [RankDetail] for this status.
+	IsRanked bool `db:"is_ranked"`
+}
+
+type RankDetail struct {
+	RankStatusID int `db:"rank_status_id"`
+
+	Wins int `db:"wins"`
+
+	Losses int `db:"losses"`
+
+	Tier string `db:"tier"`
+
+	Division string `db:"division"`
+
+	LP int `db:"lp"`
+}
+
+type RankFull struct {
+	Status RankStatus
+	Detail *RankDetail
+}
+
+type ListRankOption struct {
+	// Start indicates an inclusive lower bound on the date.
+	Start *time.Time
+
+	// End indicates an exclusive upper bound on the date.
+	End *time.Time
+
+	Offset, Limit uint
+
+	Recent bool
 }
