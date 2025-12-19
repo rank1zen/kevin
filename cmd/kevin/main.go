@@ -11,9 +11,9 @@ import (
 	"github.com/rank1zen/kevin/internal/config"
 	"github.com/rank1zen/kevin/internal/frontend/server"
 	"github.com/rank1zen/kevin/internal/log"
-	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/rank1zen/kevin/internal/service"
+	"github.com/rank1zen/kevin/internal/store"
 )
 
 type Runtime struct {
@@ -44,9 +44,9 @@ func main() {
 
 	defer pool.Close()
 
-	store := postgres.NewStore(pool)
+	st := store.NewStore(pool)
 	client := riot.NewClient(cfg.GetRiotAPIKey())
-	datasource := service.NewService(client, store, pool)
+	datasource := service.NewService(client, st, pool)
 
 	srvr := server.New(datasource, cfg.GetPort(), server.WithLogger(rt.Logger))
 
