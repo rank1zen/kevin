@@ -10,8 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jackc/tern/v2/migrate"
-	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/store"
 	pg "github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
@@ -59,24 +57,6 @@ func NewPGInstance(ctx context.Context, migrationsPath string) *PGInstance {
 	}
 
 	return pgInstance
-}
-
-// SetupStore creates an empty store, and will clean up after test t finishes.
-func (p *PGInstance) SetupStore(ctx context.Context, t testing.TB) *internal.Store {
-	conn, err := pgxpool.New(ctx, p.pgURL)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Cleanup(func() {
-		conn.Close()
-
-		if err := p.container.Restore(ctx); err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	return store.NewStore(conn)
 }
 
 func (p *PGInstance) SetupConn(ctx context.Context, t testing.TB) *pgxpool.Pool {

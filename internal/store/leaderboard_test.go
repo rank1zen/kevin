@@ -14,7 +14,7 @@ import (
 
 func TestLeaderboardStore_GetLeaderboard(t *testing.T) {
 	ctx := context.Background()
-	db := DefaultPGInstance.SetupStore(ctx, t)
+	db := setupStore(ctx, t)
 
 	var (
 		leaderboardStore = (*store.LeaderboardStore)(db)
