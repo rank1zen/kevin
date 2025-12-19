@@ -126,10 +126,6 @@ func convertRiotUnixToTimestamp(ts int64) time.Time {
 	return time.UnixMilli(ts)
 }
 
-func convertRiotTimeToDuration(t int64) time.Duration {
-	return time.Second * time.Duration(t)
-}
-
 func convertRiotItems(p *riot.MatchParticipant) [7]int {
 	return [7]int{p.Item0, p.Item1, p.Item2, p.Item3, p.Item4, p.Item5, p.Item6}
 }
