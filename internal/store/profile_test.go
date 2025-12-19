@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/postgres"
+	"github.com/rank1zen/kevin/internal/store"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +16,7 @@ func TestProfileStore_RecordProfile(t *testing.T) {
 
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 
-	store := postgres.NewStore(pool)
+	store := store.NewStore(pool)
 
 	profile := internal.Profile{
 		PUUID:   T1OKGOODYESNA1PUUID,
@@ -37,7 +37,7 @@ func TestProfileStore_GetProfile(t *testing.T) {
 
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 
-	store := postgres.NewStore(pool)
+	store := store.NewStore(pool)
 
 	profile := internal.Profile{
 		PUUID:   T1OKGOODYESNA1PUUID,

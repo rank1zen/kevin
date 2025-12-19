@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/store"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +15,7 @@ import (
 func TestLiveMatchStatusStore_CreateLiveMatchStatus(t *testing.T) {
 	ctx := context.Background()
 
-	store := (*postgres.LiveMatchStatusStore)(DefaultPGInstance.SetupStore(ctx, t))
+	store := (*store.LiveMatchStatusStore)(DefaultPGInstance.SetupStore(ctx, t))
 
 	err := store.CreateLiveMatchStatus(ctx, &internal.LiveMatchStatus{
 		Region:  riot.RegionNA1,
@@ -29,7 +29,7 @@ func TestLiveMatchStatusStore_CreateLiveMatchStatus(t *testing.T) {
 func TestLiveMatchStatusStore_GetLiveMatchStatus(t *testing.T) {
 	ctx := context.Background()
 
-	store := (*postgres.LiveMatchStatusStore)(DefaultPGInstance.SetupStore(ctx, t))
+	store := (*store.LiveMatchStatusStore)(DefaultPGInstance.SetupStore(ctx, t))
 
 	err := store.CreateLiveMatchStatus(ctx, &internal.LiveMatchStatus{
 		Region:  riot.RegionNA1,
@@ -49,7 +49,7 @@ func TestLiveMatchStatusStore_GetLiveMatchStatus(t *testing.T) {
 func TestLiveMatchStatusStore_ExpireLiveMatch(t *testing.T) {
 	ctx := context.Background()
 
-	store := (*postgres.LiveMatchStatusStore)(DefaultPGInstance.SetupStore(ctx, t))
+	store := (*store.LiveMatchStatusStore)(DefaultPGInstance.SetupStore(ctx, t))
 
 	err := store.CreateLiveMatchStatus(ctx, &internal.LiveMatchStatus{
 		Region:  riot.RegionNA1,

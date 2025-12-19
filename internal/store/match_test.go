@@ -10,6 +10,7 @@ import (
 	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/rank1zen/kevin/internal/riotmapper"
 	"github.com/rank1zen/kevin/internal/sample"
+	"github.com/rank1zen/kevin/internal/store"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +20,7 @@ func TestMatchStore_RecordMatch(t *testing.T) {
 
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 
-	store := postgres.NewStore(pool)
+	store := store.NewStore(pool)
 
 	riotMatch := sample.WithSampleMatch()
 	match := riotmapper.MapMatch(&riotMatch)
@@ -35,7 +36,7 @@ func TestMatchStore_GetMatchDetail(t *testing.T) {
 
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 
-	store := postgres.NewStore(pool)
+	store := store.NewStore(pool)
 
 	riotMatch := sample.WithSampleMatch()
 	match := riotmapper.MapMatch(&riotMatch)
@@ -92,7 +93,7 @@ func TestMatchStore_GetMatchHistory(t *testing.T) {
 
 	pool := DefaultPGInstance.SetupConn(ctx, t)
 
-	store := postgres.NewStore(pool)
+	store := store.NewStore(pool)
 
 	for _, m := range []riot.Match{
 		sample.Match5347748140(),

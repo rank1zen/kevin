@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/rank1zen/kevin/internal"
-	"github.com/rank1zen/kevin/internal/postgres"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/store"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -17,8 +17,8 @@ func TestLeaderboardStore_GetLeaderboard(t *testing.T) {
 	db := DefaultPGInstance.SetupStore(ctx, t)
 
 	var (
-		leaderboardStore = (*postgres.LeaderboardStore)(db)
-		profileStore     = (*postgres.ProfileStore)(db)
+		leaderboardStore = (*store.LeaderboardStore)(db)
+		profileStore     = (*store.ProfileStore)(db)
 	)
 
 	err := profileStore.RecordProfile(ctx, &internal.Profile{
