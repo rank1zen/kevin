@@ -9,6 +9,9 @@ import (
 	"github.com/go-chi/httplog/v3"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/page"
+	"github.com/rank1zen/kevin/internal/frontend/page/livep"
+	"github.com/rank1zen/kevin/internal/frontend/page/profilelivep"
+	"github.com/rank1zen/kevin/internal/frontend/page/profilep"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/search/searchmenu"
 	"github.com/rank1zen/kevin/internal/service"
@@ -47,10 +50,10 @@ func New(s *service.Service, port int, opts ...ServerOption) *Server {
 
 	router.Handle("GET /{$}", (*page.HomePageHandler)(s))
 
-	router.Handle("GET /profile/{riotID}/{$}", (*page.ProfilePageHandler)(s))
-	router.Handle("GET /profile/{riotID}/live/{$}", (*page.ProfileLiveMatchPageHandler)(s))
+	router.Handle("GET /profile/{riotID}/{$}", (*profilep.ProfilepHandler)(s))
+	router.Handle("GET /profile/{riotID}/live/{$}", (*profilelivep.ProfilelivepHandler)(s))
 
-	router.Handle("GET /livematch/{matchID}/{$}", (*page.LivematchPageHandler)(s))
+	router.Handle("GET /livematch/{matchID}/{$}", (*livep.LivepHandler)(s))
 
 	router.Handle("POST /partial/profile.HistoryEntry", (*profile.HistoryEntryHandler)(s))
 	router.Handle("POST /partial/profile.ChampionList", (*profile.ChampionListHandler)(s))
