@@ -16,17 +16,17 @@ type RowData struct {
 }
 
 templ Row(ctx context.Context, data RowData) {
-	<tr class="even:bg-gray-50 hover:bg-gray-100">
-		<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+	<tr class="bg-neutral-primary even:bg-neutral-secondary hover:bg-neutral-tertiary">
+		<td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-body">
 			{ data.Place }
 		</td>
-		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-body">
 			{ fmt.Sprintf("%s#%s", data.Name, data.Tag) }
 		</td>
-		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-body">
 			{ data.Tier }
 		</td>
-		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-body">
 			{ fmt.Sprintf("%d%%, %d-%d", data.WinPercentage, data.Wins, data.Losses) }
 		</td>
 	</tr>
