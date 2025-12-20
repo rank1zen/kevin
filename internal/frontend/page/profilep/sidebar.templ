@@ -2,6 +2,7 @@ package profilep
 
 import (
 	"context"
+	"github.com/rank1zen/kevin/internal/frontend/loader/rank_card_loader"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 )
 
@@ -15,7 +16,7 @@ templ sidebar(ctx context.Context, data sidebarData) {
 				Tier Graph
 			</h3>
 			<div class="my-2">
-				@profile.PartialRankCard(ctx, profile.PartialRankCardData{})
+				@rank_card_loader.RankCardLoader(ctx, rank_card_loader.RankCardLoaderData{})
 			</div>
 		</div>
 		<div class="py-3 border-b border-gray-200 dark:border-neutral-600">

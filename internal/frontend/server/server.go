@@ -12,6 +12,7 @@ import (
 	"github.com/rank1zen/kevin/internal/frontend/page/livep"
 	"github.com/rank1zen/kevin/internal/frontend/page/profilelivep"
 	"github.com/rank1zen/kevin/internal/frontend/page/profilep"
+	"github.com/rank1zen/kevin/internal/frontend/partial/rank_card"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/search/searchmenu"
 	"github.com/rank1zen/kevin/internal/service"
@@ -60,6 +61,8 @@ func New(s *service.Service, port int, opts ...ServerOption) *Server {
 	router.Handle("POST /partial/profile.MatchDetailBox", (*profile.MatchDetailBoxHandler)(s))
 	router.Handle("POST /partial/profile.UpdateProfile", (*profile.UpdateProfileHandler)(s))
 	router.Handle("POST /partial/searchmenu.SearchMenu", (*searchmenu.SearchMenuHandler)(s))
+
+	router.Handle("GET /partial/rank_card.RankCard/{$}", (*rank_card.RankCardHandler)(s))
 
 	middlewares := []func(http.Handler) http.Handler{
 		httplog.RequestLogger(srvr.Logger, &httplog.Options{

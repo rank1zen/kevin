@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
+	"github.com/rank1zen/kevin/internal/frontend/loader/rank_card_loader"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 )
 
@@ -41,7 +42,7 @@ func sidebar(ctx context.Context, data sidebarData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = profile.PartialRankCard(ctx, profile.PartialRankCardData{}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = rank_card_loader.RankCardLoader(ctx, rank_card_loader.RankCardLoaderData{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
