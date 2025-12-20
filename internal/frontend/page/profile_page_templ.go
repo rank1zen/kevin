@@ -100,7 +100,7 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div><div class=\"px-2 max-w-7xl mt-7 mx-auto md:px-6\"><h1 class=\"mt-7 font-bold text-2xl text-gray-900/90 dark:text-gray-100/90\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div><div class=\"px-2 max-w-7xl mx-auto border-b border-default md:px-6\"><h1 class=\"font-bold text-2xl text-gray-900/90 my-4 dark:text-gray-100/90\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -113,7 +113,7 @@ func ProfilePage(ctx context.Context, data ProfilePageData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</h1><div class=\"flex gap-x-4 mt-3\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</h1><div class=\"flex gap-x-4 my-3\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
