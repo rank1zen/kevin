@@ -21,14 +21,19 @@ templ LadderPage(ctx context.Context, data LadderPageData) {
 			})
 		}
 		@page.Body() {
-			<div>
-				<h1>Ladder Page</h1>
-				<p>Welcome to the ladder page!</p>
+			<div class="max-w-7xl mx-auto sm:px-2 md:px-6">
+				<section class="mt-8">
+					<h1 class="my-4 text-xl text-heading">
+						Solo Queue Leaderboards
+					</h1>
+					<div class="my-4">
+						@ladder.Table(ctx, ladder.TableData{
+							Region: data.Region,
+							Rows:   data.Entries,
+						})
+					</div>
+				</section>
 			</div>
-			@ladder.Table(ctx, ladder.TableData{
-				Region: data.Region,
-				Rows:   data.Entries,
-			})
 		}
 		@page.Footer() {
 			@shared.PageFooter(ctx, shared.PageFooterData{})
