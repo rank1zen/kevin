@@ -11,19 +11,15 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/component/page"
-	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 	"github.com/rank1zen/kevin/internal/riot"
 	"time"
 )
 
 type ProfilepData struct {
-	PUUID riot.PUUID
-
-	Region riot.Region
-
+	PUUID     riot.PUUID
+	Region    riot.Region
 	Name, Tag string
 }
 
@@ -100,72 +96,34 @@ func Profilep(ctx context.Context, data ProfilepData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div><div class=\"px-2 max-w-7xl mx-auto border-b border-default md:px-6\"><h1 class=\"font-bold text-2xl text-gray-900/90 my-4 dark:text-gray-100/90\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var5 string
-				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s#%s", data.Name, data.Tag))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/page/profilep/profilep.templ`, Line: 33, Col: 49}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</h1><div class=\"flex gap-x-4 my-3\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = profile.UpdateProfileButton(ctx, profile.UpdateProfileButtonData{
-					Region: &data.Region,
+				templ_7745c5c3_Err = header(ctx, headerData{
+					Region: data.Region,
 					Name:   data.Name,
 					Tag:    data.Tag,
 				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div><div class=\"flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6\"><div class=\"flex-1\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				days := frontend.GetDays(time.Now())
-				for i := range len(days) - 1 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"py-7\">")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = profile.PartialHistoryEntry(ctx, profile.PartialHistoryEntryData{
-						Region:  &data.Region,
-						PUUID:   data.PUUID,
-						StartTS: &days[i+1],
-						EndTS:   &days[i],
-					}).Render(ctx, templ_7745c5c3_Buffer)
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div><div class=\"w-2xs flex-none hidden md:block\"><div class=\"py-4 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Tier Graph</h3><div class=\"my-2\">")
+				templ_7745c5c3_Err = matchlist(ctx, matchlistData{
+					PUUID:  data.PUUID,
+					Region: data.Region,
+				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = profile.PartialRankCard(ctx, profile.PartialRankCardData{}).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = sidebar(ctx, sidebarData{}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div><div class=\"py-3 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Past Week</h3><div class=\"my-2\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = profile.PartialChampionList(ctx, profile.PartialChampionListData{}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></div></div></div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -175,11 +133,11 @@ func Profilep(ctx context.Context, data ProfilepData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Var6 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+			templ_7745c5c3_Var5 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 				if !templ_7745c5c3_IsBuffer {
@@ -197,7 +155,7 @@ func Profilep(ctx context.Context, data ProfilepData) templ.Component {
 				}
 				return nil
 			})
-			templ_7745c5c3_Err = page.Footer().Render(templ.WithChildren(ctx, templ_7745c5c3_Var6), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = page.Footer().Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

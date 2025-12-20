@@ -1,0 +1,30 @@
+package profilep
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+	"github.com/rank1zen/kevin/internal/riot"
+	"time"
+)
+
+type matchlistData struct {
+	PUUID  riot.PUUID
+	Region riot.Region
+}
+
+templ matchlist(ctx context.Context, data matchlistData) {
+	<div class="flex-1">
+		{{ days := frontend.GetDays(time.Now()) }}
+		for i := range len(days) - 1 {
+			<div class="py-7">
+				@profile.PartialHistoryEntry(ctx, profile.PartialHistoryEntryData{
+					Region:  &data.Region,
+					PUUID:   data.PUUID,
+					StartTS: &days[i+1],
+					EndTS:   &days[i],
+				})
+			</div>
+		}
+	</div>
+}

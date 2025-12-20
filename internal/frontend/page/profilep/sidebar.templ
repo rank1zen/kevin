@@ -1,0 +1,30 @@
+package profilep
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+)
+
+type sidebarData struct {
+}
+
+templ sidebar(ctx context.Context, data sidebarData) {
+	<div class="w-2xs flex-none hidden md:block">
+		<div class="py-4 border-b border-gray-200 dark:border-neutral-600">
+			<h3 class="font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90">
+				Tier Graph
+			</h3>
+			<div class="my-2">
+				@profile.PartialRankCard(ctx, profile.PartialRankCardData{})
+			</div>
+		</div>
+		<div class="py-3 border-b border-gray-200 dark:border-neutral-600">
+			<h3 class="font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90">
+				Past Week
+			</h3>
+			<div class="my-2">
+				@profile.PartialChampionList(ctx, profile.PartialChampionListData{})
+			</div>
+		</div>
+	</div>
+}
