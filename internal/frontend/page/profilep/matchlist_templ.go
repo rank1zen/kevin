@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+	"github.com/rank1zen/kevin/internal/frontend/loader/history_entry_loader"
 	"github.com/rank1zen/kevin/internal/riot"
 	"time"
 )
@@ -47,17 +47,12 @@ func matchlist(ctx context.Context, data matchlistData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		days := frontend.GetDays(time.Now())
-		for i := range len(days) - 1 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"py-7\">")
+		for _ = range len(days) - 1 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"\"><h5 class=\"font-medium text-lg text-heading mt-8 mb-4\">Mar 25</h5>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = profile.PartialHistoryEntry(ctx, profile.PartialHistoryEntryData{
-				Region:  &data.Region,
-				PUUID:   data.PUUID,
-				StartTS: &days[i+1],
-				EndTS:   &days[i],
-			}).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = history_entry_loader.HistoryEntryLoader(ctx, history_entry_loader.HistoryEntryLoaderData{}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

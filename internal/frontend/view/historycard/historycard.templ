@@ -26,52 +26,41 @@ type HistorycardData struct {
 }
 
 templ Historycard(ctx context.Context, data HistorycardData) {
-	<div class="relative overflow-x-auto rounded-default">
-		@accordion.Accordion() {
-			@accordion.Card() {
-				<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap items-center justify-between lg:flex-nowrap">
-					<div class="flex gap-x-3">
-						@championWidget(ctx, championWidgetData{
-							ChampionID:    data.ChampionID,
-							ChampionLevel: data.ChampionLevel,
-							SummonerIDs:   data.SummonerIDs,
-						})
-						@kdaWidget(ctx, kdaWidgetData{
-							Kills:          data.Kills,
-							Deaths:         data.Deaths,
-							Assists:        data.Assists,
-							KillDeathRatio: data.KillDeathRatio,
-						})
-						@csWidget(ctx, csWidgetData{
-							CS:          data.CS,
-							CSPerMinute: data.CSPerMinute,
-						})
-					</div>
-					<div class="flex gap-x-2 lg:order-last">
-						@rankDeltaWidget(ctx, rankDeltaWidgetData{
-							RankChange: data.RankChange,
-							LPChange:   data.LPChange,
-							Win:        data.Win,
-						})
-						@accordion.Trigger()
-					</div>
-					<div class="flex gap-x-2 w-full justify-between lg:w-auto">
-						@runeWidget(ctx, runeWidgetData{
-							RunePage: data.RunePage,
-						})
-						@itemWidget(ctx, itemWidgetData{
-							Items:       data.Items,
-							VisionScore: data.VisionScore,
-						})
-					</div>
+	@accordion.Accordion() {
+		@accordion.Card() {
+			<div class="p-4 flex items-center justify-between gap-x-4">
+				<div class="flex flex-wrap text-xs gap-0.5">
+					<span class="text-body inline-flex px-1.5 py-0.5 flex-none">Dec 20, 10:50AM EST</span>
+					<span class="text-body inline-flex px-1.5 py-0.5">34:11</span>
+					<span class="text-body inline-flex px-1.5 py-0.5">GM</span>
+					<span class="text-body inline-flex px-1.5 py-0.5">+21</span>
 				</div>
-			}
-			@accordion.Panel() {
-				@matchdetail.Matchdetail(ctx, matchdetail.MatchdetailData{
-					Region:  riot.RegionNA1,
-					MatchID: data.MatchID,
+				@champion(ctx, championData{
+					ChampionID:    data.ChampionID,
+					CS:            data.CS,
+					Kills:         data.Kills,
+					Deaths:        data.Deaths,
+					Assists:       data.Assists,
+					CSPerMinute:   data.CSPerMinute,
+					ChampionLevel: data.ChampionLevel,
 				})
-			}
+				<div class="flex gap-x-4">
+					@runeWidget(ctx, runeWidgetData{
+						RunePage: data.RunePage,
+					})
+					@itemWidget(ctx, itemWidgetData{
+						Items:       data.Items,
+						VisionScore: data.VisionScore,
+					})
+				</div>
+				@accordion.Trigger()
+			</div>
 		}
-	</div>
+		@accordion.Panel() {
+			@matchdetail.Matchdetail(ctx, matchdetail.MatchdetailData{
+				Region:  riot.RegionNA1,
+				MatchID: data.MatchID,
+			})
+		}
+	}
 }

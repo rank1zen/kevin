@@ -54,10 +54,6 @@ func Historycard(ctx context.Context, data HistorycardData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"relative overflow-x-auto rounded-default\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
 		templ_7745c5c3_Var2 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
@@ -82,51 +78,23 @@ func Historycard(ctx context.Context, data HistorycardData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap items-center justify-between lg:flex-nowrap\"><div class=\"flex gap-x-3\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-4 flex items-center justify-between gap-x-4\"><div class=\"flex flex-wrap text-xs gap-0.5\"><span class=\"text-body inline-flex px-1.5 py-0.5 flex-none\">Dec 20, 10:50AM EST</span> <span class=\"text-body inline-flex px-1.5 py-0.5\">34:11</span> <span class=\"text-body inline-flex px-1.5 py-0.5\">GM</span> <span class=\"text-body inline-flex px-1.5 py-0.5\">+21</span></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = championWidget(ctx, championWidgetData{
+				templ_7745c5c3_Err = champion(ctx, championData{
 					ChampionID:    data.ChampionID,
+					CS:            data.CS,
+					Kills:         data.Kills,
+					Deaths:        data.Deaths,
+					Assists:       data.Assists,
+					CSPerMinute:   data.CSPerMinute,
 					ChampionLevel: data.ChampionLevel,
-					SummonerIDs:   data.SummonerIDs,
 				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = kdaWidget(ctx, kdaWidgetData{
-					Kills:          data.Kills,
-					Deaths:         data.Deaths,
-					Assists:        data.Assists,
-					KillDeathRatio: data.KillDeathRatio,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = csWidget(ctx, csWidgetData{
-					CS:          data.CS,
-					CSPerMinute: data.CSPerMinute,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"flex gap-x-2 lg:order-last\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = rankDeltaWidget(ctx, rankDeltaWidgetData{
-					RankChange: data.RankChange,
-					LPChange:   data.LPChange,
-					Win:        data.Win,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = accordion.Trigger().Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div><div class=\"flex gap-x-2 w-full justify-between lg:w-auto\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex gap-x-4\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -143,7 +111,15 @@ func Historycard(ctx context.Context, data HistorycardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = accordion.Trigger().Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -153,7 +129,7 @@ func Historycard(ctx context.Context, data HistorycardData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -185,10 +161,6 @@ func Historycard(ctx context.Context, data HistorycardData) templ.Component {
 			return nil
 		})
 		templ_7745c5c3_Err = accordion.Accordion().Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

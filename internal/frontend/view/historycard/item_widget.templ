@@ -12,7 +12,7 @@ type itemWidgetData struct {
 }
 
 templ itemWidget(ctx context.Context, data itemWidgetData) {
-	<div class="flex flex-none h-9 items-center pl-1 gap-x-1 bg-gray-100 rounded-lg dark:bg-neutral-100/20">
+	<div class="flex flex-none h-9 items-center px-1 gap-x-1 bg-gray-100 rounded-lg dark:bg-neutral-100/20">
 		for i := range 6 {
 			if id := data.Items[i]; id != 0 {
 				@shared.ItemSprite(ctx, shared.ItemSpriteData{
@@ -30,6 +30,5 @@ templ itemWidget(ctx context.Context, data itemWidgetData) {
 				{ fmt.Sprintf("%d", data.VisionScore) }
 			</span>
 		</div>
-		<div class="transition h-9 w-6 rounded-lg hover:bg-gray-200"></div>
 	</div>
 }

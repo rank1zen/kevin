@@ -19,31 +19,27 @@ type rankDeltaWidgetData struct {
 }
 
 templ rankDeltaWidget(ctx context.Context, data rankDeltaWidgetData) {
-	<div class="h-9">
-		<div clas="flex justify-end">
-			if data.RankChange != nil {
-				// @shared.RankTag(*data.RankChange).ToTempl(ctx)
-			} else {
-				<div class="text-sm font-semibold text-gray-900/90 dark:text-gray-100/90">
-					Unknown
-				</div>
-			}
-		</div>
+	<div class="">
+		if data.RankChange != nil {
+			// @shared.RankTag(*data.RankChange).ToTempl(ctx)
+		} else {
+			<span class="text-heading bg-neutral-secondary-soft px-1.5 py-0.5 dark:text-gray-100/90">
+				Unknown
+			</span>
+		}
 		if data.Win {
-			<div class="flex justify-end">
-				<div class="text-xs bg-green-500/80 text-white px-1 rounded">
-					if data.LPChange != nil {
-						{ fmt.Sprintf("WIN %+d", data.LPChange) }
-					} else {
-						{ fmt.Sprintf("WIN +??") }
-					}
-				</div>
-			</div>
+			<span class="bg-green-500 text-white px-1.5 py-0.5 rounded-sm">
+				if data.LPChange != nil {
+					{ fmt.Sprintf("%+d", *data.LPChange) }
+				} else {
+					{ fmt.Sprintf("+??") }
+				}
+			</span>
 		} else {
 			<div class="flex justify-end">
 				<div class="text-xs bg-red-500/80 text-white px-1 rounded">
 					if data.LPChange != nil {
-						{ fmt.Sprintf("LOSS %+d", data.LPChange) }
+						{ fmt.Sprintf("LOSS %+d", *data.LPChange) }
 					} else {
 						{ fmt.Sprintf("LOSS +??") }
 					}

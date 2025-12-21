@@ -21,6 +21,5 @@ templ runeWidget(ctx context.Context, data runeWidgetData) {
 			{{ secondaryTree := path.Join("/static/", ddragon.RuneMap[data.RunePage.SecondaryTree].IconPath) }}
 			<img class="size-4" src={ secondaryTree }/>
 		</div>
-		<div class="transition h-9 w-6 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-200"></div>
 	</div>
 }

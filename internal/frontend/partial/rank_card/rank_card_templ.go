@@ -49,33 +49,33 @@ func RankCard(ctx context.Context, data RankCardData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex h-25 justify-between items-center bg-gray-100 rounded-lg p-2\"><img class=\"h-11\" src=\"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsupport-leagueoflegends.riotgames.com%2Fhc%2Farticle_attachments%2F4415894930323%2FChallenger_Emblem_2022.png&f=1&nofb=1&ipt=de55a2f43584113307a306fb0c113a59419c4006df09d4c50cb866a9c914a841\"><div class=\"flex-none\"><div class=\"h-5 w-full font-medium text-sm text-gray-900/90\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"h-40 items-center bg-neutral-primary-soft rounded-default p-4 border border-default shadow-sm shadow-gray-200\"><div class=\"flex w-full justify-between items-center\"><img class=\"h-11\" src=\"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsupport-leagueoflegends.riotgames.com%2Fhc%2Farticle_attachments%2F4415894930323%2FChallenger_Emblem_2022.png&f=1&nofb=1&ipt=de55a2f43584113307a306fb0c113a59419c4006df09d4c50cb866a9c914a841\"><div class=\"text-right\"><h5 class=\"font-medium text-sm text-heading\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s %d LP", data.TierDivision, data.LP))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/partial/rank_card/rank_card.templ`, Line: 29, Col: 58}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/partial/rank_card/rank_card.templ`, Line: 30, Col: 59}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"h-4 w-full text-right text-xs text-gray-900/90\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</h5><div class=\"text-xs text-body\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d-%d (%d%%)", data.Win, data.Loss, data.WinPercentage))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/partial/rank_card/rank_card.templ`, Line: 32, Col: 75}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/partial/rank_card/rank_card.templ`, Line: 33, Col: 76}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
