@@ -5,9 +5,11 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/rank1zen/kevin/internal/frontend/page"
+	"github.com/rank1zen/kevin/internal/frontend/page/profilep"
 	"github.com/rank1zen/kevin/internal/frontend/view/profile"
 	"github.com/rank1zen/kevin/internal/frontend/view/search"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
+	"github.com/rank1zen/kevin/internal/riot"
 )
 
 type Route struct {
@@ -71,5 +73,14 @@ var routes = []*Route{
 	{
 		Name:     "page.LadderPage",
 		Renderer: page.LadderPage(context.Background(), ladderPageData),
+	},
+	{
+		Name: "profilep.Profilep",
+		Renderer: profilep.Profilep(context.Background(), profilep.ProfilepData{
+			PUUID:  "bacon-egg-and-cheese",
+			Region: riot.RegionNA1,
+			Name:   "Bacon",
+			Tag:    "41",
+		}),
 	},
 }

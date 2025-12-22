@@ -1,0 +1,17 @@
+package history_entry_loader
+
+import "context"
+
+type HistoryEntryLoaderData struct {
+	PUUID  string
+	Region string
+}
+
+templ HistoryEntryLoader(ctx context.Context, data HistoryEntryLoaderData) {
+	<div
+		hx-get="/partial/historyentry.Historyentry"
+		hx-trigger="load once"
+	>
+		<div class="h-40"></div>
+	</div>
+}

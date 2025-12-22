@@ -1,0 +1,28 @@
+package profilep
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/frontend/loader/history_entry_loader"
+	"github.com/rank1zen/kevin/internal/riot"
+	"time"
+)
+
+type matchlistData struct {
+	PUUID  riot.PUUID
+	Region riot.Region
+}
+
+templ matchlist(ctx context.Context, data matchlistData) {
+	<div class="flex-1">
+		{{ days := frontend.GetDays(time.Now()) }}
+		for _ = range len(days) - 1 {
+			<div class="">
+				<h5 class="font-medium text-lg text-heading mt-8 mb-4">
+					Mar 25
+				</h5>
+				@history_entry_loader.HistoryEntryLoader(ctx, history_entry_loader.HistoryEntryLoaderData{})
+			</div>
+		}
+	</div>
+}

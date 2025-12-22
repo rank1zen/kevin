@@ -1,0 +1,17 @@
+package rank_card_loader
+
+import "context"
+
+type RankCardLoaderData struct {
+	PUUID  string
+	Region string
+}
+
+templ RankCardLoader(ctx context.Context, data RankCardLoaderData) {
+	<div
+		hx-get="/partial/rank_card.RankCard"
+		hx-trigger="load once"
+	>
+		<div class="h-40 rounded-default animate-pulse bg-neutral-secondary border border-default shadow-sm shadow-gray-200"></div>
+	</div>
+}

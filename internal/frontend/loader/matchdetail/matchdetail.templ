@@ -1,0 +1,20 @@
+package matchdetail
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/riot"
+)
+
+type MatchdetailData struct {
+	Region  riot.Region
+	MatchID string
+}
+
+templ Matchdetail(ctx context.Context, data MatchdetailData) {
+	<div
+		hx-post="/profile.PartialMatchDetailBox"
+		hx-trigger="load"
+	>
+		Loading
+	</div>
+}
