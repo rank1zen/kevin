@@ -10,9 +10,9 @@ import (
 
 type HistorycardData struct {
 	MatchID                string
-	ChampionID             int
+	ChampionIconPath       string
 	ChampionLevel          int
-	SummonerIDs            [2]int
+	SummonerSpellIconPaths [2]string
 	Kills, Deaths, Assists int
 	KillDeathRatio         float32
 	CS                     int
@@ -36,13 +36,14 @@ templ Historycard(ctx context.Context, data HistorycardData) {
 					<span class="text-body inline-flex px-1.5 py-0.5">+21</span>
 				</div>
 				@champion(ctx, championData{
-					ChampionID:    data.ChampionID,
-					CS:            data.CS,
-					Kills:         data.Kills,
-					Deaths:        data.Deaths,
-					Assists:       data.Assists,
-					CSPerMinute:   data.CSPerMinute,
-					ChampionLevel: data.ChampionLevel,
+					ChampionIconPath:       data.ChampionIconPath,
+					SummonerSpellIconPaths: data.SummonerSpellIconPaths,
+					CS:                     data.CS,
+					Kills:                  data.Kills,
+					Deaths:                 data.Deaths,
+					Assists:                data.Assists,
+					CSPerMinute:            data.CSPerMinute,
+					ChampionLevel:          data.ChampionLevel,
 				})
 				<div class="flex gap-x-4">
 					@runeWidget(ctx, runeWidgetData{

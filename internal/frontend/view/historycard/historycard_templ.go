@@ -18,9 +18,9 @@ import (
 
 type HistorycardData struct {
 	MatchID                string
-	ChampionID             int
+	ChampionIconPath       string
 	ChampionLevel          int
-	SummonerIDs            [2]int
+	SummonerSpellIconPaths [2]string
 	Kills, Deaths, Assists int
 	KillDeathRatio         float32
 	CS                     int
@@ -83,13 +83,14 @@ func Historycard(ctx context.Context, data HistorycardData) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				templ_7745c5c3_Err = champion(ctx, championData{
-					ChampionID:    data.ChampionID,
-					CS:            data.CS,
-					Kills:         data.Kills,
-					Deaths:        data.Deaths,
-					Assists:       data.Assists,
-					CSPerMinute:   data.CSPerMinute,
-					ChampionLevel: data.ChampionLevel,
+					ChampionIconPath:       data.ChampionIconPath,
+					SummonerSpellIconPaths: data.SummonerSpellIconPaths,
+					CS:                     data.CS,
+					Kills:                  data.Kills,
+					Deaths:                 data.Deaths,
+					Assists:                data.Assists,
+					CSPerMinute:            data.CSPerMinute,
+					ChampionLevel:          data.ChampionLevel,
 				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

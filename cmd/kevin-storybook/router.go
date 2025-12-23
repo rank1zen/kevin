@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/partial/historyentry"
 	"github.com/rank1zen/kevin/internal/frontend/partial/rank_card"
@@ -13,6 +14,8 @@ import (
 
 func NewRouter() *http.ServeMux {
 	mux := http.NewServeMux()
+
+	dd := ddragon.New("https://ddragon.leagueoflegends.com/cdn/15.24.1")
 
 	mux.Handle("GET /{$}", &IndexHandler{})
 
@@ -48,22 +51,22 @@ func NewRouter() *http.ServeMux {
 				Date: time.Now(),
 				Matchlist: []historycard.HistorycardData{
 					{
-						MatchID:        "NA1_123456789",
-						ChampionID:     41,
-						ChampionLevel:  17,
-						SummonerIDs:    sampleSpells,
-						Kills:          3,
-						Deaths:         4,
-						Assists:        5,
-						KillDeathRatio: 6.1,
-						CS:             324,
-						CSPerMinute:    8.9,
-						RunePage:       sampleRunePage,
-						Items:          sampleItems,
-						VisionScore:    23,
-						RankChange:     nil,
-						LPChange:       &lpChange,
-						Win:            true,
+						MatchID:                "NA1_123456789",
+						ChampionLevel:          17,
+						ChampionIconPath:       dd.GetChampionImage(41),
+						Kills:                  3,
+						Deaths:                 4,
+						Assists:                5,
+						KillDeathRatio:         6.1,
+						CS:                     324,
+						CSPerMinute:            8.9,
+						RunePage:               sampleRunePage,
+						Items:                  sampleItems,
+						VisionScore:            23,
+						RankChange:             nil,
+						LPChange:               &lpChange,
+						Win:                    true,
+						SummonerSpellIconPaths: [2]string{},
 					},
 				},
 			})
