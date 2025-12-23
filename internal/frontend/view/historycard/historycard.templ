@@ -18,7 +18,7 @@ type HistorycardData struct {
 	CS                     int
 	CSPerMinute            float32
 	RunePage               internal.RunePage
-	Items                  [7]int
+	ItemIconPaths          [7]string
 	VisionScore            int
 	RankChange             *internal.Rank
 	LPChange               *int
@@ -50,8 +50,8 @@ templ Historycard(ctx context.Context, data HistorycardData) {
 						RunePage: data.RunePage,
 					})
 					@itemWidget(ctx, itemWidgetData{
-						Items:       data.Items,
-						VisionScore: data.VisionScore,
+						ItemIconPaths: data.ItemIconPaths,
+						VisionScore:   data.VisionScore,
 					})
 				</div>
 				@accordion.Trigger()

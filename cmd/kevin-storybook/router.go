@@ -47,29 +47,42 @@ func NewRouter() *http.ServeMux {
 
 			lpChange := 10
 
-			c := historyentry.Historyentry(r.Context(), historyentry.HistoryentryData{
+			data := historyentry.HistoryentryData{
 				Date: time.Now(),
 				Matchlist: []historycard.HistorycardData{
 					{
-						MatchID:                "NA1_123456789",
-						ChampionLevel:          17,
-						ChampionIconPath:       dd.GetChampionImage(41),
-						Kills:                  3,
-						Deaths:                 4,
-						Assists:                5,
-						KillDeathRatio:         6.1,
-						CS:                     324,
-						CSPerMinute:            8.9,
-						RunePage:               sampleRunePage,
-						Items:                  sampleItems,
-						VisionScore:            23,
-						RankChange:             nil,
-						LPChange:               &lpChange,
-						Win:                    true,
-						SummonerSpellIconPaths: [2]string{},
+						MatchID:          "NA1_123456789",
+						ChampionLevel:    17,
+						ChampionIconPath: dd.GetChampionImage(41),
+						Kills:            3,
+						Deaths:           4,
+						Assists:          5,
+						KillDeathRatio:   6.1,
+						CS:               324,
+						CSPerMinute:      8.9,
+						RunePage:         sampleRunePage,
+						VisionScore:      23,
+						RankChange:       nil,
+						LPChange:         &lpChange,
+						Win:              true,
+						SummonerSpellIconPaths: [2]string{
+							dd.GetSummonerSpellImage(4),
+							dd.GetSummonerSpellImage(6),
+						},
+						ItemIconPaths: [7]string{
+							dd.GetItemImage(6698),
+							dd.GetItemImage(0),
+							dd.GetItemImage(3176),
+							dd.GetItemImage(0),
+							dd.GetItemImage(3134),
+							dd.GetItemImage(3814),
+							dd.GetItemImage(3364),
+						},
 					},
 				},
-			})
+			}
+
+			c := historyentry.Historyentry(r.Context(), data)
 
 			if err := c.Render(r.Context(), w); err != nil {
 				w.WriteHeader(500)

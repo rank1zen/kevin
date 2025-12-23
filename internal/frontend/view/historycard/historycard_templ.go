@@ -26,7 +26,7 @@ type HistorycardData struct {
 	CS                     int
 	CSPerMinute            float32
 	RunePage               internal.RunePage
-	Items                  [7]int
+	ItemIconPaths          [7]string
 	VisionScore            int
 	RankChange             *internal.Rank
 	LPChange               *int
@@ -106,8 +106,8 @@ func Historycard(ctx context.Context, data HistorycardData) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				templ_7745c5c3_Err = itemWidget(ctx, itemWidgetData{
-					Items:       data.Items,
-					VisionScore: data.VisionScore,
+					ItemIconPaths: data.ItemIconPaths,
+					VisionScore:   data.VisionScore,
 				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
