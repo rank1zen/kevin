@@ -29,6 +29,9 @@ type HistorycardData struct {
 	ItemIconPaths          [7]string
 	VisionScore            int
 	RankChange             *internal.Rank
+	MatchDate              string
+	MatchDuration          string
+	RankDuringMatch        string
 	LPChange               *int
 	Win                    bool
 }
@@ -66,75 +69,55 @@ func Historycard(ctx context.Context, data HistorycardData) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-6 bg-neutral-primary-soft border border-default shadow-xs rounded-default dark:shadow-none dark:bg-neutral-900 dark:border-neutral-600\"><h5 class=\"text-heading font-medium mb-2\">Solo/Duo</h5><div class=\"flex items-center gap-x-4 mb-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = champion(ctx, championData{
+				ChampionIconPath:       data.ChampionIconPath,
+				SummonerSpellIconPaths: data.SummonerSpellIconPaths,
+				CS:                     data.CS,
+				Kills:                  data.Kills,
+				Deaths:                 data.Deaths,
+				Assists:                data.Assists,
+				CSPerMinute:            data.CSPerMinute,
+				ChampionLevel:          data.ChampionLevel,
+			}).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = runeWidget(ctx, runeWidgetData{
+				RunePage: data.RunePage,
+			}).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = itemWidget(ctx, itemWidgetData{
+				ItemIconPaths: data.ItemIconPaths,
+				VisionScore:   data.VisionScore,
+			}).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = tags(ctx, tagsData{
+				Date:     data.MatchDate,
+				Duration: data.MatchDuration,
+				Rank:     data.RankDuringMatch,
+				LPChange: data.LPChange,
+				Win:      data.Win,
+			}).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 			templ_7745c5c3_Var3 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-				if !templ_7745c5c3_IsBuffer {
-					defer func() {
-						templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-						if templ_7745c5c3_Err == nil {
-							templ_7745c5c3_Err = templ_7745c5c3_BufErr
-						}
-					}()
-				}
-				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-4 flex items-center justify-between gap-x-4\"><div class=\"flex flex-wrap text-xs gap-0.5\"><span class=\"text-body inline-flex px-1.5 py-0.5 flex-none\">Dec 20, 10:50AM EST</span> <span class=\"text-body inline-flex px-1.5 py-0.5\">34:11</span> <span class=\"text-body inline-flex px-1.5 py-0.5\">GM</span> <span class=\"text-body inline-flex px-1.5 py-0.5\">+21</span></div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = champion(ctx, championData{
-					ChampionIconPath:       data.ChampionIconPath,
-					SummonerSpellIconPaths: data.SummonerSpellIconPaths,
-					CS:                     data.CS,
-					Kills:                  data.Kills,
-					Deaths:                 data.Deaths,
-					Assists:                data.Assists,
-					CSPerMinute:            data.CSPerMinute,
-					ChampionLevel:          data.ChampionLevel,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex gap-x-4\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = runeWidget(ctx, runeWidgetData{
-					RunePage: data.RunePage,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = itemWidget(ctx, itemWidgetData{
-					ItemIconPaths: data.ItemIconPaths,
-					VisionScore:   data.VisionScore,
-				}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = accordion.Trigger().Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				return nil
-			})
-			templ_7745c5c3_Err = accordion.Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " ")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Var4 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 				if !templ_7745c5c3_IsBuffer {
@@ -155,7 +138,7 @@ func Historycard(ctx context.Context, data HistorycardData) templ.Component {
 				}
 				return nil
 			})
-			templ_7745c5c3_Err = accordion.Panel().Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = accordion.Panel().Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

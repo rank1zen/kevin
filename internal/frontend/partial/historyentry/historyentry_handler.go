@@ -69,6 +69,10 @@ func (h *HistoryentryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			RankChange:             nil,
 			LPChange:               nil,
 			Win:                    match.Win,
+			MatchID:                match.MatchID,
+			MatchDate:              match.Date.Format("2006-01-02"),
+			MatchDuration:          fmt.Sprintf("%d:%d", int(match.Duration.Minutes()), int(match.Duration.Seconds())%60),
+			RankDuringMatch:        "", // TODO: Implement rank during match
 		}
 
 		data.SummonerSpellIconPaths[0] = dd.GetSummonerSpellImage(match.SummonerIDs[0])

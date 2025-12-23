@@ -78,6 +78,9 @@ func NewRouter() *http.ServeMux {
 							dd.GetItemImage(3814),
 							dd.GetItemImage(3364),
 						},
+						MatchDate:       "Dec 20, 10:50AM",
+						MatchDuration:   "34:11",
+						RankDuringMatch: "D4",
 					},
 				},
 			}
