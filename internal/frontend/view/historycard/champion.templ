@@ -28,19 +28,31 @@ templ champion(ctx context.Context, data championData) {
 			alt=""
 		/>
 		<div class="font-medium text-heading flex-none">
-			<div>
-				<span class="text-fg-brand font-semibold">{ data.Kills }</span>
-				<span class="text-body">/</span>
-				<span class="text-red-500 font-semibold">{ data.Kills }</span>
-				<span class="text-body">/</span>
-				<span class="text-body font-semibold">{ data.Kills }</span>
+			<div class="items-baseline flex">
+				<span class="text-fg-brand font-semibold">
+					{ data.Kills }
+				</span>
+				<span class="text-body text-sm mx-2">
+					/
+				</span>
+				<span class="text-red-500 font-semibold">
+					{ data.Kills }
+				</span>
+				<span class="text-body text-sm mx-2">
+					/
+				</span>
+				<span class="text-body font-semibold">
+					{ data.Kills }
+				</span>
 			</div>
-			<div class="text-sm font-normal text-body">
-				<span class="font-semibold">
+			<div class="text-body items-baseline flex">
+				<span class="text-sm font-medium">
 					{ data.CS }
 				</span>
-				<span>CS</span>
-				<span class="font-semibold">
+				<span class="text-xs ms-1">
+					CS
+				</span>
+				<span class="text-sm ms-1">
 					({ data.CSPerMinute })
 				</span>
 			</div>
