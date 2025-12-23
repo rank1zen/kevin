@@ -3,29 +3,32 @@ package historycard
 import (
 	"context"
 	"fmt"
-	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 )
 
 type itemWidgetData struct {
-	Items       [7]int
-	VisionScore int
+	ItemIconPaths [7]string
+	VisionScore   int
 }
 
 templ itemWidget(ctx context.Context, data itemWidgetData) {
 	<div class="flex flex-none h-9 items-center px-1 gap-x-1 bg-gray-100 rounded-lg dark:bg-neutral-100/20">
 		for i := range 6 {
-			if id := data.Items[i]; id != 0 {
-				@shared.ItemSprite(ctx, shared.ItemSpriteData{
-					ItemID: id,
-				})
+			if iconPath := data.ItemIconPaths[i]; iconPath != "" {
+				<img
+					class="size-7 rounded"
+					src={ iconPath }
+					alt=""
+				/>
 			} else {
 				<div class="size-7 rounded bg-gray-200 dark:bg-neutral-800"></div>
 			}
 		}
 		<div class="relative">
-			@shared.ItemSprite(ctx, shared.ItemSpriteData{
-				ItemID: data.Items[6],
-			})
+			<img
+				class="size-7 rounded-full"
+				src={ data.ItemIconPaths[6] }
+				alt=""
+			/>
 			<span class="text-xs text-white font-medium left-1/2 -translate-x-1/2 bottom-0 absolute">
 				{ fmt.Sprintf("%d", data.VisionScore) }
 			</span>

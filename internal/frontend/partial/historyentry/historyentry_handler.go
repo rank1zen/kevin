@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rank1zen/kevin/internal/ddragon"
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/view/historycard"
 	"github.com/rank1zen/kevin/internal/riot"
@@ -46,27 +47,42 @@ func (h *HistoryentryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		Matchlist: []historycard.HistorycardData{},
 	}
 
+	dd := ddragon.New("https://ddragon.leagueoflegends.com/cdn/15.24.1")
+
 	for _, match := range storeMatches {
 		// HACK: very hacky; please integrate into internal
 		kda := float32(match.Kills+match.Assists) / float32(match.Deaths)
 
-		v.Matchlist = append(v.Matchlist, historycard.HistorycardData{
-			ChampionID:     match.ChampionID,
-			ChampionLevel:  match.ChampionLevel,
-			SummonerIDs:    match.SummonerIDs,
-			Kills:          match.Kills,
-			Deaths:         match.Deaths,
-			Assists:        match.Assists,
-			KillDeathRatio: kda,
-			CS:             match.CreepScore,
-			CSPerMinute:    match.CreepScorePerMinute,
-			RunePage:       match.Runes,
-			Items:          match.Items,
-			VisionScore:    match.VisionScore,
-			RankChange:     nil,
-			LPChange:       nil,
-			Win:            match.Win,
-		})
+		data := historycard.HistorycardData{
+			ChampionIconPath:       dd.GetChampionImage(match.ChampionID),
+			ChampionLevel:          match.ChampionLevel,
+			SummonerSpellIconPaths: [2]string{},
+			Kills:                  match.Kills,
+			Deaths:                 match.Deaths,
+			Assists:                match.Assists,
+			KillDeathRatio:         kda,
+			CS:                     match.CreepScore,
+			CSPerMinute:            match.CreepScorePerMinute,
+			RunePage:               match.Runes,
+			ItemIconPaths:          [7]string{},
+			VisionScore:            match.VisionScore,
+			RankChange:             nil,
+			LPChange:               nil,
+			Win:                    match.Win,
+		}
+
+		data.SummonerSpellIconPaths[0] = dd.GetSummonerSpellImage(match.SummonerIDs[0])
+		data.SummonerSpellIconPaths[1] = dd.GetSummonerSpellImage(match.SummonerIDs[1])
+
+		data.ItemIconPaths[0] = dd.GetItemImage(match.Items[0])
+		data.ItemIconPaths[1] = dd.GetItemImage(match.Items[1])
+		data.ItemIconPaths[2] = dd.GetItemImage(match.Items[2])
+		data.ItemIconPaths[3] = dd.GetItemImage(match.Items[3])
+		data.ItemIconPaths[4] = dd.GetItemImage(match.Items[4])
+		data.ItemIconPaths[5] = dd.GetItemImage(match.Items[5])
+		data.ItemIconPaths[6] = dd.GetItemImage(match.Items[6])
+
+		v.Matchlist = append(v.Matchlist, data)
 	}
 
 	c := Historyentry(r.Context(), v)
