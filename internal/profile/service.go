@@ -13,6 +13,13 @@ type ProfileService struct {
 	store ProfileStore
 }
 
+func NewProfileService(riot *riot.Client, store ProfileStore) *ProfileService {
+	return &ProfileService{
+		riot:  riot,
+		store: store,
+	}
+}
+
 // GetProfileRequest represents the request payload for retrieving a summoner profile.
 type GetProfileRequest struct {
 	Region string `json:"region"`
