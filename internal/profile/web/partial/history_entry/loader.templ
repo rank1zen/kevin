@@ -1,0 +1,15 @@
+package history_entry
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/profile"
+)
+
+templ Loader(ctx context.Context, data *profile.GetMatchlistRequest) {
+	<div
+		hx-get="/profile/web/history_entry"
+		hx-trigger="load once"
+	>
+		<div class="h-40"></div>
+	</div>
+}

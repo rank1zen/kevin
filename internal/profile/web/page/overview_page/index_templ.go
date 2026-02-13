@@ -17,13 +17,13 @@ import (
 	"time"
 )
 
-type ProfilepData struct {
+type IndexData struct {
 	PUUID     riot.PUUID
 	Region    riot.Region
 	Name, Tag string
 }
 
-func Profilep(ctx context.Context, data ProfilepData) templ.Component {
+func Index(ctx context.Context, data IndexData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {

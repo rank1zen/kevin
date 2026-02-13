@@ -11,10 +11,10 @@ import (
 )
 
 type Handler struct {
-	service profile.ProfileService
+	service *profile.ProfileService
 }
 
-func NewHandler(service profile.ProfileService) *Handler {
+func NewHandler(service *profile.ProfileService) *Handler {
 	return &Handler{service: service}
 }
 
@@ -32,14 +32,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := ProfilepData{
+	data := IndexData{
 		PUUID:  riot.PUUID(storeProfile.PUUID),
 		Region: riot.Region(req.Region),
 		Name:   storeProfile.Name,
 		Tag:    storeProfile.Tagline,
 	}
 
-	c := Profilep(r.Context(), data)
+	c := Index(r.Context(), data)
 
 	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

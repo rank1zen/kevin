@@ -1,0 +1,70 @@
+package history_entry
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal"
+)
+
+type CardData struct {
+	Date                   string
+	Duration               string
+	Rank                   string
+	LPChange               string
+	ChampionID             int
+	ChampionLevel          string
+	SummonerIDs            [2]int
+	Kills, Deaths, Assists string
+	KillDeathRatio         string
+	CS                     string
+	CSPerMinute            string
+	RunePage               internal.RunePage
+	Items                  [7]int
+	VisionScore            string
+	Win                    bool
+}
+
+templ Card(ctx context.Context, data *CardData) {
+	<div class="p-4 flex items-center justify-between gap-x-4">
+		<div class="flex flex-wrap text-xs gap-0.5">
+			<span class="text-body inline-flex px-1.5 py-0.5 flex-none">{ data.Date }</span>
+			<span class="text-body inline-flex px-1.5 py-0.5">{ data.Duration }</span>
+			<span class="text-body inline-flex px-1.5 py-0.5">{ data.Rank }</span>
+			<span class="text-body inline-flex px-1.5 py-0.5">{ data.LPChange }</span>
+		</div>
+		<div class="flex flex-none items-start gap-2">
+			<div class="flex flex-col gap-y-0.5">
+				for _, _ = range data.SummonerIDs {
+					<img class="size-5 rounded-sm" src="https://static.bigbrain.gg/assets/lol/riot_static/15.24.1/img/spell/SummonerFlash.webp" alt=""/>
+				}
+			</div>
+			<img
+				class="size-12 rounded-full border-4 border-brand-soft"
+				src="https://static.bigbrain.gg/assets/lol/riot_static/15.24.1/img/champion/Yasuo.webp"
+				alt=""
+			/>
+			<div class="font-medium text-heading flex-none">
+				<div>
+					<span class="text-fg-brand font-semibold">{ data.Kills }</span>
+					<span class="text-body">/</span>
+					<span class="text-red-500 font-semibold">{ data.Kills }</span>
+					<span class="text-body">/</span>
+					<span class="text-body font-semibold">{ data.Kills }</span>
+				</div>
+				<div class="text-sm font-normal text-body">
+					<span class="font-semibold">{ data.CS }</span>
+					<span>CS</span>
+					<span class="font-semibold">({ data.CSPerMinute })</span>
+				</div>
+			</div>
+		</div>
+		<div class="flex gap-x-4">
+			// @runeWidget(ctx, runeWidgetData{
+			// 	RunePage: data.RunePage,
+			// })
+			// @itemWidget(ctx, itemWidgetData{
+			// 	Items:       data.Items,
+			// 	VisionScore: data.VisionScore,
+			// })
+		</div>
+	</div>
+}

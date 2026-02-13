@@ -9,13 +9,13 @@ import (
 	"time"
 )
 
-type ProfilepData struct {
+type IndexData struct {
 	PUUID     riot.PUUID
 	Region    riot.Region
 	Name, Tag string
 }
 
-templ Profilep(ctx context.Context, data ProfilepData) {
+templ Index(ctx context.Context, data IndexData) {
 	@page.Page(fmt.Sprintf("%s#%s - Kevin", data.Name, data.Tag)) {
 		@page.Header() {
 			@shared.Header(ctx, shared.HeaderData{
