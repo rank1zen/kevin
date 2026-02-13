@@ -6,21 +6,26 @@ import (
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/profile"
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/service"
 )
 
-type ProfilepHandler service.Service
+type Handler struct {
+	service profile.ProfileService
+}
 
-func (h *ProfilepHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := service.GetProfileRequest{}
+func NewHandler(service profile.ProfileService) *Handler {
+	return &Handler{service: service}
+}
 
-	req.Region = new(riot.Region)
-	*req.Region = frontend.StrToRiotRegion(r.FormValue("region"))
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	req := profile.GetProfileRequest{}
+
+	req.Region = r.FormValue("region")
 
 	req.Name, req.Tag = frontend.ParseRiotID(r.PathValue("riotID"))
 
-	storeProfile, err := (*service.ProfileService)(h).GetProfile(r.Context(), req)
+	storeProfile, err := h.service.GetProfile(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, fmt.Errorf("failed to get profile for profile page: %w", err))
@@ -28,8 +33,8 @@ func (h *ProfilepHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := ProfilepData{
-		PUUID:  storeProfile.PUUID,
-		Region: *req.Region,
+		PUUID:  riot.PUUID(storeProfile.PUUID),
+		Region: riot.Region(req.Region),
 		Name:   storeProfile.Name,
 		Tag:    storeProfile.Tagline,
 	}
