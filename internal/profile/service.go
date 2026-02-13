@@ -73,7 +73,7 @@ type UpdateProfileRequest struct {
 }
 
 // UpdateProfile updates a summoner's profile.
-func (s *ProfileService) UpdateProfile(ctx context.Context, req UpdateProfileRequest) error {
+func (s *ProfileService) UpdateProfile(ctx context.Context, req *UpdateProfileRequest) error {
 	if req.Region == "" {
 		req.Region = "NA1"
 	}
@@ -147,6 +147,13 @@ type GetMatchlistRequest struct {
 }
 
 func (s *ProfileService) GetMatchlist(ctx context.Context, req *GetMatchlistRequest) ([]Match, error) {
+	panic("not implemented")
+}
+
+type GetMatchDetailRequest struct {
+}
+
+func (s *ProfileService) GetMatchDetail(ctx context.Context, req *GetMatchDetailRequest) (*Match, error) {
 	panic("not implemented")
 }
 

@@ -5,13 +5,21 @@ import (
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/service"
+	"github.com/rank1zen/kevin/internal/profile"
 )
 
 // TODO: not implemented fully
-type RankCardHandler service.Service
+type Handler struct {
+	service *profile.ProfileService
+}
 
-func (h *RankCardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func NewHandler(service *profile.ProfileService) *Handler {
+	return &Handler{
+		service: service,
+	}
+}
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// (*service.ProfileService)(h).GetRankHistory(r.Context(), req)
 
 	v := RankCardData{

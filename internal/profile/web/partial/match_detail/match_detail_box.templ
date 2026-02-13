@@ -1,0 +1,53 @@
+package match_detail
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend/component/tab"
+	"time"
+)
+
+type MatchDetailBoxData struct {
+	Date              time.Time
+	Duration          time.Duration
+	BlueSide, RedSide MatchTeamListData
+}
+
+templ MatchDetailBox(ctx context.Context, data MatchDetailBoxData) {
+	@tab.Tab() {
+		<div class="flex py-3 px-4 gap-x-2 items-center justify-between">
+			@tab.TriggerList() {
+				@tab.Trigger() {
+					<span class="whitespace-nowrap font-bold text-sm text-gray-900/90 dark:text-gray-100/90">
+						Scoreboard
+					</span>
+				}
+			}
+			@MatchDateDurationWidget(ctx, MatchDateDurationWidgetData{
+				Date:     data.Date,
+				Duration: data.Duration,
+			})
+		</div>
+		@tab.PaneList() {
+			@tab.Panel() {
+				<div class="px-4 py-3">
+					<div>
+						<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90">
+							Blue Side
+						</h2>
+						<div class="mt-2">
+							@MatchTeamList(ctx, data.BlueSide)
+						</div>
+					</div>
+					<div class="mt-5">
+						<h2 class="font-bold text-gray-900/90 dark:text-gray-100/90">
+							Red Side
+						</h2>
+						<div class="mt-2">
+							@MatchTeamList(ctx, data.RedSide)
+						</div>
+					</div>
+				</div>
+			}
+		}
+	}
+}

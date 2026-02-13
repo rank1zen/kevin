@@ -1,0 +1,17 @@
+package champion
+
+import "context"
+
+type ChampionListData struct {
+	Champions []ChampionItemData
+}
+
+templ ChampionList(ctx context.Context, data ChampionListData) {
+	<table class="table-fixed w-full">
+		<tbody>
+			for _, data := range data.Champions {
+				@ChampionItem(ctx, data)
+			}
+		</tbody>
+	</table>
+}

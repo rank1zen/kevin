@@ -11,7 +11,13 @@ import (
 )
 
 type Handler struct {
-	service profile.ProfileService
+	service *profile.ProfileService
+}
+
+func NewHandler(service *profile.ProfileService) *Handler {
+	return &Handler{
+		service: service,
+	}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

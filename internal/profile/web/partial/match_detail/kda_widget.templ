@@ -1,0 +1,36 @@
+package match_detail
+
+import (
+	"context"
+	"fmt"
+)
+
+type KDAWidgetData struct {
+	Kills, Deaths, Assists int
+	KillDeathRatio         float32
+}
+
+templ KDAWidget(ctx context.Context, data KDAWidgetData) {
+	<div class="h-9 w-18">
+		<div class="flex flex-none items-center font-semibold text-sm">
+			<div class="flex-1 text-gray-900/90 text-left dark:text-gray-100/90">
+				{ fmt.Sprintf("%d", data.Kills) }
+			</div>
+			<div class="text-gray-900/5 mx-1 dark:text-gray-100/5">
+				/
+			</div>
+			<div class="flex-1 text-red-500/90 text-center">
+				{ fmt.Sprintf("%d", data.Deaths) }
+			</div>
+			<div class="text-gray-900/5 mx-1 dark:text-gray-100/5">
+				/
+			</div>
+			<div class="flex-1 text-gray-900/90 text-right dark:text-gray-100/90">
+				{ fmt.Sprintf("%d", data.Assists) }
+			</div>
+		</div>
+		<div class="text-xs text-gray-900/90 dark:text-gray-100/90">
+			{ fmt.Sprintf("%.2f KDA", data.KillDeathRatio) }
+		</div>
+	</div>
+}
