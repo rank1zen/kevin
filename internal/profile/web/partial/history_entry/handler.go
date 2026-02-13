@@ -7,23 +7,19 @@ import (
 
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/view/historycard"
-	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/service"
+	"github.com/rank1zen/kevin/internal/profile"
 )
 
-type HistoryEntryHandler service.Service
+type Handler struct {
+	service profile.ProfileService
+}
 
-func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := service.GetMatchlistRequest{}
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	req := &profile.GetMatchlistRequest{}
 
 	switch r.Header.Get("Content-type") {
 	default:
-		if region := r.FormValue("region"); region != "" {
-			region := frontend.StrToRiotRegion(region)
-			req.Region = &region
-		}
-
-		req.PUUID = riot.PUUID(r.FormValue("puuid"))
+		req.PUUID = r.FormValue("puuid")
 
 		if start, err := time.Parse(time.RFC3339, r.FormValue("startTs")); err == nil {
 			req.StartTS = &start
@@ -34,7 +30,7 @@ func (h *HistoryEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	storeMatches, err := (*service.MatchService)(h).GetMatchlist(r.Context(), req)
+	storeMatches, err := h.service.GetMatchlist(r.Context(), req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, fmt.Errorf("service failure: %w", err))

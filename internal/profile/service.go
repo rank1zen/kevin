@@ -132,11 +132,21 @@ func (s *ProfileService) GetSummonerChampions(ctx context.Context, req GetSummon
 	return champions, nil
 }
 
-func (s *ProfileService) GetMatchlist(ctx context.Context, req GetProfileRequest) (*Profile, error) {
-	panic("not implemented")
+type GetMatchlistRequest struct {
+	Region string `json:"region"`
+
+	PUUID string `json:"puuid"`
+
+	// StartTS is the start timestamp of the end of the game from which to include
+	// in the match list. Defaults to 1 day ago.
+	StartTS *time.Time `json:"startTs"`
+
+	// EndTS is the end timestamp of the end of the game from which to include in
+	// the match list. Defaults to now.
+	EndTS *time.Time `json:"endTs"`
 }
 
-func (s *ProfileService) GetChampionStats(ctx context.Context, req GetProfileRequest) (*Profile, error) {
+func (s *ProfileService) GetMatchlist(ctx context.Context, req *GetMatchlistRequest) ([]Match, error) {
 	panic("not implemented")
 }
 
