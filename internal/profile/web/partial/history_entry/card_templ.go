@@ -103,7 +103,7 @@ func Card(ctx context.Context, data *CardData) templ.Component {
 				}
 				return nil
 			})
-			templ_7745c5c3_Err = card.Header(card.HeaderProps{Class: "flex"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = card.Header().Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

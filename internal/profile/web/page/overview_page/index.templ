@@ -32,7 +32,7 @@ templ Index(ctx context.Context, data *IndexData) {
 					Tag:                  data.Tag,
 					ProfileIconImagePath: data.ProfileIconImagePath,
 				})
-				<div class="flex px-2 max-w-6xl mx-auto gap-x-12 md:px-6 md:gap-x-6">
+				<div class="flex px-2 max-w-5xl mx-auto gap-x-12 md:px-6 md:gap-x-6">
 					<div class="flex-1">
 						{{ days := frontend.GetDays(time.Now()) }}
 						for _ = range len(days) - 1 {

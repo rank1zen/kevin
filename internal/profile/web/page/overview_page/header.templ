@@ -16,7 +16,7 @@ type headerData struct {
 
 templ header(ctx context.Context, data headerData) {
 	<div class="pt-8">
-		<div class="max-w-6xl mx-auto flex items-start md:px-6">
+		<div class="max-w-5xl mx-auto flex items-start md:px-6">
 			<img src={ data.ProfileIconImagePath } alt="Profile Icon" class="size-26 mr-4 rounded-md"/>
 			<div>
 				<h1 class="font-bold text-3xl text-heading my-4 tracking-tight leading-none dark:text-gray-100/90">
@@ -30,7 +30,7 @@ templ header(ctx context.Context, data headerData) {
 			</div>
 		</div>
 		<div class="border-b border-default mt-6">
-			<div class="max-w-6xl mx-auto md:px-6">
+			<div class="max-w-5xl mx-auto md:px-6">
 				<ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-body">
 					<li class="me-2">
 						<a href="#" class="inline-flex items-center justify-center p-4 border-b border-transparent rounded-t-base group hover:text-fg-brand hover:border-brand">

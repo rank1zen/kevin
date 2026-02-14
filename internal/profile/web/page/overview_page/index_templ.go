@@ -111,7 +111,7 @@ func Index(ctx context.Context, data *IndexData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"flex px-2 max-w-6xl mx-auto gap-x-12 md:px-6 md:gap-x-6\"><div class=\"flex-1\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"flex px-2 max-w-5xl mx-auto gap-x-12 md:px-6 md:gap-x-6\"><div class=\"flex-1\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

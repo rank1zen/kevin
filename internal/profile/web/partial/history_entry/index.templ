@@ -27,9 +27,9 @@ templ Index(ctx context.Context, data *IndexData) {
 			<ul class="divide-y divide-default">
 				for i := range data.Matchlist {
 					<div role="region" x-id="['accordion']" x-data="{ open: false }">
-						<button type="button" x-ref="trigger" @click="open = !open" :aria-expanded="open" class="block">
+						<div role="button" x-ref="trigger" @click="open = !open" :aria-expanded="open" class="">
 							@Card(ctx, &data.Matchlist[i])
-						</button>
+						</div>
 						<div x-show="open" class="mt-8">
 							@match_detail.Loader(ctx, &data.MatchDetailLoaderData[i])
 						</div>

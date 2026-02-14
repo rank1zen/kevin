@@ -28,7 +28,7 @@ type CardData struct {
 
 templ Card(ctx context.Context, data *CardData) {
 	@card.Card() {
-		@card.Header(card.HeaderProps{Class: "flex"}) {
+		@card.Header() {
 			@card.Title() {
 				Solo/Duo
 			}

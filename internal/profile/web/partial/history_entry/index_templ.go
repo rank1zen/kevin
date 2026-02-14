@@ -69,7 +69,7 @@ func Index(ctx context.Context, data *IndexData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for i := range data.Matchlist {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div role=\"region\" x-id=\"['accordion']\" x-data=\"{ open: false }\"><button type=\"button\" x-ref=\"trigger\" @click=\"open = !open\" :aria-expanded=\"open\" class=\"block\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div role=\"region\" x-id=\"['accordion']\" x-data=\"{ open: false }\"><div role=\"button\" x-ref=\"trigger\" @click=\"open = !open\" :aria-expanded=\"open\" class=\"\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -77,7 +77,7 @@ func Index(ctx context.Context, data *IndexData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</button><div x-show=\"open\" class=\"mt-8\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><div x-show=\"open\" class=\"mt-8\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
