@@ -5,6 +5,7 @@ import (
 	"github.com/rank1zen/kevin/internal/components/badge"
 	"github.com/rank1zen/kevin/internal/components/card"
 	"github.com/rank1zen/kevin/internal/components/icon"
+	"github.com/rank1zen/kevin/internal/web/component/champion_icon"
 )
 
 type CardData struct {
@@ -64,10 +65,12 @@ templ Card(ctx context.Context, data *CardData) {
 				<div class="flex flex-none items-start gap-2">
 					<div class="flex flex-col gap-y-0.5">
 						for _, pathStr := range data.SummonerSpellImagePaths {
-							<img class="size-5 rounded-sm" src={ pathStr } alt=""/>
+							<img class="size-5 rounded-xs border border-ring" src={ pathStr } alt=""/>
 						}
 					</div>
-					<img class="size-12 rounded-full border-4 border-brand-soft" src={ data.ChampionImagePath } alt=""/>
+					@champion_icon.Index(ctx, &champion_icon.IndexData{
+						ImagePath: data.ChampionImagePath,
+					})
 					<div class="font-medium text-heading flex-none">
 						<div>
 							<span class="text-fg-brand font-semibold">{ data.Kills }</span>

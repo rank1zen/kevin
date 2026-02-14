@@ -3,6 +3,7 @@ package champion
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/components/table"
+	"github.com/rank1zen/kevin/internal/web/component/champion_icon"
 )
 
 type RowData struct {
@@ -14,7 +15,10 @@ type RowData struct {
 templ Row(ctx context.Context, data *RowData) {
 	@table.Row() {
 		@table.Cell() {
-			<img src={ data.ChampionImagePath } alt="Champion Image" class="rounded-full size-8">
+			@champion_icon.Index(ctx, &champion_icon.IndexData{
+				Class:     "size-8",
+				ImagePath: data.ChampionImagePath,
+			})
 		}
 		@table.Cell() {
 			{ data.KDA }

@@ -3,6 +3,7 @@ package match_detail
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/components/badge"
+	"github.com/rank1zen/kevin/internal/web/component/champion_icon"
 )
 
 type ScoreCardData struct {
@@ -41,7 +42,10 @@ templ ScoreCard(ctx context.Context, data *ScoreCardData) {
 						<img class="size-4 rounded-sm" src={ pathStr } alt=""/>
 					}
 				</div>
-				<img class="size-9 rounded-full" src={ data.ChampionImagePath } alt=""/>
+				@champion_icon.Index(ctx, &champion_icon.IndexData{
+					Class:     "size-9",
+					ImagePath: data.ChampionImagePath,
+				})
 				<div class="font-medium text-heading flex-none">
 					<div class="text-sm">
 						<span class="text-fg-brand font-semibold">{ data.Kills }</span>
