@@ -3,6 +3,7 @@ package match_detail
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/components/card"
+	"github.com/rank1zen/kevin/internal/components/icon"
 	"github.com/rank1zen/kevin/internal/components/tabs"
 )
 
@@ -18,15 +19,19 @@ templ Index(ctx context.Context, data *IndexData) {
 			Class: "w-full",
 		}) {
 			@tabs.Trigger(tabs.TriggerProps{
+				Class:    "flex gap-2 items-center",
 				Value:    "score",
 				IsActive: true,
 			}) {
-				Score
+				@icon.LayoutList()
+				Score Board
 			}
 			@tabs.Trigger(tabs.TriggerProps{
+				Class:    "flex gap-2 items-center",
 				Value:    "build",
 				IsActive: false,
 			}) {
+				@icon.Grid3x2()
 				Build and Runes
 			}
 		}
@@ -36,20 +41,17 @@ templ Index(ctx context.Context, data *IndexData) {
 				IsActive: true,
 			}) {
 				@card.Card() {
-					@card.Content() {
+					@card.Header() {
 						@card.Title() {
-							Blue Side
+							Score Board
 						}
+					}
+					@card.Content() {
 						<div class="mt-2 divide-y">
 							for _, team := range data.Teams[0] {
 								@ScoreCard(ctx, &team)
 							}
 						</div>
-						@card.Title(card.TitleProps{
-							Class: "mt-8",
-						}) {
-							Red Side
-						}
 						<div class="mt-2 divide-y">
 							for _, team := range data.Teams[1] {
 								@ScoreCard(ctx, &team)

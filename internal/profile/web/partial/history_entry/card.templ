@@ -28,10 +28,36 @@ type CardData struct {
 
 templ Card(ctx context.Context, data *CardData) {
 	@card.Card() {
-		@card.Header() {
-			@card.Title() {
+		@card.Header(card.HeaderProps{Class: "flex flex-row items-center gap-4"}) {
+			@card.Title(card.TitleProps{Class: "m-0 p-0"}) {
 				Solo/Duo
 			}
+			<div class="flex flex-wrap gap-1">
+				@badge.Badge(badge.Props{
+					Class:   "flex gap-2 items-center",
+					Variant: badge.VariantSecondary,
+				}) {
+					@icon.Calendar()
+					{ data.Date }
+				}
+				@badge.Badge(badge.Props{
+					Class:   "flex gap-2 items-center",
+					Variant: badge.VariantSecondary,
+				}) {
+					@icon.Timer()
+					{ data.Duration }
+				}
+				@badge.Badge(badge.Props{
+					Variant: badge.VariantSecondary,
+				}) {
+					{ data.Rank }
+				}
+				@badge.Badge(badge.Props{
+					Variant: badge.VariantSecondary,
+				}) {
+					{ data.LPChange }
+				}
+			</div>
 		}
 		@card.Content() {
 			<div class="flex items-center">
@@ -88,34 +114,6 @@ templ Card(ctx context.Context, data *CardData) {
 						</span>
 					</div>
 				</div>
-			</div>
-		}
-		@card.Footer() {
-			<div class="flex flex-wrap gap-1">
-				@badge.Badge(badge.Props{
-					Class:   "flex gap-2 items-center",
-					Variant: badge.VariantSecondary,
-				}) {
-					@icon.Calendar()
-					{ data.Date }
-				}
-				@badge.Badge(badge.Props{
-					Class:   "flex gap-2 items-center",
-					Variant: badge.VariantSecondary,
-				}) {
-					@icon.Timer()
-					{ data.Duration }
-				}
-				@badge.Badge(badge.Props{
-					Variant: badge.VariantSecondary,
-				}) {
-					{ data.Rank }
-				}
-				@badge.Badge(badge.Props{
-					Variant: badge.VariantSecondary,
-				}) {
-					{ data.LPChange }
-				}
 			</div>
 		}
 	}

@@ -2,6 +2,8 @@ package history_entry
 
 import (
 	"context"
+	"github.com/rank1zen/kevin/internal/components/button"
+	"github.com/rank1zen/kevin/internal/components/icon"
 	"github.com/rank1zen/kevin/internal/profile/web/partial/match_detail"
 )
 
@@ -32,6 +34,16 @@ templ Index(ctx context.Context, data *IndexData) {
 						</div>
 						<div x-show="open" class="mt-8">
 							@match_detail.Loader(ctx, &data.MatchDetailLoaderData[i])
+							@button.Button(button.Props{
+								Variant: button.VariantSecondary,
+								Class:   "w-full mt-4 flex gap-2 items-center",
+								Attributes: templ.Attributes{
+									"@click": "open = !open",
+								},
+							}) {
+								@icon.ChevronUp()
+								Collapse
+							}
 						</div>
 					</div>
 				}
