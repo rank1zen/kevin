@@ -1,0 +1,17 @@
+package match_card
+
+import "context"
+
+type tagsData struct {
+	ID   int
+	Name string
+}
+
+templ tags(ctx context.Context, data tagsData) {
+	<div class="flex flex-wrap text-xs gap-0.5">
+		<span class="text-body inline-flex px-1.5 py-0.5 flex-none">Dec 20, 10:50AM EST</span>
+		<span class="text-body inline-flex px-1.5 py-0.5">34:11</span>
+		<span class="text-body inline-flex px-1.5 py-0.5">GM</span>
+		<span class="text-body inline-flex px-1.5 py-0.5">+21</span>
+	</div>
+}

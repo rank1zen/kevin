@@ -1,0 +1,50 @@
+package match_card
+
+import (
+	"context"
+	"fmt"
+	"github.com/rank1zen/kevin/internal"
+)
+
+type rankDeltaWidgetData struct {
+	// RankWidget is the rank after the match. A nil value means the store
+	// did not record a rank after the match.
+	RankChange *internal.Rank
+
+	// LPChange is the lp change after the match. A nil value indicates the
+	// lp change is unknown.
+	LPChange *int
+
+	Win bool
+}
+
+templ rankDeltaWidget(ctx context.Context, data rankDeltaWidgetData) {
+	<div class="">
+		if data.RankChange != nil {
+			// @shared.RankTag(*data.RankChange).ToTempl(ctx)
+		} else {
+			<span class="text-heading bg-neutral-secondary-soft px-1.5 py-0.5 dark:text-gray-100/90">
+				Unknown
+			</span>
+		}
+		if data.Win {
+			<span class="bg-green-500 text-white px-1.5 py-0.5 rounded-sm">
+				if data.LPChange != nil {
+					{ fmt.Sprintf("%+d", *data.LPChange) }
+				} else {
+					{ fmt.Sprintf("+??") }
+				}
+			</span>
+		} else {
+			<div class="flex justify-end">
+				<div class="text-xs bg-red-500/80 text-white px-1 rounded">
+					if data.LPChange != nil {
+						{ fmt.Sprintf("LOSS %+d", *data.LPChange) }
+					} else {
+						{ fmt.Sprintf("LOSS +??") }
+					}
+				</div>
+			</div>
+		}
+	</div>
+}

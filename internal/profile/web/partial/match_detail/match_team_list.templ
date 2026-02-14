@@ -1,0 +1,15 @@
+package match_detail
+
+import "context"
+
+type MatchTeamListData struct {
+	Participants []MatchParticipantCardData
+}
+
+templ MatchTeamList(ctx context.Context, data MatchTeamListData) {
+	<div class="bg-white border border-gray-900/10 shadow-sm shadow-gray-900/10 rounded-2xl dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10">
+		for _, data := range data.Participants {
+			@MatchParticipantCard(ctx, data)
+		}
+	</div>
+}
