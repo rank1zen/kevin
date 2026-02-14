@@ -2,17 +2,16 @@ package history_entry
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal/frontend/view/historycard"
 	"time"
 )
 
-type HistoryEntryData struct {
-	Date time.Time
-
-	Matchlist []historycard.HistorycardData
+type IndexData struct {
+	Date                time.Time
+	Matchlist           []CardData
+	NextEntryLoaderData *LoaderData
 }
 
-templ HistoryEntry(ctx context.Context, data HistoryEntryData) {
+templ Index(ctx context.Context, data *IndexData) {
 	if len(data.Matchlist) == 0 {
 		<section>
 			<div class="flex justify-center bg-white border border-gray-200 rounded-2xl items-center w-full h-15 dark:bg-black dark:border-neutral-600">
@@ -24,7 +23,7 @@ templ HistoryEntry(ctx context.Context, data HistoryEntryData) {
 	} else {
 		<ul class="divide-y divide-default">
 			for _, data := range data.Matchlist {
-				@historycard.Historycard(ctx, data)
+				@Card(ctx, &data)
 			}
 		</ul>
 	}

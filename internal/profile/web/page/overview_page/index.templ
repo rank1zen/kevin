@@ -15,7 +15,7 @@ type IndexData struct {
 	Name, Tag string
 }
 
-templ Index(ctx context.Context, data IndexData) {
+templ Index(ctx context.Context, data *IndexData) {
 	@page.Page(fmt.Sprintf("%s#%s - Kevin", data.Name, data.Tag)) {
 		@page.Header() {
 			@shared.Header(ctx, shared.HeaderData{

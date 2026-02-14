@@ -3,10 +3,10 @@ package history_entry
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/frontend/view/historycard"
 	"github.com/rank1zen/kevin/internal/profile"
 )
 
@@ -43,39 +43,45 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	v := HistoryEntryData{
-		Date:      time.Now(), // TODO: GetMatchHistory should return this data
-		Matchlist: []historycard.HistorycardData{},
-	}
-
-	for _, match := range storeMatches {
-		// HACK: very hacky; please integrate into internal
-		kda := float32(match.Kills+match.Assists) / float32(match.Deaths)
-
-		v.Matchlist = append(v.Matchlist, historycard.HistorycardData{
-			ChampionID:     match.ChampionID,
-			ChampionLevel:  match.ChampionLevel,
-			SummonerIDs:    match.SummonerIDs,
-			Kills:          match.Kills,
-			Deaths:         match.Deaths,
-			Assists:        match.Assists,
-			KillDeathRatio: kda,
-			CS:             match.CreepScore,
-			CSPerMinute:    match.CreepScorePerMinute,
-			RunePage:       match.Runes,
-			Items:          match.Items,
-			VisionScore:    match.VisionScore,
-			RankChange:     nil,
-			LPChange:       nil,
-			Win:            match.Win,
-		})
-	}
-
-	c := HistoryEntry(r.Context(), v)
+	c := Index(r.Context(), mapper(storeMatches))
 
 	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		frontend.LogError(r, fmt.Errorf("templ error: %w", err))
 		return
 	}
+}
+
+func mapper(matches []profile.Match) *IndexData {
+	mapp := &IndexData{
+		Date:      time.Now(),
+		Matchlist: []CardData{},
+	}
+	for _, match := range matches {
+		kda := float32(match.Kills+match.Assists) / float32(match.Deaths)
+
+		var lpChange string
+
+		mapp.Matchlist = append(mapp.Matchlist, CardData{
+			Kills:                      strconv.Itoa(match.Kills),
+			Deaths:                     strconv.Itoa(match.Deaths),
+			Assists:                    strconv.Itoa(match.Assists),
+			KillDeathRatio:             strconv.FormatFloat(float64(kda), 'f', 2, 64),
+			CS:                         strconv.Itoa(match.CreepScore),
+			CSPerMinute:                strconv.FormatFloat(float64(match.CreepScorePerMinute), 'f', 2, 64),
+			VisionScore:                strconv.Itoa(match.VisionScore),
+			LPChange:                   lpChange,
+			Win:                        match.Win,
+			Date:                       "",
+			Duration:                   "",
+			Rank:                       "",
+			ChampionImagePath:          "",
+			ChampionLevel:              "",
+			SummonerSpellImagePaths:    [2]string{},
+			RuneKeystoneImagePath:      "",
+			RuneSecondaryTreeImagePath: "",
+			ItemImagePaths:             [7]string{},
+		})
+	}
+	return mapp
 }

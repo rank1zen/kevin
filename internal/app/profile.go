@@ -18,7 +18,7 @@ func ProfileRoutes() {
 	profileService := profile.NewProfileService(nil, nil)
 
 	// Pages
-	router.Handle("GET /profile/{riotID}/{$}", overview_page.NewHandler(*profileService))
+	router.Handle("GET /profile/{riotID}/{$}", overview_page.NewHandler(profileService))
 
 	// Partials
 	router.Handle("GET /partial/rank_card.RankCard/{$}", rank_card.NewHandler(profileService))

@@ -23,7 +23,7 @@ type IndexData struct {
 	Name, Tag string
 }
 
-func Index(ctx context.Context, data IndexData) templ.Component {
+func Index(ctx context.Context, data *IndexData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {

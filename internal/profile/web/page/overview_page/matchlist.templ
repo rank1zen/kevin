@@ -3,7 +3,7 @@ package overview_page
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/frontend/loader/history_entry_loader"
+	"github.com/rank1zen/kevin/internal/profile/web/partial/history_entry"
 	"github.com/rank1zen/kevin/internal/riot"
 	"time"
 )
@@ -21,7 +21,7 @@ templ matchlist(ctx context.Context, data matchlistData) {
 				<h5 class="font-medium text-lg text-heading mt-8 mb-4">
 					Mar 25
 				</h5>
-				@history_entry_loader.HistoryEntryLoader(ctx, history_entry_loader.HistoryEntryLoaderData{})
+				@history_entry.Loader(ctx, &history_entry.LoaderData{})
 			</div>
 		}
 	</div>

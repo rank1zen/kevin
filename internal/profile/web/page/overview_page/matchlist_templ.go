@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"github.com/rank1zen/kevin/internal/frontend"
-	"github.com/rank1zen/kevin/internal/frontend/loader/history_entry_loader"
+	"github.com/rank1zen/kevin/internal/profile/web/partial/history_entry"
 	"github.com/rank1zen/kevin/internal/riot"
 	"time"
 )
@@ -52,7 +52,7 @@ func matchlist(ctx context.Context, data matchlistData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = history_entry_loader.HistoryEntryLoader(ctx, history_entry_loader.HistoryEntryLoaderData{}).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = history_entry.Loader(ctx, &history_entry.LoaderData{}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

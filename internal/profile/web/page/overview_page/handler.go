@@ -32,7 +32,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := IndexData{
+	data := &IndexData{
 		PUUID:  riot.PUUID(storeProfile.PUUID),
 		Region: riot.Region(req.Region),
 		Name:   storeProfile.Name,

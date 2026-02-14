@@ -1,17 +1,13 @@
-package history_entry
+package match_detail
 
-import (
-	"context"
-	"github.com/rank1zen/kevin/internal/profile"
-)
+import "context"
 
 type LoaderData struct {
-	Ok *profile.GetMatchlistRequest
 }
 
 templ Loader(ctx context.Context, data *LoaderData) {
 	<div
-		hx-get="/profile/web/partial/history_entry"
+		hx-get="/profile/web/partial/match_detail"
 		hx-trigger="load once"
 	>
 		// TODO: hx-get
