@@ -1,0 +1,70 @@
+package match_detail
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/components/card"
+	"github.com/rank1zen/kevin/internal/components/tabs"
+)
+
+type IndexData struct {
+	Teams [2][]ScoreCardData
+}
+
+templ Index(ctx context.Context, data *IndexData) {
+	@tabs.Tabs(tabs.Props{
+		ID: "match-detail-tabs",
+	}) {
+		@tabs.List(tabs.ListProps{
+			Class: "w-full",
+		}) {
+			@tabs.Trigger(tabs.TriggerProps{
+				Value:    "score",
+				IsActive: true,
+			}) {
+				Score
+			}
+			@tabs.Trigger(tabs.TriggerProps{
+				Value:    "build",
+				IsActive: false,
+			}) {
+				Build and Runes
+			}
+		}
+		<div class="w-full mt-2">
+			@tabs.Content(tabs.ContentProps{
+				Value:    "score",
+				IsActive: true,
+			}) {
+				@card.Card() {
+					@card.Content() {
+						@card.Title() {
+							Blue Side
+						}
+						<div class="mt-2 divide-y">
+							for _, team := range data.Teams[0] {
+								@ScoreCard(ctx, &team)
+							}
+						</div>
+						@card.Title(card.TitleProps{
+							Class: "mt-8",
+						}) {
+							Red Side
+						}
+						<div class="mt-2 divide-y">
+							for _, team := range data.Teams[1] {
+								@ScoreCard(ctx, &team)
+							}
+						</div>
+					}
+				}
+				@tabs.Content(tabs.ContentProps{
+					Value:    "build",
+					IsActive: false,
+				}) {
+					@card.Card() {
+					}
+				}
+			}
+		</div>
+	}
+}

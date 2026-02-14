@@ -54,7 +54,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func mapper(matches []profile.Match) *IndexData {
 	mapp := &IndexData{
-		Date:      time.Now(),
+		Date:      time.Now().String(),
 		Matchlist: []CardData{},
 	}
 	for _, match := range matches {

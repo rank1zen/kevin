@@ -4,25 +4,26 @@ import (
 	"context"
 	"github.com/rank1zen/kevin/internal/components/badge"
 	"github.com/rank1zen/kevin/internal/components/card"
+	"github.com/rank1zen/kevin/internal/components/icon"
 )
 
 type CardData struct {
-	Date                    string
-	Duration                string
-	Rank                    string
-	LPChange                string
-	ChampionImagePath       string
-	ChampionLevel           string
-	SummonerSpellImagePaths [2]string
-	Kills, Deaths, Assists  string
-	KillDeathRatio          string
-	CS                      string
-	CSPerMinute             string
-	RuneKeystoneImagePath   string
-	RuneSecondaryTreeImagePath  string
-	ItemImagePaths          [7]string
-	VisionScore             string
-	Win                     bool
+	Date                       string
+	Duration                   string
+	Rank                       string
+	LPChange                   string
+	ChampionImagePath          string
+	ChampionLevel              string
+	SummonerSpellImagePaths    [2]string
+	Kills, Deaths, Assists     string
+	KillDeathRatio             string
+	CS                         string
+	CSPerMinute                string
+	RuneKeystoneImagePath      string
+	RuneSecondaryTreeImagePath string
+	ItemImagePaths             [7]string
+	VisionScore                string
+	Win                        bool
 }
 
 templ Card(ctx context.Context, data *CardData) {
@@ -92,13 +93,17 @@ templ Card(ctx context.Context, data *CardData) {
 		@card.Footer() {
 			<div class="flex flex-wrap gap-1">
 				@badge.Badge(badge.Props{
+					Class:   "flex gap-2 items-center",
 					Variant: badge.VariantSecondary,
 				}) {
+					@icon.Calendar()
 					{ data.Date }
 				}
 				@badge.Badge(badge.Props{
+					Class:   "flex gap-2 items-center",
 					Variant: badge.VariantSecondary,
 				}) {
+					@icon.Timer()
 					{ data.Duration }
 				}
 				@badge.Badge(badge.Props{

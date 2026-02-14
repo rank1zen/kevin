@@ -33,6 +33,9 @@ func (c *Config) Run(ctx context.Context) error {
 	router := http.NewServeMux()
 
 	router.Handle("GET /static/", http.FileServer(http.FS(frontend.StaticAssets)))
+
+	router.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("./assets/js"))))
+
 	registerProfileRoutes(router)
 
 	go func() {

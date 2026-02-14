@@ -1,0 +1,48 @@
+package champion
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/components/table"
+)
+
+type IndexData struct {
+	AverageKDA string
+	WinRate    string
+
+	ChampionData []RowData
+}
+
+templ Index(ctx context.Context, data *IndexData) {
+	@table.Table() {
+		@table.Header() {
+			@table.Row() {
+				@table.Head() {
+				}
+				@table.Head() {
+					KDA
+				}
+				@table.Head() {
+					Win Rate
+				}
+			}
+		}
+		@table.Body() {
+			for _, data := range data.ChampionData {
+				@Row(ctx, &data)
+			}
+			@table.Footer() {
+				@table.Row() {
+					@table.Head() {
+						All
+					}
+					@table.Head() {
+						{ data.AverageKDA }
+					}
+					@table.Head() {
+						{ data.WinRate }
+					}
+				}
+			}
+		}
+	}
+}

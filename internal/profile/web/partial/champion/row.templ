@@ -1,0 +1,26 @@
+package champion
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/components/table"
+)
+
+type RowData struct {
+	ChampionImagePath string
+	KDA               string
+	WinRate           string
+}
+
+templ Row(ctx context.Context, data *RowData) {
+	@table.Row() {
+		@table.Cell() {
+			<img src={ data.ChampionImagePath } alt="Champion Image" class="rounded-full size-8">
+		}
+		@table.Cell() {
+			{ data.KDA }
+		}
+		@table.Cell() {
+			{ data.WinRate }
+		}
+	}
+}
