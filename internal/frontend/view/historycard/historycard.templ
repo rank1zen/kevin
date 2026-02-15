@@ -21,20 +21,20 @@ type HistorycardData struct {
 	ItemIconPaths          [7]string
 	VisionScore            int
 	RankChange             *internal.Rank
+	MatchDate              string
+	MatchDuration          string
+	RankDuringMatch        string
 	LPChange               *int
 	Win                    bool
 }
 
 templ Historycard(ctx context.Context, data HistorycardData) {
 	@accordion.Accordion() {
-		@accordion.Card() {
-			<div class="p-4 flex items-center justify-between gap-x-4">
-				<div class="flex flex-wrap text-xs gap-0.5">
-					<span class="text-body inline-flex px-1.5 py-0.5 flex-none">Dec 20, 10:50AM EST</span>
-					<span class="text-body inline-flex px-1.5 py-0.5">34:11</span>
-					<span class="text-body inline-flex px-1.5 py-0.5">GM</span>
-					<span class="text-body inline-flex px-1.5 py-0.5">+21</span>
-				</div>
+		<div class="p-6 bg-neutral-primary-soft border border-default shadow-xs rounded-default dark:shadow-none dark:bg-neutral-900 dark:border-neutral-600">
+			<h5 class="text-heading font-medium mb-2">
+				Solo/Duo
+			</h5>
+			<div class="flex items-center gap-x-4 mb-2">
 				@champion(ctx, championData{
 					ChampionIconPath:       data.ChampionIconPath,
 					SummonerSpellIconPaths: data.SummonerSpellIconPaths,
@@ -45,18 +45,22 @@ templ Historycard(ctx context.Context, data HistorycardData) {
 					CSPerMinute:            data.CSPerMinute,
 					ChampionLevel:          data.ChampionLevel,
 				})
-				<div class="flex gap-x-4">
-					@runeWidget(ctx, runeWidgetData{
-						RunePage: data.RunePage,
-					})
-					@itemWidget(ctx, itemWidgetData{
-						ItemIconPaths: data.ItemIconPaths,
-						VisionScore:   data.VisionScore,
-					})
-				</div>
-				@accordion.Trigger()
+				@runeWidget(ctx, runeWidgetData{
+					RunePage: data.RunePage,
+				})
+				@itemWidget(ctx, itemWidgetData{
+					ItemIconPaths: data.ItemIconPaths,
+					VisionScore:   data.VisionScore,
+				})
 			</div>
-		}
+			@tags(ctx, tagsData{
+				Date:     data.MatchDate,
+				Duration: data.MatchDuration,
+				Rank:     data.RankDuringMatch,
+				LPChange: data.LPChange,
+				Win:      data.Win,
+			})
+		</div>
 		@accordion.Panel() {
 			@matchdetail.Matchdetail(ctx, matchdetail.MatchdetailData{
 				Region:  riot.RegionNA1,
