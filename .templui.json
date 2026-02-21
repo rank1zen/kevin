@@ -1,0 +1,7 @@
+{
+  "componentsDir": "internal/components",
+  "utilsDir": "utils",
+  "moduleName": "github.com/rank1zen/kevin",
+  "jsDir": "assets/js",
+  "jsPublicPath": "/assets/js"
+}

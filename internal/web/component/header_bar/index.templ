@@ -1,0 +1,45 @@
+package header_bar
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/components/button"
+	"github.com/rank1zen/kevin/internal/components/dropdown"
+	"github.com/rank1zen/kevin/internal/components/icon"
+)
+
+type IndexData struct {
+	Title string
+}
+
+templ Index(ctx context.Context, data *IndexData) {
+	<div class="flex bg-white gap-2 justify-between items-center p-4">
+		<div class="flex gap-x-2">
+			@dropdown.Dropdown() {
+				@dropdown.Trigger() {
+					@button.Button(button.Props{
+						Variant: button.VariantOutline,
+					}) {
+						@icon.Menu(icon.Props{Size: 16})
+					}
+				}
+				@dropdown.Content(dropdown.ContentProps{
+					Class: "w-56",
+				}) {
+					@dropdown.Label() {
+						Kevin
+					}
+					@dropdown.Separator()
+					@dropdown.Item(dropdown.ItemProps{
+						Href:   "https://github.com/rank1zen/kevin",
+						Target: "_blank",
+					}) {
+						<span class="flex items-center">
+							@icon.Github(icon.Props{Size: 16, Class: "mr-2"})
+							GitHub Repository
+						</span>
+					}
+				}
+			}
+		</div>
+	</div>
+}

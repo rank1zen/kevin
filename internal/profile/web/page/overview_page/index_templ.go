@@ -11,19 +11,23 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
+	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/frontend/component/page"
 	"github.com/rank1zen/kevin/internal/frontend/view/shared"
+	"github.com/rank1zen/kevin/internal/profile/web/partial/history_entry"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/web/component/header_bar"
 	"time"
 )
 
 type IndexData struct {
-	PUUID     riot.PUUID
-	Region    riot.Region
-	Name, Tag string
+	PUUID                riot.PUUID
+	Region               riot.Region
+	Name, Tag            string
+	ProfileIconImagePath string
 }
 
-func Index(ctx context.Context, data IndexData) templ.Component {
+func Index(ctx context.Context, data *IndexData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -68,9 +72,7 @@ func Index(ctx context.Context, data IndexData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = shared.Header(ctx, shared.HeaderData{
-					Region: data.Region,
-				}).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = header_bar.Index(ctx, &header_bar.IndexData{}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -101,21 +103,26 @@ func Index(ctx context.Context, data IndexData) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				templ_7745c5c3_Err = header(ctx, headerData{
-					Region: data.Region,
-					Name:   data.Name,
-					Tag:    data.Tag,
+					Region:               data.Region,
+					Name:                 data.Name,
+					Tag:                  data.Tag,
+					ProfileIconImagePath: data.ProfileIconImagePath,
 				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"flex px-2 max-w-5xl mx-auto gap-x-12 md:px-6 md:gap-x-6\"><div class=\"flex-1\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = matchlist(ctx, matchlistData{
-					PUUID:  data.PUUID,
-					Region: data.Region,
-				}).Render(ctx, templ_7745c5c3_Buffer)
+				days := frontend.GetDays(time.Now())
+				for _ = range len(days) - 1 {
+					templ_7745c5c3_Err = history_entry.Loader(ctx, &history_entry.LoaderData{}).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -123,7 +130,7 @@ func Index(ctx context.Context, data IndexData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -133,7 +140,7 @@ func Index(ctx context.Context, data IndexData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

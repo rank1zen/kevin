@@ -3,6 +3,7 @@ module github.com/rank1zen/kevin
 go 1.25
 
 require (
+	github.com/Oudwins/tailwind-merge-go v0.2.1
 	github.com/a-h/templ v0.3.960
 	github.com/go-chi/httplog/v3 v3.3.0
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438

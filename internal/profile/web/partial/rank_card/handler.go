@@ -22,7 +22,7 @@ func NewHandler(service *profile.ProfileService) *Handler {
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// (*service.ProfileService)(h).GetRankHistory(r.Context(), req)
 
-	v := RankCardData{
+	v := &IndexData{
 		Region:        "NA1",
 		LP:            0,
 		Win:           0,
@@ -32,7 +32,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		WinPercentage: 12,
 	}
 
-	c := RankCard(r.Context(), v)
+	c := Index(r.Context(), v)
 
 	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

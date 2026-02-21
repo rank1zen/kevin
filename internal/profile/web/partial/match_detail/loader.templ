@@ -1,0 +1,16 @@
+package match_detail
+
+import "context"
+
+type LoaderData struct {
+}
+
+templ Loader(ctx context.Context, data *LoaderData) {
+	<div
+		hx-get="/profile/web/partial/match_detail"
+		hx-trigger="load once"
+	>
+		// TODO: hx-get
+		<div class="h-40"></div>
+	</div>
+}

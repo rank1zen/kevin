@@ -10,8 +10,8 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal/frontend/loader/rank_card_loader"
-	"github.com/rank1zen/kevin/internal/frontend/view/profile"
+	"github.com/rank1zen/kevin/internal/profile/web/partial/champion"
+	"github.com/rank1zen/kevin/internal/profile/web/partial/rank_card"
 )
 
 type sidebarData struct {
@@ -38,19 +38,19 @@ func sidebar(ctx context.Context, data sidebarData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"w-2xs flex-none hidden md:block\"><div class=\"py-4 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Tier Graph</h3><div class=\"my-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"w-2xs flex-none hidden md:block\"><div class=\"py-3\"><div class=\"relative flex py-5 items-center\"><h3 class=\"font-semibold flex-shrink mr-3 leading-none tracking-tight\">Rank Graph</h3><div class=\"flex-grow border-t\"></div></div><div class=\"my-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = rank_card_loader.RankCardLoader(ctx, rank_card_loader.RankCardLoaderData{}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = rank_card.Loader(ctx, &rank_card.LoaderData{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></div><div class=\"py-3 border-b border-gray-200 dark:border-neutral-600\"><h3 class=\"font-semibold text-gray-900/90 mb-4 dark:text-neutral-100/90\">Past Week</h3><div class=\"my-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></div><div class=\"py-3\"><div class=\"relative flex py-5 items-center\"><h3 class=\"font-semibold flex-shrink mr-3 leading-none tracking-tight\">Past Week</h3><div class=\"flex-grow border-t\"></div></div><div class=\"my-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = profile.PartialChampionList(ctx, profile.PartialChampionListData{}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = champion.Loader(ctx, &champion.LoaderData{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

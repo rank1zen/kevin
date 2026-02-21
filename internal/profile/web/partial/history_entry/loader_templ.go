@@ -13,7 +13,11 @@ import (
 	"github.com/rank1zen/kevin/internal/profile"
 )
 
-func Loader(ctx context.Context, data *profile.GetMatchlistRequest) templ.Component {
+type LoaderData struct {
+	Ok *profile.GetMatchlistRequest
+}
+
+func Loader(ctx context.Context, data *LoaderData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -34,6 +38,10 @@ func Loader(ctx context.Context, data *profile.GetMatchlistRequest) templ.Compon
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div hx-get=\"/profile/web/partial/history_entry\" hx-trigger=\"load once\"><div class=\"h-40\"></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		return nil
 	})
 }

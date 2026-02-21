@@ -1,0 +1,16 @@
+package champion_icon
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/utils"
+)
+
+type IndexData struct {
+	Class string
+
+	ImagePath string
+}
+
+templ Index(ctx context.Context, data *IndexData) {
+	<img class={ utils.TwMerge("size-12 rounded-full border border-ring", data.Class) } src={ data.ImagePath } alt=""/>
+}

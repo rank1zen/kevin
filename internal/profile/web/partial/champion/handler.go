@@ -2,6 +2,7 @@ package champion
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -40,21 +41,19 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	v := &ChampionListData{
-		Champions: []ChampionItemData{},
+	v := &IndexData{
+		ChampionData: []RowData{},
 	}
 
 	for _, champ := range storeChamps {
-		v.Champions = append(v.Champions, ChampionItemData{
-			Champion:    int(champ.Champion),
-			GamesPlayed: champ.GamesPlayed,
-			Wins:        champ.Wins,
-			Losses:      champ.Losses,
-			LPDelta:     nil,
+		v.ChampionData = append(v.ChampionData, RowData{
+			ChampionImagePath: "",
+			KDA:               fmt.Sprintf("%d/%d/%d", champ.AverageKillsPerGame, champ.AverageDeathsPerGame, champ.AverageAssistsPerGame),
+			WinRate:           "",
 		})
 	}
 
-	c := ChampionList(r.Context(), *v)
+	c := Index(r.Context(), v)
 
 	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

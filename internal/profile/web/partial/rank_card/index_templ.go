@@ -11,18 +11,27 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"context"
 	"fmt"
+	"github.com/rank1zen/kevin/internal/components/chart"
 )
 
-type RankCardData struct {
+type IndexData struct {
 	Region        string
 	TierDivision  string
 	LP            int
 	Win, Loss     int
 	WinPercentage int
 	Unranked      bool
+
+	// RankValues is an array of floats representing the player's rank (some
+	// numberical representation) over time.
+	RankValues []float64
+
+	// RankDates is an array of strings representing the dates of the rank
+	// values.
+	RankDates []string
 }
 
-func RankCard(ctx context.Context, data RankCardData) templ.Component {
+func Index(ctx context.Context, data *IndexData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -49,14 +58,14 @@ func RankCard(ctx context.Context, data RankCardData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"h-40 items-center bg-neutral-primary-soft rounded-default p-4 border border-default shadow-sm shadow-gray-200\"><div class=\"flex w-full justify-between items-center\"><img class=\"h-11\" src=\"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsupport-leagueoflegends.riotgames.com%2Fhc%2Farticle_attachments%2F4415894930323%2FChallenger_Emblem_2022.png&f=1&nofb=1&ipt=de55a2f43584113307a306fb0c113a59419c4006df09d4c50cb866a9c914a841\"><div class=\"text-right\"><h5 class=\"font-medium text-sm text-heading\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"\"><div class=\"flex w-full justify-between items-center\"><img class=\"h-11\" src=\"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsupport-leagueoflegends.riotgames.com%2Fhc%2Farticle_attachments%2F4415894930323%2FChallenger_Emblem_2022.png&f=1&nofb=1&ipt=de55a2f43584113307a306fb0c113a59419c4006df09d4c50cb866a9c914a841\"><div class=\"text-right\"><h5 class=\"font-medium text-sm text-heading\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%s %d LP", data.TierDivision, data.LP))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/profile/web/partial/rank_card/rank_card.templ`, Line: 30, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/profile/web/partial/rank_card/index.templ`, Line: 39, Col: 59}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -69,13 +78,34 @@ func RankCard(ctx context.Context, data RankCardData) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d-%d (%d%%)", data.Win, data.Loss, data.WinPercentage))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/profile/web/partial/rank_card/rank_card.templ`, Line: 33, Col: 76}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/profile/web/partial/rank_card/index.templ`, Line: 42, Col: 76}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = chart.Chart(chart.Props{
+				Variant:     chart.VariantLine,
+				ShowYGrid:   false,
+				ShowXLabels: false,
+				Data: chart.Data{
+					Labels: data.RankDates,
+					Datasets: []chart.Dataset{
+						{
+							Data:    data.RankValues,
+							Tension: 0.5,
+						},
+					},
+				},
+			}).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

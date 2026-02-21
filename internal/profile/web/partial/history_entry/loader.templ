@@ -5,11 +5,16 @@ import (
 	"github.com/rank1zen/kevin/internal/profile"
 )
 
-templ Loader(ctx context.Context, data *profile.GetMatchlistRequest) {
+type LoaderData struct {
+	Ok *profile.GetMatchlistRequest
+}
+
+templ Loader(ctx context.Context, data *LoaderData) {
 	<div
-		hx-get="/profile/web/history_entry"
+		hx-get="/profile/web/partial/history_entry"
 		hx-trigger="load once"
 	>
+		// TODO: hx-get
 		<div class="h-40"></div>
 	</div>
 }

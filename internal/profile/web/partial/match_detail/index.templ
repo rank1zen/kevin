@@ -1,0 +1,72 @@
+package match_detail
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/components/card"
+	"github.com/rank1zen/kevin/internal/components/icon"
+	"github.com/rank1zen/kevin/internal/components/tabs"
+)
+
+type IndexData struct {
+	Teams [2][]ScoreCardData
+}
+
+templ Index(ctx context.Context, data *IndexData) {
+	@tabs.Tabs(tabs.Props{
+		ID: "match-detail-tabs",
+	}) {
+		@tabs.List(tabs.ListProps{
+			Class: "w-full",
+		}) {
+			@tabs.Trigger(tabs.TriggerProps{
+				Class:    "flex gap-2 items-center",
+				Value:    "score",
+				IsActive: true,
+			}) {
+				@icon.LayoutList()
+				Score Board
+			}
+			@tabs.Trigger(tabs.TriggerProps{
+				Class:    "flex gap-2 items-center",
+				Value:    "build",
+				IsActive: false,
+			}) {
+				@icon.Grid3x2()
+				Build and Runes
+			}
+		}
+		<div class="w-full mt-2">
+			@tabs.Content(tabs.ContentProps{
+				Value:    "score",
+				IsActive: true,
+			}) {
+				@card.Card() {
+					@card.Header() {
+						@card.Title() {
+							Score Board
+						}
+					}
+					@card.Content() {
+						<div class="mt-2 divide-y">
+							for _, team := range data.Teams[0] {
+								@ScoreCard(ctx, &team)
+							}
+						</div>
+						<div class="mt-2 divide-y">
+							for _, team := range data.Teams[1] {
+								@ScoreCard(ctx, &team)
+							}
+						</div>
+					}
+				}
+				@tabs.Content(tabs.ContentProps{
+					Value:    "build",
+					IsActive: false,
+				}) {
+					@card.Card() {
+					}
+				}
+			}
+		</div>
+	}
+}
