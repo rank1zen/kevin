@@ -29,13 +29,13 @@ func main() {
 
 	rt.Logger = log.New()
 
-	cfg, err := config.LoadConfig()
+	cfg, err := config.NewConfig()
 	if err != nil {
 		rt.Logger.Error("failed to load configuration", "err", err)
 		os.Exit(1)
 	}
 
-	pool, err := connectPostgres(ctx, cfg.GetPostgresConnection())
+	pool, err := connectPostgres(ctx, cfg.GetDatabaseURL())
 	if err != nil {
 		rt.Logger.Error("error starting server", "err", err)
 		os.Exit(1)
