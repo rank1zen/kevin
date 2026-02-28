@@ -73,21 +73,27 @@ func NewConfig() (*Config, error) {
 }
 
 func (c *Config) validate() error {
+	var errs []error
+
 	if c.kevinRiotAPIKey == "" {
-		return errors.New("KEVIN_RIOT_API_KEY is not set")
+		errs = append(errs, errors.New("KEVIN_RIOT_API_KEY is not set"))
 	}
 
 	if err := validateDatabaseURL(c.kevinDatabaseURL); err != nil {
-		return fmt.Errorf("KEVIN_DATABASE_URL: %w", err)
+		errs = append(errs, fmt.Errorf("KEVIN_DATABASE_URL: %w", err))
 	}
 
 	if c.kevinEnv != "development" && c.kevinEnv != "production" {
 		message := fmt.Sprintf("KEVIN_ENV must be either '%s' or '%s'", development, production)
-		return errors.New(message)
+		errs = append(errs, errors.New(message))
 	}
 
 	if !(1024 <= c.port && c.port <= 65535) {
-		return errors.New("PORT must be between 1024 and 65535")
+		errs = append(errs, errors.New("PORT must be between 1024 and 65535"))
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 
 	return nil
