@@ -8,7 +8,7 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-RUN go install github.com/jackc/tern/v2@latest
+RUN CGO_ENABLED=0 go install github.com/jackc/tern/v2@latest
 
 # what about images and templ files
 COPY ./ ./
