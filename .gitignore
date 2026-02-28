@@ -13,3 +13,5 @@ devenv.local.yaml
 .zed
 
 tmp
+
+.env

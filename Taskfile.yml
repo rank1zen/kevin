@@ -8,14 +8,38 @@ tasks:
   templ:
     desc: Run templ with integrated server and hot reload
     cmds:
+      - go tool templ generate --watch --proxy="http://localhost:8090" --cmd="go run ./cmd/kevin" --open-browser=false
+
+  templ-mock:
+    desc: Run templ with integrated server and hot reload
+    cmds:
       - go tool templ generate --watch --proxy="http://localhost:8090" --cmd="go run ./cmd/kevin-storybook-v2" --open-browser=false
 
-  tailwind:
+  tailwind-clean:
+    desc: Clean tailwind output
+    cmds:
+      - "{{.TAILWIND_CMD}} -i ./internal/frontend/static/input.css -o ./internal/frontend/static/output.css --clean"
+
+  tailwind-watch:
     desc: Watch Tailwind CSS changes
     cmds:
       - "{{.TAILWIND_CMD}} -i ./internal/frontend/static/input.css -o ./internal/frontend/static/output.css --watch"
 
+  templ-generate:
+    desc: Compile templ files into Go
+    cmds:
+      - go tool templ generate
+
   dev:
     desc: Start development server with hot reload
+    deps:
+      - tailwind-clean
     cmds:
-      - task --parallel tailwind templ
+      - task --parallel tailwind-watch templ
+
+  dev-mock:
+    desc: Start development mock with hot reload
+    deps:
+      - tailwind-clean
+    cmds:
+      - task --parallel tailwind-watch templ-mock
