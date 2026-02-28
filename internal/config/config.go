@@ -9,10 +9,10 @@ import (
 
 // Config holds all application-level configurations.
 type Config struct {
-	kevinPostgresConnection string
-	kevinRiotAPIKey         string
-	env                     string
-	port                    int
+	kevinDatabaseURL string
+	kevinRiotAPIKey  string
+	kevinEnv         string
+	port             int
 }
 
 // LoadConfig loads configuration from environment variables.
@@ -32,9 +32,9 @@ func LoadConfig() (*Config, error) {
 		}
 	}
 
-	_ = v.BindEnv("KEVIN_POSTGRES_CONNECTION")
+	_ = v.BindEnv("KEVIN_DATABASE_URL")
 	_ = v.BindEnv("KEVIN_RIOT_API_KEY")
-	_ = v.BindEnv("ENV")
+	_ = v.BindEnv("KEVIN_ENV")
 	_ = v.BindEnv("PORT")
 
 	output := config{}
@@ -53,7 +53,7 @@ func LoadConfig() (*Config, error) {
 
 // IsDevelopment checks if the current environment is development.
 func (c *Config) IsDevelopment() bool {
-	return c.env == "dev"
+	return c.kevinEnv == "dev"
 }
 
 func (c *Config) Validate() error {
@@ -61,7 +61,7 @@ func (c *Config) Validate() error {
 		return errors.New("KEVIN_RIOT_API_KEY is not set")
 	}
 
-	if c.kevinPostgresConnection == "" {
+	if c.kevinDatabaseURL == "" {
 		return errors.New("KEVIN_POSTGRES_CONNECTION is not set")
 	}
 
@@ -77,17 +77,17 @@ func (c *Config) GetRiotAPIKey() string {
 }
 
 func (c *Config) GetPostgresConnection() string {
-	return c.kevinPostgresConnection
+	return c.kevinDatabaseURL
 }
 
 // config is an unexported struct for unmarshaling from viper.
 type config struct {
-	KevinPostgresConnection string `mapstructure:"KEVIN_POSTGRES_CONNECTION"`
+	KevinPostgresConnection string `mapstructure:"KEVIN_DATABASE_URL"`
 	KevinRiotAPIKey         string `mapstructure:"KEVIN_RIOT_API_KEY"`
 
 	// env is the environment the application is running in.
 	// Can be "dev" or "prod"; the default is "prod".
-	Env string `mapstructure:"ENV"`
+	Env string `mapstructure:"KEVIN_ENV"`
 
 	// port is the port number to listen on.
 	Port int `mapstructure:"PORT"`
@@ -95,9 +95,9 @@ type config struct {
 
 func (c *config) ToConfig() *Config {
 	return &Config{
-		kevinPostgresConnection: c.KevinPostgresConnection,
-		kevinRiotAPIKey:         c.KevinRiotAPIKey,
-		env:                     c.Env,
-		port:                    c.Port,
+		kevinDatabaseURL: c.KevinPostgresConnection,
+		kevinRiotAPIKey:  c.KevinRiotAPIKey,
+		kevinEnv:         c.Env,
+		port:             c.Port,
 	}
 }
