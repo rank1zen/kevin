@@ -1,103 +1,140 @@
+// config manages all application-level configurations. Only environment
+// variables are supported. There are no default values. The two supported
+// environments are development and production.
 package config
 
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/spf13/viper"
 )
 
+const (
+	development = "development"
+	production  = "production"
+)
+
+// config is an unexported struct for unmarshaling from viper.
+type config struct {
+	KevinDatabaseURL string `mapstructure:"KEVIN_DATABASE_URL"`
+	KevinRiotAPIKey  string `mapstructure:"KEVIN_RIOT_API_KEY"`
+	KevinEnv         string `mapstructure:"KEVIN_ENV"`
+	Port             int    `mapstructure:"PORT"`
+}
+
 // Config holds all application-level configurations.
 type Config struct {
-	kevinDatabaseURL string
 	kevinRiotAPIKey  string
+	kevinDatabaseURL string
 	kevinEnv         string
 	port             int
 }
 
-// LoadConfig loads configuration from environment variables.
-func LoadConfig() (*Config, error) {
+// NewConfig loads configuration from environment variables.
+func NewConfig() (*Config, error) {
 	v := viper.New()
 
-	v.SetDefault("ENV", "prod")
-	v.SetDefault("PORT", 8080)
-
-	v.SetConfigName("kevin")
-	v.AddConfigPath(".")
-
-	if err := v.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-		} else {
-			return nil, fmt.Errorf("failed to read config file: %w", err)
-		}
+	if err := v.BindEnv("KEVIN_RIOT_API_KEY"); err != nil {
+		return nil, fmt.Errorf("failed to bind KEVIN_RIOT_API_KEY: %w", err)
 	}
 
-	_ = v.BindEnv("KEVIN_DATABASE_URL")
-	_ = v.BindEnv("KEVIN_RIOT_API_KEY")
-	_ = v.BindEnv("KEVIN_ENV")
-	_ = v.BindEnv("PORT")
+	if err := v.BindEnv("KEVIN_DATABASE_URL"); err != nil {
+		return nil, fmt.Errorf("failed to bind KEVIN_DATABASE_URL: %w", err)
+	}
+
+	if err := v.BindEnv("KEVIN_ENV"); err != nil {
+		return nil, fmt.Errorf("failed to bind KEVIN_ENV: %w", err)
+	}
+
+	if err := v.BindEnv("PORT"); err != nil {
+		return nil, fmt.Errorf("failed to bind PORT: %w", err)
+	}
 
 	output := config{}
 	if err := v.Unmarshal(&output); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal from viper: %w", err)
 	}
 
-	cfg := output.ToConfig()
+	cfg := &Config{
+		kevinRiotAPIKey:  output.KevinRiotAPIKey,
+		kevinDatabaseURL: output.KevinDatabaseURL,
+		kevinEnv:         output.KevinEnv,
+		port:             output.Port,
+	}
 
-	if err := cfg.Validate(); err != nil {
+	if err := cfg.validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %w", err)
 	}
 
 	return cfg, nil
 }
 
-// IsDevelopment checks if the current environment is development.
-func (c *Config) IsDevelopment() bool {
-	return c.kevinEnv == "dev"
-}
-
-func (c *Config) Validate() error {
+func (c *Config) validate() error {
 	if c.kevinRiotAPIKey == "" {
 		return errors.New("KEVIN_RIOT_API_KEY is not set")
 	}
 
-	if c.kevinDatabaseURL == "" {
-		return errors.New("KEVIN_POSTGRES_CONNECTION is not set")
+	if err := validateDatabaseURL(c.kevinDatabaseURL); err != nil {
+		return fmt.Errorf("KEVIN_DATABASE_URL: %w", err)
+	}
+
+	if c.kevinEnv != "development" && c.kevinEnv != "production" {
+		message := fmt.Sprintf("KEVIN_ENV must be either '%s' or '%s'", development, production)
+		return errors.New(message)
+	}
+
+	if !(1024 <= c.port && c.port <= 65535) {
+		return errors.New("PORT must be between 1024 and 65535")
 	}
 
 	return nil
-}
-
-func (c *Config) GetPort() int {
-	return c.port
 }
 
 func (c *Config) GetRiotAPIKey() string {
 	return c.kevinRiotAPIKey
 }
 
-func (c *Config) GetPostgresConnection() string {
+func (c *Config) GetDatabaseURL() string {
 	return c.kevinDatabaseURL
 }
 
-// config is an unexported struct for unmarshaling from viper.
-type config struct {
-	KevinPostgresConnection string `mapstructure:"KEVIN_DATABASE_URL"`
-	KevinRiotAPIKey         string `mapstructure:"KEVIN_RIOT_API_KEY"`
-
-	// env is the environment the application is running in.
-	// Can be "dev" or "prod"; the default is "prod".
-	Env string `mapstructure:"KEVIN_ENV"`
-
-	// port is the port number to listen on.
-	Port int `mapstructure:"PORT"`
+func (c *Config) IsDevelopment() bool {
+	return c.kevinEnv == development
 }
 
-func (c *config) ToConfig() *Config {
-	return &Config{
-		kevinDatabaseURL: c.KevinPostgresConnection,
-		kevinRiotAPIKey:  c.KevinRiotAPIKey,
-		kevinEnv:         c.Env,
-		port:             c.Port,
+func (c *Config) GetPort() int {
+	return c.port
+}
+
+func validateDatabaseURL(raw string) error {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		return errors.New("url is not set")
 	}
+
+	u, err := url.Parse(s)
+	if err != nil {
+		return err
+	}
+
+	// (5) Scheme whitelist
+	switch strings.ToLower(u.Scheme) {
+	case "postgres", "postgresql":
+	default:
+		return fmt.Errorf("url must use postgres/postgresql scheme, got %q", u.Scheme)
+	}
+
+	// (4) Required URL parts
+	if u.Host == "" {
+		return errors.New("url must include a host")
+	}
+	// Path should be /dbname
+	if u.Path == "" || u.Path == "/" {
+		return errors.New("url must include a database name in path")
+	}
+
+	return nil
 }
