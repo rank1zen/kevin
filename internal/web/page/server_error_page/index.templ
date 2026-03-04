@@ -1,0 +1,28 @@
+package server_error_page
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/frontend/component/page"
+	"github.com/rank1zen/kevin/internal/frontend/view/shared"
+	"github.com/rank1zen/kevin/internal/web/component/header_bar"
+)
+
+type IndexData struct{}
+
+templ Index(ctx context.Context, data *IndexData) {
+	@page.Page("An internal server has occurred - Kevin") {
+		@page.Header() {
+			@header_bar.Index(ctx, &header_bar.IndexData{})
+		}
+		@page.Body() {
+			<div class="flex items-center justify-center mt-6">
+				<h2 class="text-2xl font-bold">
+					A server error occurred.
+				</h2>
+			</div>
+		}
+		@page.Footer() {
+			@shared.PageFooter(ctx, shared.PageFooterData{})
+		}
+	}
+}

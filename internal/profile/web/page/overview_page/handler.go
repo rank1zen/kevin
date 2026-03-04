@@ -1,13 +1,13 @@
 package overview_page
 
 import (
-	// "errors" // No longer needed directly
 	"fmt"
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/frontend"
 	"github.com/rank1zen/kevin/internal/profile"
 	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/web/page/server_error_page"
 )
 
 type Handler struct {
@@ -27,8 +27,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	storeProfile, err := h.service.GetProfile(r.Context(), req)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		frontend.LogError(r, fmt.Errorf("failed to get profile for profile page: %w", err))
+		server_error_page.Render(w, r, err, "failed to get profile for profile page")
 		return
 	}
 
