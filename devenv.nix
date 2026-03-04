@@ -10,7 +10,6 @@
     pkgs.golangci-lint
     pkgs.tailwindcss_4
     pkgs.rustywind
-    pkgs.just
     pkgs.go-task
   ];
 
