@@ -1,4 +1,5 @@
-package app
+// routes defines ALL pages, partials, and misc things for the application.
+package route
 
 import (
 	"net/http"
@@ -10,13 +11,34 @@ import (
 	"github.com/rank1zen/kevin/internal/profile/web/partial/match_detail"
 	"github.com/rank1zen/kevin/internal/profile/web/partial/rank_card"
 	"github.com/rank1zen/kevin/internal/profile/web/partial/update"
+	"github.com/rank1zen/kevin/internal/riot"
+	"github.com/rank1zen/kevin/internal/web/page/not_found_page"
 )
 
-func ProfileRoutes() {
+func Router(
+	riotClient *riot.Client,
+	profileService *profile.ProfileService,
+) http.Handler {
 	router := http.NewServeMux()
 
-	profileService := profile.NewProfileService(nil, nil)
+	router.HandleFunc("GET /ready/{$}", func(w http.ResponseWriter, r *http.Request) {
+		if _, err := riotClient.Account.GetAccountByRiotID(r.Context(), riot.RegionNA1, "orrange", "NA1"); err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
 
+		w.WriteHeader(http.StatusOK)
+	})
+
+	profileRoutes(router, profileService)
+
+	router.Handle("GET /assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
+	router.Handle("/", not_found_page.NewHandler())
+
+	return router
+}
+
+func profileRoutes(router *http.ServeMux, profileService *profile.ProfileService) {
 	// Pages
 	router.Handle("GET /profile/{riotID}/{$}", overview_page.NewHandler(profileService))
 

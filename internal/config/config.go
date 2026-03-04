@@ -88,7 +88,7 @@ func (c *Config) validate() error {
 		errs = append(errs, errors.New(message))
 	}
 
-	if !(1024 <= c.port && c.port <= 65535) {
+	if 1024 > c.port || c.port > 65535 {
 		errs = append(errs, errors.New("PORT must be between 1024 and 65535"))
 	}
 

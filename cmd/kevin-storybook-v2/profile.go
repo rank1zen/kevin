@@ -31,7 +31,7 @@ func overviewHandler(w http.ResponseWriter, r *http.Request) {
 		ProfileIconImagePath: "https://ddragon.leagueoflegends.com/cdn/13.14.1/img/profileicon/1003.png",
 	}
 
-	overview_page.Index(r.Context(), data).Render(r.Context(), w)
+	_ = overview_page.Index(r.Context(), data).Render(r.Context(), w)
 }
 
 func rankCardHandler(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +43,7 @@ func rankCardHandler(w http.ResponseWriter, r *http.Request) {
 		Loss:          30,
 		WinPercentage: 65,
 		Unranked:      false,
-		RankValues:    []float64{
+		RankValues: []float64{
 			100.0,
 			101.0,
 			104.0,
@@ -55,7 +55,7 @@ func rankCardHandler(w http.ResponseWriter, r *http.Request) {
 			20.0,
 			10.0,
 		},
-		RankDates:     []string{
+		RankDates: []string{
 			"Jan 01",
 			"Jan 02",
 			"Jan 03",
@@ -69,7 +69,7 @@ func rankCardHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	rank_card.Index(r.Context(), data).Render(r.Context(), w)
+	_ = rank_card.Index(r.Context(), data).Render(r.Context(), w)
 }
 
 func historyEntryHandler(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +106,7 @@ func historyEntryHandler(w http.ResponseWriter, r *http.Request) {
 		NextEntryLoaderData: &history_entry.LoaderData{},
 	}
 
-	history_entry.Index(r.Context(), data).Render(r.Context(), w)
+	_ = history_entry.Index(r.Context(), data).Render(r.Context(), w)
 }
 
 func championListHandler(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +127,7 @@ func championListHandler(w http.ResponseWriter, r *http.Request) {
 		WinRate:    "71% (18)",
 	}
 
-	champion.Index(r.Context(), data).Render(r.Context(), w)
+	_ = champion.Index(r.Context(), data).Render(r.Context(), w)
 }
 
 func matchDetailBoxHandler(w http.ResponseWriter, r *http.Request) {
@@ -188,9 +188,9 @@ func matchDetailBoxHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	match_detail.Index(r.Context(), data).Render(r.Context(), w)
+	_ = match_detail.Index(r.Context(), data).Render(r.Context(), w)
 }
 
 func updateProfileHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hi"))
+	_, _ = w.Write([]byte("hi"))
 }

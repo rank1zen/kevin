@@ -111,20 +111,6 @@
     --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
-    --color-body: var(--color-stone-600);
-    --color-body-subtle: var(--color-stone-500);
-    --color-heading: var(--color-stone-900);
-    --color-fg-brand: var(--color-stone-950);
-    --color-fg-disabled: var(--color-stone-400);
-    --color-neutral-primary-soft: var(--color-white);
-    --color-neutral-primary: var(--color-white);
-    --color-neutral-secondary-soft: var(--color-gray-50);
-    --color-neutral-secondary: var(--color-gray-50);
-    --color-neutral-tertiary: var(--color-gray-100);
-    --color-brand-soft: var(--color-blue-100);
-    --color-brand: var(--color-blue-700);
-    --color-default: var(--color-gray-200);
-    --radius-default: var(--radius-2xl);
     --color-foreground: var(--foreground);
     --color-muted-foreground: var(--muted-foreground);
   }
@@ -807,11 +793,6 @@
       border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
     }
   }
-  .divide-default {
-    :where(& > :not(:last-child)) {
-      border-color: var(--color-default);
-    }
-  }
   .truncate {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -834,9 +815,6 @@
   }
   .rounded-2xl {
     border-radius: var(--radius-2xl);
-  }
-  .rounded-default {
-    border-radius: var(--radius-default);
   }
   .rounded-full {
     border-radius: calc(infinity * 1px);
@@ -890,15 +868,6 @@
   }
   .border-border {
     border-color: var(--border);
-  }
-  .border-brand {
-    border-color: var(--color-brand);
-  }
-  .border-brand-soft {
-    border-color: var(--color-brand-soft);
-  }
-  .border-default {
-    border-color: var(--color-default);
   }
   .border-gray-100 {
     border-color: var(--color-gray-100);
@@ -995,18 +964,6 @@
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--muted) 50%, transparent);
     }
-  }
-  .bg-neutral-primary {
-    background-color: var(--color-neutral-primary);
-  }
-  .bg-neutral-primary-soft {
-    background-color: var(--color-neutral-primary-soft);
-  }
-  .bg-neutral-secondary {
-    background-color: var(--color-neutral-secondary);
-  }
-  .bg-neutral-secondary-soft {
-    background-color: var(--color-neutral-secondary-soft);
   }
   .bg-popover {
     background-color: var(--popover);
@@ -1231,23 +1188,11 @@
   .whitespace-nowrap {
     white-space: nowrap;
   }
-  .text-body {
-    color: var(--color-body);
-  }
-  .text-body-subtle {
-    color: var(--color-body-subtle);
-  }
   .text-card-foreground {
     color: var(--card-foreground);
   }
   .text-destructive {
     color: var(--destructive);
-  }
-  .text-fg-brand {
-    color: var(--color-fg-brand);
-  }
-  .text-fg-disabled {
-    color: var(--color-fg-disabled);
   }
   .text-foreground {
     color: var(--foreground);
@@ -1275,9 +1220,6 @@
     @supports (color: color-mix(in lab, red, red)) {
       color: color-mix(in oklab, var(--color-gray-900) 90%, transparent);
     }
-  }
-  .text-heading {
-    color: var(--color-heading);
   }
   .text-muted-foreground {
     color: var(--muted-foreground);
@@ -1402,13 +1344,6 @@
     --tw-outline-style: none;
     outline-style: none;
   }
-  .group-hover\:text-fg-brand {
-    &:is(:where(.group):hover *) {
-      @media (hover: hover) {
-        color: var(--color-fg-brand);
-      }
-    }
-  }
   .first\:rounded-t-2xl {
     &:first-child {
       border-top-left-radius: var(--radius-2xl);
@@ -1441,18 +1376,6 @@
   .last\:pb-0 {
     &:last-child {
       padding-bottom: calc(var(--spacing) * 0);
-    }
-  }
-  .even\:bg-neutral-secondary {
-    &:nth-child(even) {
-      background-color: var(--color-neutral-secondary);
-    }
-  }
-  .hover\:border-brand {
-    &:hover {
-      @media (hover: hover) {
-        border-color: var(--color-brand);
-      }
     }
   }
   .hover\:bg-accent {
@@ -1516,13 +1439,6 @@
       }
     }
   }
-  .hover\:bg-neutral-tertiary {
-    &:hover {
-      @media (hover: hover) {
-        background-color: var(--color-neutral-tertiary);
-      }
-    }
-  }
   .hover\:bg-primary\/90 {
     &:hover {
       @media (hover: hover) {
@@ -1547,13 +1463,6 @@
     &:hover {
       @media (hover: hover) {
         color: var(--accent-foreground);
-      }
-    }
-  }
-  .hover\:text-fg-brand {
-    &:hover {
-      @media (hover: hover) {
-        color: var(--color-fg-brand);
       }
     }
   }
