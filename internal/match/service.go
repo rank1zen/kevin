@@ -167,20 +167,12 @@ func computeKillParticipation(p *riot.MatchParticipant, teamKills int) float32 {
 	return float32(p.Assists+p.Kills) / float32(teamKills)
 }
 
-func convertRiotUnixToTimestamp(ts int64) time.Time {
-	return time.UnixMilli(ts)
-}
-
 func convertRiotItems(p *riot.MatchParticipant) [7]int {
 	return [7]int{p.Item0, p.Item1, p.Item2, p.Item3, p.Item4, p.Item5, p.Item6}
 }
 
 func convertRiotSummonerSpells(p *riot.MatchParticipant) [2]int {
 	return [2]int{p.Summoner1ID, p.Summoner2ID}
-}
-
-func convertRiotLiveSummonerSpells(p riot.LiveMatchParticipant) [2]int {
-	return [2]int{p.Spell1ID, p.Spell2ID}
 }
 
 func getCounterPartIndex(index int) int {

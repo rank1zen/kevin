@@ -48,7 +48,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, champ := range storeChamps {
 		v.ChampionData = append(v.ChampionData, RowData{
 			ChampionImagePath: "",
-			KDA:               fmt.Sprintf("%d/%d/%d", champ.AverageKillsPerGame, champ.AverageDeathsPerGame, champ.AverageAssistsPerGame),
+			KDA:               fmt.Sprintf("%f/%f/%f", champ.AverageKillsPerGame, champ.AverageDeathsPerGame, champ.AverageAssistsPerGame),
 			WinRate:           "",
 		})
 	}

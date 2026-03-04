@@ -14,6 +14,7 @@ jobs:
     name: Go Tests
 
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v4
@@ -27,10 +28,9 @@ jobs:
       - name: Install devenv.sh
         run: nix profile install nixpkgs#devenv
 
-      - name: Run all short tests
+      - name: Run Taskfile test
         shell: devenv shell bash -- -e {0}
-        run: |
-          go test -short ./...
+        run: task test
 
   static-go-checks:
     name: Static Go Checks
@@ -61,7 +61,6 @@ jobs:
           go tool templ generate
           git diff --exit-code
 
-      - name: Run golangci-lint
+      - name: Run Taskfile lint
         shell: devenv shell bash -- -e {0}
-        run: |
-          golangci-lint run
+        run: task lint

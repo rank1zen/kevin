@@ -8,8 +8,8 @@ import (
 )
 
 type LeaderboardService struct {
-	riot  *riot.Client
-	store LeaderboardStore
+	riot *riot.Client
+	// store LeaderboardStore
 }
 
 type GetLeaderboardRequest struct {

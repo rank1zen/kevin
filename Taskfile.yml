@@ -3,6 +3,8 @@ version: "3"
 vars:
   TAILWIND_CMD:
     sh: command -v tailwindcss >/dev/null 2>&1 && echo "tailwindcss" || echo "npx tailwindcss@latest"
+  GOLANGCI_LINT_CMD:
+    sh: command -v golangci-lint >/dev/null 2>&1 && echo "golangci-lint" || echo "go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest"
 
 tasks:
   templ:
@@ -43,3 +45,13 @@ tasks:
       - tailwind-clean
     cmds:
       - task --parallel tailwind-watch templ-mock
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - "{{.GOLANGCI_LINT_CMD}} run ./..."
+
+  test:
+    desc: Run Go unit tests
+    cmds:
+      - go test -short ./...
