@@ -1,7 +1,5 @@
 Session.vim
 
-.envrc
-
 .devenv*
 devenv.local.nix
 devenv.local.yaml
