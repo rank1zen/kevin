@@ -32,6 +32,7 @@ func Router(
 
 	profileRoutes(router, profileService)
 
+	router.Handle("GET /assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 	router.Handle("/", not_found_page.NewHandler())
 
 	return router
