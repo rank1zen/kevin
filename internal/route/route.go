@@ -21,7 +21,7 @@ func Router(
 ) http.Handler {
 	router := http.NewServeMux()
 
-	router.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("GET /ready/{$}", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := riotClient.Account.GetAccountByRiotID(r.Context(), riot.RegionNA1, "orrange", "NA1"); err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
@@ -32,7 +32,7 @@ func Router(
 
 	profileRoutes(router, profileService)
 
-	router.Handle("GET /", not_found_page.NewHandler())
+	router.Handle("/", not_found_page.NewHandler())
 
 	return router
 }
