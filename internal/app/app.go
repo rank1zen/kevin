@@ -120,5 +120,9 @@ func connectPostgres(ctx context.Context, connString string) (*pgxpool.Pool, err
 		return nil, fmt.Errorf("failed to create postgres connection pool: %w", err)
 	}
 
+	if err := pool.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("failed to ping postgres: %w", err)
+	}
+
 	return pool, nil
 }
