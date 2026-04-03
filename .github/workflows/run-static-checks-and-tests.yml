@@ -53,13 +53,13 @@ jobs:
         shell: devenv shell bash -- -e {0}
         run: |
           go mod tidy
-          git diff --exit-code
+          git diff --exit-code go.mod go.sum
 
       - name: Check *_templ.go files are up-to-date
         shell: devenv shell bash -- -e {0}
         run: |
           go tool templ generate
-          git diff --exit-code
+          git diff --exit-code -- '*.go'
 
       - name: Run Taskfile lint
         shell: devenv shell bash -- -e {0}

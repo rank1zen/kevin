@@ -1,4 +1,4 @@
-// routes defines ALL pages, partials, and misc things for the application.
+// Package routes defines ALL pages, partials, and misc things for the application.
 package route
 
 import (
