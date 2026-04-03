@@ -109,6 +109,10 @@ func (a *App) Run(ctx context.Context) int {
 	return 0
 }
 
+func (a *App) Errors() error {
+	return errors.Join(a.errors...)
+}
+
 func connectPostgres(ctx context.Context, connString string) (*pgxpool.Pool, error) {
 	cfg, err := pgxpool.ParseConfig(connString)
 	if err != nil {
