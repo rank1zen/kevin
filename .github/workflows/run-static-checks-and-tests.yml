@@ -20,5 +20,5 @@ jobs:
       - uses: jdx/mise-action@v4
       - run: mise ls # shows installed tools + versions
       - run: ls ~/.local/share/mise/installs/ # confirm the directory exists
-      - run: ls ./assets
+      - run: ls ./assets/css
       - run: task ci
