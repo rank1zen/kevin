@@ -35,7 +35,7 @@ func MatchTeamList(ctx context.Context, data MatchTeamListData) templ.Component 
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"bg-white border border-gray-900/10 shadow-sm shadow-gray-900/10 rounded-2xl dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"rounded-2xl border border-gray-900/10 bg-white shadow-sm shadow-gray-900/10 dark:border-gray-100/10 dark:bg-black dark:shadow-gray-100/10\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

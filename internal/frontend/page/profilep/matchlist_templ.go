@@ -48,7 +48,7 @@ func matchlist(ctx context.Context, data matchlistData) templ.Component {
 		}
 		days := frontend.GetDays(time.Now())
 		for _ = range len(days) - 1 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"\"><h5 class=\"font-medium text-lg text-heading mt-8 mb-4\">Mar 25</h5>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"\"><h5 class=\"mt-8 mb-4 text-lg font-medium text-heading\">Mar 25</h5>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

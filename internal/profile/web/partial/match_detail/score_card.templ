@@ -23,8 +23,8 @@ type ScoreCardData struct {
 
 templ ScoreCard(ctx context.Context, data *ScoreCardData) {
 	<div class="py-4">
-		<div class="flex items-center gap-4 mb-2">
-			<h4 class="font-medium leading-none tracking-tight">
+		<div class="mb-2 flex items-center gap-4">
+			<h4 class="leading-none font-medium tracking-tight">
 				{ data.Name }
 			</h4>
 			<div class="flex flex-wrap gap-1">
@@ -46,13 +46,13 @@ templ ScoreCard(ctx context.Context, data *ScoreCardData) {
 					Class:     "size-9",
 					ImagePath: data.ChampionImagePath,
 				})
-				<div class="font-medium text-heading flex-none">
+				<div class="flex-none font-medium text-heading">
 					<div class="text-sm">
-						<span class="text-fg-brand font-semibold">{ data.Kills }</span>
+						<span class="font-semibold text-fg-brand">{ data.Kills }</span>
 						<span class="text-body">/</span>
-						<span class="text-red-500 font-semibold">{ data.Kills }</span>
+						<span class="font-semibold text-red-500">{ data.Kills }</span>
 						<span class="text-body">/</span>
-						<span class="text-body font-semibold">{ data.Kills }</span>
+						<span class="font-semibold text-body">{ data.Kills }</span>
 					</div>
 					<div class="text-xs font-normal text-body">
 						<span class="font-semibold">{ data.CS }</span>
@@ -61,15 +61,15 @@ templ ScoreCard(ctx context.Context, data *ScoreCardData) {
 					</div>
 				</div>
 			</div>
-			<div class="flex ml-8 flex-none bg-gray-100 rounded-lg dark:bg-neutral-900">
-				<div class="transition size-9 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-200">
+			<div class="ml-8 flex flex-none rounded-lg bg-gray-100 dark:bg-neutral-900">
+				<div class="size-9 rounded-lg transition hover:bg-gray-200 dark:hover:bg-neutral-100/20">
 					<img class="size-9" src={ data.RuneKeystoneImagePath }/>
 				</div>
-				<div class="transition h-9 w-6 flex items-center justify-center rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-200">
+				<div class="flex h-9 w-6 items-center justify-center rounded-lg transition hover:bg-gray-200 dark:hover:bg-neutral-100/20">
 					<img class="size-4" src={ data.RuneSecondaryTreeImagePath }/>
 				</div>
 			</div>
-			<div class="flex ml-4 flex-none h-9 items-center px-1 gap-x-1 bg-gray-100 rounded-lg dark:bg-neutral-100/20">
+			<div class="ml-4 flex h-9 flex-none items-center gap-x-1 rounded-lg bg-gray-100 px-1 dark:bg-neutral-100/20">
 				for i := range 6 {
 					if iconPath := data.ItemImagePaths[i]; iconPath != "" {
 						<img
@@ -87,7 +87,7 @@ templ ScoreCard(ctx context.Context, data *ScoreCardData) {
 						src={ data.ItemImagePaths[6] }
 						alt=""
 					/>
-					<span class="text-xs text-white font-medium left-1/2 -translate-x-1/2 bottom-0 absolute">
+					<span class="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs font-medium text-white">
 						{ data.VisionScore }
 					</span>
 				</div>

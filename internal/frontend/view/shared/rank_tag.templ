@@ -22,7 +22,7 @@ templ RankTag(ctx context.Context, data RankTagData) {
 		}
 	}}
 	<div class={ "flex flex-none px-1 rounded h-4 items-center gap-x-1", bgColor }>
-		<span class="text-xs text-white font-medium">
+		<span class="text-xs font-medium text-white">
 			{{ tier := data.Rank.Tier }}
 			{{ tierName := strings.ToUpper(tier.String()) }}
 			{{ division := data.Rank.Division.String() }}

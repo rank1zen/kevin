@@ -36,7 +36,7 @@ func LiveMatchButton(ctx context.Context, data LiveMatchButtonData) templ.Compon
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a href=\"live\" class=\"flex items-center justify-center gap-x-2 h-9 w-36 cursor-pointer bg-gray-100 rounded-lg transition enabled:dark:hover:bg-gray-100/5 enabled:dark:active:bg-gray-100/10 enabled:hover:bg-gray-200 enabled:active:bg-gray-300 dark:bg-neutral-900 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90 disabled:text-gray-500/90\">Live Match</span></a>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a href=\"live\" class=\"flex h-9 w-36 cursor-pointer items-center justify-center gap-x-2 rounded-lg bg-gray-100 transition focus-visible:inset-ring-2 focus-visible:inset-ring-blue-500/50 focus-visible:outline-0 enabled:hover:bg-gray-200 enabled:active:bg-gray-300 dark:bg-neutral-900 enabled:dark:hover:bg-gray-100/5 enabled:dark:active:bg-gray-100/10\"><span class=\"text-sm font-bold text-gray-900/90 disabled:text-gray-500/90 dark:text-gray-100/90\">Live Match</span></a>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -48,7 +48,7 @@ func ParticipantCard(ctx context.Context, data ParticipantCardData) templ.Compon
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"@container\"><div class=\"px-4 py-3 gap-y-1 flex flex-col @3xl:flex-row gap-x-2 bg-white border border-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 rounded-2xl\"><div class=\"flex gap-x-2 justify-between items-start w-full @3xl:w-1/2\"><div class=\"flex gap-x-2 items-start\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"@container\"><div class=\"px-4 py-3 gap-y-1 flex flex-col @3xl:flex-row gap-x-2 bg-white border border-gray-900/10 dark:bg-gray-950 dark:border-gray-100/10 rounded-2xl\"><div class=\"flex gap-x-2 justify-between items-start w-full @3xl:w-1/2\"><div class=\"flex items-start gap-x-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

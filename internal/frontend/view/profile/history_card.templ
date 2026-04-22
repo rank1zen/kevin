@@ -27,7 +27,7 @@ templ HistoryCard(ctx context.Context, data HistoryCardData) {
 	<div class="relative overflow-x-auto rounded-default">
 		@accordion.Accordion() {
 			@accordion.Card() {
-				<div class="px-4 py-3 gap-y-1 gap-x-2 flex flex-wrap items-center justify-between lg:flex-nowrap">
+				<div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 px-4 py-3 lg:flex-nowrap">
 					<div class="flex gap-x-3">
 						@ChampionWidget(ctx, ChampionWidgetData{
 							ChampionID:    data.ChampionID,
@@ -53,7 +53,7 @@ templ HistoryCard(ctx context.Context, data HistoryCardData) {
 						})
 						@accordion.Trigger()
 					</div>
-					<div class="flex gap-x-2 w-full justify-between lg:w-auto">
+					<div class="flex w-full justify-between gap-x-2 lg:w-auto">
 						@RuneWidget(ctx, RuneWidgetData{
 							RunePage: data.RunePage,
 						})

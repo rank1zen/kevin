@@ -53,7 +53,7 @@ func NotFoundCard(ctx context.Context, data NotFoundCardData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"flex w-full h-8 rounded-lg transition items-center cursor-pointer justify-between px-3 gap-x-3 dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10\"><div class=\"text-sm text-gray-900/90 text-left truncate dark:text-gray-100/90\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"flex h-8 w-full cursor-pointer items-center justify-between gap-x-3 rounded-lg px-3 transition hover:bg-gray-900/5 focus-visible:inset-ring-2 focus-visible:inset-ring-blue-500/50 focus-visible:outline-0 active:bg-gray-900/10 dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10\"><div class=\"truncate text-left text-sm text-gray-900/90 dark:text-gray-100/90\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -66,7 +66,7 @@ func NotFoundCard(ctx context.Context, data NotFoundCardData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"text-sm text-gray-500/90 line-clamp-1\">Visit Profile</div></a>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"line-clamp-1 text-sm text-gray-500/90\">Visit Profile</div></a>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -22,7 +22,7 @@ templ Trigger() {
 			$dispatch('visible');
 		"
 		:aria-expanded="open"
-		class="flex items-center justify-center size-9 rounded-lg transition cursor-pointer dark:hover:bg-neutral-100/20 dark:active:bg-neutral-100/40 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
+		class="flex size-9 cursor-pointer items-center justify-center rounded-lg transition hover:bg-gray-900/5 focus-visible:inset-ring-2 focus-visible:inset-ring-blue-500/50 focus-visible:outline-0 active:bg-gray-900/10 dark:hover:bg-neutral-100/20 dark:active:bg-neutral-100/40"
 		:class="open && 'bg-gray-900/5 dark:bg-neutral-100/20'"
 	>
 		@icon.DownLargeIcon()
@@ -30,7 +30,7 @@ templ Trigger() {
 }
 
 templ Card() {
-	<div class="bg-white border border-gray-200 shadow-sm shadow-gray-200 rounded-2xl dark:shadow-none dark:bg-neutral-900 dark:border-neutral-600">
+	<div class="rounded-2xl border border-gray-200 bg-white shadow-sm shadow-gray-200 dark:border-neutral-600 dark:bg-neutral-900 dark:shadow-none">
 		{ children... }
 	</div>
 }
@@ -39,7 +39,7 @@ templ Panel() {
 	<div
 		x-show="open"
 		x-cloak
-		class="bg-white border border-gray-200 shadow-sm shadow-gray-200 rounded-2xl mt-2 dark:shadow-none dark:bg-neutral-900 dark:border-neutral-600"
+		class="mt-2 rounded-2xl border border-gray-200 bg-white shadow-sm shadow-gray-200 dark:border-neutral-600 dark:bg-neutral-900 dark:shadow-none"
 	>
 		{ children... }
 	</div>
@@ -60,7 +60,7 @@ templ (m LazyPanel) ToTempl(ctx context.Context) {
 		}
 		x-show="open"
 		x-cloak
-		class="bg-gray-50 border border-gray-200 rounded-2xl mt-2 dark:bg-neutral-900 dark:border-neutral-600"
+		class="mt-2 rounded-2xl border border-gray-200 bg-gray-50 dark:border-neutral-600 dark:bg-neutral-900"
 	>
 		{ children... }
 	</div>

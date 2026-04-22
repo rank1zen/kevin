@@ -29,7 +29,7 @@ templ Profilep(ctx context.Context, data ProfilepData) {
 					Name:   data.Name,
 					Tag:    data.Tag,
 				})
-				<div class="flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6">
+				<div class="mx-auto flex max-w-7xl gap-x-4 px-2 md:gap-x-6 md:px-6">
 					@matchlist(ctx, matchlistData{
 						PUUID:  data.PUUID,
 						Region: data.Region,

@@ -76,7 +76,7 @@ func ChampionSprite(ctx context.Context, data ChampionSpriteData) templ.Componen
 			X:         x*truePixelSize + extra,
 			Y:         y*truePixelSize + extra,
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"rounded-lg overflow-hidden\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"overflow-hidden rounded-lg\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

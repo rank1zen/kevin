@@ -55,7 +55,7 @@ func SummonerSpellSprite(ctx context.Context, data SummonerSpellSpriteData) temp
 			X:         pixelSize * x,
 			Y:         pixelSize * y,
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"rounded-xs overflow-hidden\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"overflow-hidden rounded-xs\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

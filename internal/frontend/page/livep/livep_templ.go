@@ -97,7 +97,7 @@ func Livep(ctx context.Context, data LivepData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div><div class=\"px-2 max-w-7xl mt-7 mx-auto md:px-6\"><h1 class=\"mt-7 font-bold text-2xl text-gray-900/90 dark:text-gray-100/90\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div><div class=\"mx-auto mt-7 max-w-7xl px-2 md:px-6\"><h1 class=\"mt-7 text-2xl font-bold text-gray-900/90 dark:text-gray-100/90\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

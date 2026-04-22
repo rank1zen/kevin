@@ -299,7 +299,7 @@ func Card(ctx context.Context, data *CardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"font-medium text-heading flex-none\"><div><span class=\"text-fg-brand font-semibold\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"flex-none font-medium text-heading\"><div><span class=\"font-semibold text-fg-brand\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -312,7 +312,7 @@ func Card(ctx context.Context, data *CardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</span> <span class=\"text-body\">/</span> <span class=\"text-red-500 font-semibold\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</span> <span class=\"text-body\">/</span> <span class=\"font-semibold text-red-500\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -325,7 +325,7 @@ func Card(ctx context.Context, data *CardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</span> <span class=\"text-body\">/</span> <span class=\"text-body font-semibold\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</span> <span class=\"text-body\">/</span> <span class=\"font-semibold text-body\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -364,7 +364,7 @@ func Card(ctx context.Context, data *CardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, ")</span></div></div></div><div class=\"flex ml-8 flex-none bg-gray-100 rounded-lg dark:bg-neutral-900\"><div class=\"transition size-9 rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-200\"><img class=\"size-9\" src=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, ")</span></div></div></div><div class=\"ml-8 flex flex-none rounded-lg bg-gray-100 dark:bg-neutral-900\"><div class=\"size-9 rounded-lg transition hover:bg-gray-200 dark:hover:bg-neutral-100/20\"><img class=\"size-9\" src=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -377,7 +377,7 @@ func Card(ctx context.Context, data *CardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\"></div><div class=\"transition h-9 w-6 flex items-center justify-center rounded-lg dark:hover:bg-neutral-100/20 hover:bg-gray-200\"><img class=\"size-4\" src=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\"></div><div class=\"flex h-9 w-6 items-center justify-center rounded-lg transition hover:bg-gray-200 dark:hover:bg-neutral-100/20\"><img class=\"size-4\" src=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -390,7 +390,7 @@ func Card(ctx context.Context, data *CardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\"></div></div><div class=\"flex ml-4 flex-none h-9 items-center px-1 gap-x-1 bg-gray-100 rounded-lg dark:bg-neutral-100/20\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\"></div></div><div class=\"ml-4 flex h-9 flex-none items-center gap-x-1 rounded-lg bg-gray-100 px-1 dark:bg-neutral-100/20\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -433,7 +433,7 @@ func Card(ctx context.Context, data *CardData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" alt=\"\"> <span class=\"text-xs text-white font-medium left-1/2 -translate-x-1/2 bottom-0 absolute\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" alt=\"\"> <span class=\"absolute bottom-0 left-1/2 -translate-x-1/2 text-xs font-medium text-white\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

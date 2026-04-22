@@ -42,7 +42,7 @@ func Historyentry(ctx context.Context, data HistoryentryData) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if len(data.Matchlist) == 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section><div class=\"flex justify-center bg-white border border-gray-200 rounded-2xl items-center w-full h-15 dark:bg-black dark:border-neutral-600\"><span class=\"font-medium text-gray-900/90 text-sm dark:text-gray-100/90\">No matches played</span></div></section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section><div class=\"flex h-15 w-full items-center justify-center rounded-2xl border border-gray-200 bg-white dark:border-neutral-600 dark:bg-black\"><span class=\"text-sm font-medium text-gray-900/90 dark:text-gray-100/90\">No matches played</span></div></section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

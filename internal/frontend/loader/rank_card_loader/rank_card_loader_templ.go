@@ -36,7 +36,7 @@ func RankCardLoader(ctx context.Context, data RankCardLoaderData) templ.Componen
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div hx-get=\"/partial/rank_card.RankCard\" hx-trigger=\"load once\"><div class=\"h-40 rounded-default animate-pulse bg-neutral-secondary border border-default shadow-sm shadow-gray-200\"></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div hx-get=\"/partial/rank_card.RankCard\" hx-trigger=\"load once\"><div class=\"h-40 animate-pulse border shadow-sm shadow-gray-200 rounded-default bg-neutral-secondary border-default\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

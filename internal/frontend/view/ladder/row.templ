@@ -16,7 +16,7 @@ type RowData struct {
 }
 
 templ Row(ctx context.Context, data RowData) {
-	<tr class="bg-neutral-primary border-b border-default last:border-0 even:bg-neutral-secondary hover:bg-neutral-tertiary">
+	<tr class="border-b last:border-0 bg-neutral-primary border-default even:bg-neutral-secondary hover:bg-neutral-tertiary">
 		<td class="px-6 py-4 whitespace-nowrap">
 			{ data.Place }
 		</td>

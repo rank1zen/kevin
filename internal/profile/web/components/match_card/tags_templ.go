@@ -36,7 +36,7 @@ func tags(ctx context.Context, data tagsData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-wrap text-xs gap-0.5\"><span class=\"text-body inline-flex px-1.5 py-0.5 flex-none\">Dec 20, 10:50AM EST</span> <span class=\"text-body inline-flex px-1.5 py-0.5\">34:11</span> <span class=\"text-body inline-flex px-1.5 py-0.5\">GM</span> <span class=\"text-body inline-flex px-1.5 py-0.5\">+21</span></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-wrap gap-0.5 text-xs\"><span class=\"inline-flex flex-none px-1.5 py-0.5 text-body\">Dec 20, 10:50AM EST</span> <span class=\"inline-flex px-1.5 py-0.5 text-body\">34:11</span> <span class=\"inline-flex px-1.5 py-0.5 text-body\">GM</span> <span class=\"inline-flex px-1.5 py-0.5 text-body\">+21</span></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -94,7 +94,7 @@ func Ladderp(ctx context.Context, data LadderpData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"max-w-7xl mx-auto sm:px-2 md:px-6\"><section class=\"mt-8\"><h1 class=\"my-4 text-xl text-heading\">Solo Queue Leaderboards</h1><div class=\"my-4\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"mx-auto max-w-7xl sm:px-2 md:px-6\"><section class=\"mt-8\"><h1 class=\"my-4 text-xl text-heading\">Solo Queue Leaderboards</h1><div class=\"my-4\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

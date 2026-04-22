@@ -50,7 +50,7 @@ func PartialSearchMenu(ctx context.Context, data PartialSearchMenuData) templ.Co
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"h-25 rounded-lg animate-pulse bg-gray-50 border border-gray-200 shadow-sm shadow-gray-200\"></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"h-25 animate-pulse rounded-lg border border-gray-200 bg-gray-50 shadow-sm shadow-gray-200\"></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

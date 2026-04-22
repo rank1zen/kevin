@@ -88,7 +88,7 @@ func Index(ctx context.Context, data *IndexData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex items-center justify-center mt-6\"><h2 class=\"text-2xl font-bold\">A server error occurred.</h2></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"mt-6 flex items-center justify-center\"><h2 class=\"text-2xl font-bold\">A server error occurred.</h2></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

@@ -63,7 +63,7 @@ func rankDeltaWidget(ctx context.Context, data rankDeltaWidgetData) templ.Compon
 			return templ_7745c5c3_Err
 		}
 		if data.Win {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex justify-end\"><div class=\"text-xs bg-green-500/80 text-white px-1 rounded\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex justify-end\"><div class=\"rounded bg-green-500/80 px-1 text-xs text-white\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -93,7 +93,7 @@ func rankDeltaWidget(ctx context.Context, data rankDeltaWidgetData) templ.Compon
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"flex justify-end\"><div class=\"text-xs bg-red-500/80 text-white px-1 rounded\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"flex justify-end\"><div class=\"rounded bg-red-500/80 px-1 text-xs text-white\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

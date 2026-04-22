@@ -40,7 +40,7 @@ func SearchMenu(ctx context.Context, data SearchMenuData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-2\"><div class=\"py-2 border-b border-gray-200 first:pt-0 last:pb-0 last:border-none\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-2\"><div class=\"border-b border-gray-200 py-2 first:pt-0 last:border-none last:pb-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -57,7 +57,7 @@ func SearchMenu(ctx context.Context, data SearchMenuData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if len(data.ProfileResults) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"py-2 border-b border-gray-200 first:pt-0 last:pb-0 last:border-none\"><ul>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"border-b border-gray-200 py-2 first:pt-0 last:border-none last:pb-0\"><ul>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

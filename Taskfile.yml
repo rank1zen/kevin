@@ -25,7 +25,7 @@ tasks:
     desc: Generate Templ and Tailwind CSS
     cmds:
       - "{{.TAILWIND_CMD}} -i ./assets/css/input.css -o ./assets/css/output.css"
-      - "{{.RUSTYWIND_CMD}} "
+      - "{{.RUSTYWIND_CMD}} --write . --output-css-file ./assets/css/output.css"
       - "go tool templ generate"
 
   build:
@@ -44,3 +44,4 @@ tasks:
       - task: generate
       - task: lint
       - task: test
+      - git diff --exit-code

@@ -72,7 +72,7 @@ func (m RegionPicker) ToTempl(ctx context.Context) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-none h-9 w-20 px-2 items-center gap-2 justify-end\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex h-9 w-20 flex-none items-center justify-end gap-2 px-2\"><span class=\"text-sm font-bold text-gray-900/90 dark:text-gray-100/90\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -137,7 +137,7 @@ func (m RegionPicker) ToTempl(ctx context.Context) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" class=\"flex flex-item h-7 w-full items-center justify-between px-3 gap-3 rounded-lg transition cursor-pointer dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 hover:bg-gray-900/5 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10\"><span class=\"text-sm text-gray-900/90 whitespace-nowrap dark:text-gray-100/90\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" class=\"flex h-7 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 transition hover:bg-gray-900/5 focus-visible:inset-ring-2 focus-visible:inset-ring-blue-500/50 focus-visible:outline-0 active:bg-gray-900/10 dark:hover:bg-gray-100/5 dark:active:bg-gray-100/10 flex-item\"><span class=\"text-sm whitespace-nowrap text-gray-900/90 dark:text-gray-100/90\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -150,7 +150,7 @@ func (m RegionPicker) ToTempl(ctx context.Context) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span> <span class=\"text-sm text-gray-500/90 whitespace-nowrap\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span> <span class=\"text-sm whitespace-nowrap text-gray-500/90\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}

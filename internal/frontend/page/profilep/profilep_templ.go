@@ -108,7 +108,7 @@ func Profilep(ctx context.Context, data ProfilepData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"flex px-2 max-w-7xl mx-auto gap-x-4 md:px-6 md:gap-x-6\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"mx-auto flex max-w-7xl gap-x-4 px-2 md:gap-x-6 md:px-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

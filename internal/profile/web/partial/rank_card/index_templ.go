@@ -53,12 +53,12 @@ func Index(ctx context.Context, data *IndexData) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if data.Unranked {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"h-30 rounded-lg bg-gray-100 p-2 flex items-center justify-center\"><span class=\"text-sm text-gray-500/90\">UNRANKED</span></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex h-30 items-center justify-center rounded-lg bg-gray-100 p-2\"><span class=\"text-sm text-gray-500/90\">UNRANKED</span></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"\"><div class=\"flex w-full justify-between items-center\"><img class=\"h-11\" src=\"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsupport-leagueoflegends.riotgames.com%2Fhc%2Farticle_attachments%2F4415894930323%2FChallenger_Emblem_2022.png&f=1&nofb=1&ipt=de55a2f43584113307a306fb0c113a59419c4006df09d4c50cb866a9c914a841\"><div class=\"text-right\"><h5 class=\"font-medium text-sm text-heading\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"\"><div class=\"flex w-full items-center justify-between\"><img class=\"h-11\" src=\"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsupport-leagueoflegends.riotgames.com%2Fhc%2Farticle_attachments%2F4415894930323%2FChallenger_Emblem_2022.png&f=1&nofb=1&ipt=de55a2f43584113307a306fb0c113a59419c4006df09d4c50cb866a9c914a841\"><div class=\"text-right\"><h5 class=\"text-sm font-medium text-heading\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

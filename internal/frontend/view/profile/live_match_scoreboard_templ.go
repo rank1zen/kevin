@@ -36,7 +36,7 @@ func LiveMatchScoreboard(ctx context.Context, data LiveMatchScoreboardData) temp
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"bg-gray-100 rounded-2xl px-5 py-4\"><h2 class=\"\">Blue Side</h2><div class=\"mt-3\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"rounded-2xl bg-gray-100 px-5 py-4\"><h2 class=\"\">Blue Side</h2><div class=\"mt-3\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

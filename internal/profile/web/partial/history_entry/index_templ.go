@@ -43,7 +43,7 @@ func Index(ctx context.Context, data *IndexData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mt-8\"><h2 class=\"text-xl font-medium tracking-tight leading-none py-6\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mt-8\"><h2 class=\"py-6 text-xl leading-none font-medium tracking-tight\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -61,7 +61,7 @@ func Index(ctx context.Context, data *IndexData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if len(data.Matchlist) == 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<section><div class=\"flex justify-center bg-white border border-gray-200 rounded-2xl items-center w-full h-15 dark:bg-black dark:border-neutral-600\"><span class=\"font-medium text-gray-900/90 text-sm dark:text-gray-100/90\">No matches played</span></div></section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<section><div class=\"flex h-15 w-full items-center justify-center rounded-2xl border border-gray-200 bg-white dark:border-neutral-600 dark:bg-black\"><span class=\"text-sm font-medium text-gray-900/90 dark:text-gray-100/90\">No matches played</span></div></section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -33,7 +33,7 @@ func PartialRankCard(ctx context.Context, data PartialRankCardData) templ.Compon
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div hx-swap=\"outerHTML\" hx-trigger=\"load once\" class=\"h-40 rounded-lg animate-pulse bg-gray-50 border border-gray-200 shadow-sm shadow-gray-200\"></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div hx-swap=\"outerHTML\" hx-trigger=\"load once\" class=\"h-40 animate-pulse rounded-lg border border-gray-200 bg-gray-50 shadow-sm shadow-gray-200\"></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

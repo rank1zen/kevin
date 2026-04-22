@@ -36,7 +36,7 @@ func Table(ctx context.Context, data TableData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"relative overflow-x-auto rounded-xl border border-default\"><table class=\"w-full text-left rounded-lg\"><thead class=\"rounded-lg bg-neutral-secondary border-default border-b text-body-subtle text-xs\"><tr><th scope=\"col\" class=\"px-6 py-3 font-medium\">Position</th><th scope=\"col\" class=\"px-6 py-3 font-medium\">Summoner</th><th scope=\"col\" class=\"px-6 py-3 font-medium\">Rank</th><th scope=\"col\" class=\"px-6 py-3 font-medium\">Win-Loss</th></tr></thead> <tbody class=\"text-body text-sm\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"relative overflow-x-auto rounded-xl border border-default\"><table class=\"w-full rounded-lg text-left\"><thead class=\"rounded-lg border-b text-xs bg-neutral-secondary border-default text-body-subtle\"><tr><th scope=\"col\" class=\"px-6 py-3 font-medium\">Position</th><th scope=\"col\" class=\"px-6 py-3 font-medium\">Summoner</th><th scope=\"col\" class=\"px-6 py-3 font-medium\">Rank</th><th scope=\"col\" class=\"px-6 py-3 font-medium\">Win-Loss</th></tr></thead> <tbody class=\"text-sm text-body\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
