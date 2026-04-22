@@ -56,6 +56,6 @@ func TestAppStartsAndResponds(t *testing.T) {
 
 	resp, err := http.Get("http://localhost:4099/healthz")
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
