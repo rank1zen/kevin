@@ -1,4 +1,4 @@
-/*! tailwindcss v4.1.17 | MIT License | https://tailwindcss.com */
+/*! tailwindcss v4.2.2 | MIT License | https://tailwindcss.com */
 @layer properties;
 @layer theme, base, components, utilities;
 @layer theme {
@@ -297,6 +297,12 @@
   .inset-0 {
     inset: calc(var(--spacing) * 0);
   }
+  .start {
+    inset-inline-start: var(--spacing);
+  }
+  .end {
+    inset-inline-end: var(--spacing);
+  }
   .top-0 {
     top: calc(var(--spacing) * 0);
   }
@@ -310,7 +316,7 @@
     left: calc(var(--spacing) * 0);
   }
   .left-1\/2 {
-    left: calc(1/2 * 100%);
+    left: calc(1 / 2 * 100%);
   }
   .z-10 {
     z-index: 10;
@@ -518,7 +524,7 @@
     height: calc(var(--spacing) * 2.5);
   }
   .h-3\/5 {
-    height: calc(3/5 * 100%);
+    height: calc(3 / 5 * 100%);
   }
   .h-4 {
     height: calc(var(--spacing) * 4);
@@ -662,7 +668,7 @@
     caption-side: bottom;
   }
   .-translate-x-1\/2 {
-    --tw-translate-x: calc(calc(1/2 * 100%) * -1);
+    --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
   .scale-3d {
@@ -1794,7 +1800,7 @@
   }
   .\@3xl\:w-1\/2 {
     @container (width >= 48rem) {
-      width: calc(1/2 * 100%);
+      width: calc(1 / 2 * 100%);
     }
   }
   .\@3xl\:w-auto {
