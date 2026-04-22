@@ -2,7 +2,6 @@ package app_test
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -55,7 +54,7 @@ func TestAppStartsAndResponds(t *testing.T) {
 		"server never became ready",
 	)
 
-	resp, err := http.Get(fmt.Sprintf("http://localhost:4099/healthz"))
+	resp, err := http.Get("http://localhost:4099/healthz")
 	require.NoError(t, err)
 	defer resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)

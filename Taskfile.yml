@@ -42,6 +42,6 @@ tasks:
     desc: Run CI tasks
     cmds:
       - task: generate
+      - git diff --exit-code
       - task: lint
       - task: test
-      - git diff --exit-code
