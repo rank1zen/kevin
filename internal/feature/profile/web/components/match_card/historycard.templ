@@ -1,0 +1,60 @@
+package match_card
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal"
+	"github.com/rank1zen/kevin/internal/web/component/accordion"
+)
+
+type MatchCardData struct {
+	MatchID                string
+	ChampionID             int
+	ChampionLevel          int
+	SummonerIDs            [2]int
+	Kills, Deaths, Assists int
+	KillDeathRatio         float32
+	CS                     int
+	CSPerMinute            float32
+	RunePage               internal.RunePage
+	Items                  [7]int
+	VisionScore            int
+	RankChange             *internal.Rank
+	LPChange               *int
+	Win                    bool
+}
+
+templ MatchCard(ctx context.Context, data MatchCardData) {
+	@accordion.Accordion() {
+		@accordion.Card() {
+			<div class="flex items-center justify-between gap-x-4 p-4">
+				<div class="flex flex-wrap gap-0.5 text-xs">
+					<span class="inline-flex flex-none px-1.5 py-0.5 text-body">Dec 20, 10:50AM EST</span>
+					<span class="inline-flex px-1.5 py-0.5 text-body">34:11</span>
+					<span class="inline-flex px-1.5 py-0.5 text-body">GM</span>
+					<span class="inline-flex px-1.5 py-0.5 text-body">+21</span>
+				</div>
+				@champion(ctx, championData{
+					ChampionID:    data.ChampionID,
+					CS:            data.CS,
+					Kills:         data.Kills,
+					Deaths:        data.Deaths,
+					Assists:       data.Assists,
+					CSPerMinute:   data.CSPerMinute,
+					ChampionLevel: data.ChampionLevel,
+				})
+				<div class="flex gap-x-4">
+					@runeWidget(ctx, runeWidgetData{
+						RunePage: data.RunePage,
+					})
+					@itemWidget(ctx, itemWidgetData{
+						Items:       data.Items,
+						VisionScore: data.VisionScore,
+					})
+				</div>
+				@accordion.Trigger()
+			</div>
+		}
+		@accordion.Panel() {
+		}
+	}
+}

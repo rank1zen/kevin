@@ -1,0 +1,15 @@
+package match_detail
+
+import (
+	"context"
+	"time"
+)
+
+type MatchDetailBoxData struct {
+	Date              time.Time
+	Duration          time.Duration
+	BlueSide, RedSide MatchTeamListData
+}
+
+templ MatchDetailBox(ctx context.Context, data MatchDetailBoxData) {
+}

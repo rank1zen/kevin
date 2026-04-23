@@ -1,0 +1,65 @@
+package accordion
+
+import "context"
+
+templ Accordion() {
+	<div
+		role="region"
+		x-id="['accordion']"
+		x-data="{ open: false }"
+	>
+		{ children... }
+	</div>
+}
+
+templ Trigger() {
+	<button
+		type="button"
+		x-ref="trigger"
+		@click="
+			open = !open;
+			$dispatch('visible');
+		"
+		:aria-expanded="open"
+		class="flex size-9 cursor-pointer items-center justify-center rounded-lg transition hover:bg-gray-900/5 focus-visible:inset-ring-2 focus-visible:inset-ring-blue-500/50 focus-visible:outline-0 active:bg-gray-900/10 dark:hover:bg-neutral-100/20 dark:active:bg-neutral-100/40"
+		:class="open && 'bg-gray-900/5 dark:bg-neutral-100/20'"
+	>
+	</button>
+}
+
+templ Card() {
+	<div class="rounded-2xl border border-gray-200 bg-white shadow-sm shadow-gray-200 dark:border-neutral-600 dark:bg-neutral-900 dark:shadow-none">
+		{ children... }
+	</div>
+}
+
+templ Panel() {
+	<div
+		x-show="open"
+		x-cloak
+		class="mt-2 rounded-2xl border border-gray-200 bg-white shadow-sm shadow-gray-200 dark:border-neutral-600 dark:bg-neutral-900 dark:shadow-none"
+	>
+		{ children... }
+	</div>
+}
+
+type LazyPanel struct {
+	Path string
+	Data string
+}
+
+templ (m LazyPanel) ToTempl(ctx context.Context) {
+	<div
+		hx-post={ m.Path }
+		hx-trigger="visible once from:previous"
+		if m.Data != "" {
+			hx-ext="json-enc"
+			hx-vals={ string(m.Data) }
+		}
+		x-show="open"
+		x-cloak
+		class="mt-2 rounded-2xl border border-gray-200 bg-gray-50 dark:border-neutral-600 dark:bg-neutral-900"
+	>
+		{ children... }
+	</div>
+}
