@@ -4,3 +4,19 @@
 "cargo:rustywind" = "latest"
 go = "1.25"
 golangci-lint = "latest"
+
+[tasks.lint]
+description = "Lint source code"
+run = "golangci-lint run ./..."
+
+[tasks.test]
+description = "Run unit tests"
+run = "go test -short ./..."
+
+[tasks.generate]
+description = "Generate Templ and Tailwind CSS"
+run = [
+    "tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css",
+    "rustywind --write . --output-css-file ./assets/css/output.css",
+    "go tool templ generate",
+]
