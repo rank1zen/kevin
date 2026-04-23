@@ -13,3 +13,5 @@ devenv.local.yaml
 tmp
 
 .env
+
+**/.DS_Store

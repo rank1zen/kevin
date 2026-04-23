@@ -7,7 +7,7 @@ type ChampionListData struct {
 }
 
 templ ChampionList(ctx context.Context, data ChampionListData) {
-	<table class="table-fixed w-full">
+	<table class="w-full table-fixed">
 		<tbody>
 			for _, data := range data.Champions {
 				@ChampionItem(ctx, data)

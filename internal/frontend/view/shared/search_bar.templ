@@ -13,7 +13,7 @@ templ (m SearchBar) ToTempl(ctx context.Context) {
 				open = false;
 			}
 		"
-		class="relative flex-1 min-w-0"
+		class="relative min-w-0 flex-1"
 	>
 		<input
 			type="hidden"
@@ -30,7 +30,7 @@ templ (m SearchBar) ToTempl(ctx context.Context) {
 			hx-trigger="input changed delay:250ms, keyup[key=='Enter']"
 			hx-include="[name='region']"
 			hx-target="#results"
-			class="transition h-9 rounded-lg bg-gray-900/5 text-sm text-gray-900/90 w-full inset-ring-blue-500/50 px-3 dark:bg-gray-200/5 dark:text-gray-100/90 focus:inset-ring-2 focus:outline-0"
+			class="h-9 w-full rounded-lg bg-gray-900/5 px-3 text-sm text-gray-900/90 inset-ring-blue-500/50 transition focus:inset-ring-2 focus:outline-0 dark:bg-gray-200/5 dark:text-gray-100/90"
 		/>
 		<template x-if="true">
 			<div
@@ -42,7 +42,7 @@ templ (m SearchBar) ToTempl(ctx context.Context) {
 						open = false;
 					}
 				"
-				class="absolute w-full mt-4 z-10 bg-white rounded-2xl border border-gray-900/10 shadow-sm shadow-gray-900/10 dark:bg-black dark:border-gray-100/10 dark:shadow-gray-100/10"
+				class="absolute z-10 mt-4 w-full rounded-2xl border border-gray-900/10 bg-white shadow-sm shadow-gray-900/10 dark:border-gray-100/10 dark:bg-black dark:shadow-gray-100/10"
 			></div>
 		</template>
 	</div>

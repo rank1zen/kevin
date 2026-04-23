@@ -25,8 +25,8 @@ templ LivematchPage(ctx context.Context, data LivematchPageData) {
 		}
 		@page.Body() {
 			<div>
-				<div class="px-2 max-w-7xl mt-7 mx-auto md:px-6">
-					<h1 class="mt-7 font-bold text-2xl text-gray-900/90 dark:text-gray-100/90">
+				<div class="mx-auto mt-7 max-w-7xl px-2 md:px-6">
+					<h1 class="mt-7 text-2xl font-bold text-gray-900/90 dark:text-gray-100/90">
 						{ fmt.Sprintf("Live Match %s", data.MatchID) }
 					</h1>
 					for _, team := range data.Teams {

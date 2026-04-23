@@ -18,7 +18,7 @@ templ Trigger() {
 		type="button"
 		x-ref="trigger"
 		@click="open = true"
-		class="relative w-full flex items-center justify-center gap-x-2 h-9 cursor-pointer rounded-lg bg-gray-900/5 transition dark:bg-neutral-20 dark:hover:bg-neutral-100/40 dark:active:bg-neutral-100/60 hover:bg-gray-900/10 focus-visible:inset-ring-blue-500/50 focus-visible:inset-ring-2 focus-visible:outline-0 active:bg-gray-900/10"
+		class="relative flex h-9 w-full cursor-pointer items-center justify-center gap-x-2 rounded-lg bg-gray-900/5 transition hover:bg-gray-900/10 focus-visible:inset-ring-2 focus-visible:inset-ring-blue-500/50 focus-visible:outline-0 active:bg-gray-900/10 dark:hover:bg-neutral-100/40 dark:active:bg-neutral-100/60 dark:bg-neutral-20"
 	>
 		{ children... }
 	</button>
@@ -35,12 +35,12 @@ templ Panel() {
 			@click.stop
 			:id="$id('modal')"
 			x-transition.opacity
-			class="fixed inset-0 flex items-end justify-center z-100 bg-gray-900/20 md:items-center"
+			class="fixed inset-0 z-100 flex items-end justify-center bg-gray-900/20 md:items-center"
 		>
 			<div
 				x-show="open"
 				x-transition
-				class="bg-gray-50 border border-gray-900/10 shadow-lg shadow-gray-900/10 w-full rounded-t-2xl h-3/5 overflow-y-auto md:w-2xl md:rounded-2xl dark:bg-gray-950 dark:border-gray-100/10 dark:shadow-gray-100/10"
+				class="h-3/5 w-full overflow-y-auto rounded-t-2xl border border-gray-900/10 bg-gray-50 shadow-lg shadow-gray-900/10 md:w-2xl md:rounded-2xl dark:border-gray-100/10 dark:bg-gray-950 dark:shadow-gray-100/10"
 			>
 				{ children... }
 			</div>
@@ -59,7 +59,7 @@ templ LazyPanel(Path, Data string) {
 			@click.stop
 			:id="$id('modal')"
 			x-transition.opacity
-			class="fixed inset-0 flex items-end justify-center z-100 bg-gray-900/20 md:items-center"
+			class="fixed inset-0 z-100 flex items-end justify-center bg-gray-900/20 md:items-center"
 		>
 			<div
 				hx-post={ Path }
@@ -68,12 +68,12 @@ templ LazyPanel(Path, Data string) {
 				hx-vals={ string(Data) }
 				x-show="open"
 				x-transition
-				class="bg-gray-50 border border-gray-900/10 shadow-lg shadow-gray-900/10 w-full rounded-t-2xl h-3/5 overflow-y-auto md:w-2xl md:rounded-2xl dark:bg-gray-950 dark:border-gray-100/10 dark:shadow-gray-100/10"
+				class="h-3/5 w-full overflow-y-auto rounded-t-2xl border border-gray-900/10 bg-gray-50 shadow-lg shadow-gray-900/10 md:w-2xl md:rounded-2xl dark:border-gray-100/10 dark:bg-gray-950 dark:shadow-gray-100/10"
 			>
-				<div class="flex sticky top-0 z-10 bg-gray-50 items-center px-2 h-13 justify-end dark:bg-gray-950">
+				<div class="sticky top-0 z-10 flex h-13 items-center justify-end bg-gray-50 px-2 dark:bg-gray-950">
 					@ExitButton()
 				</div>
-				<div class="flex justify-center items-center"></div>
+				<div class="flex items-center justify-center"></div>
 			</div>
 		</div>
 	</template>
@@ -85,7 +85,7 @@ templ ExitButton() {
 			type="button"
 			x-ref="exit"
 			@click="open = false"
-			class="cursor-pointer size-7 rounded-full flex items-center justify-center bg-gray-900/5 dark:bg-gray-100/5"
+			class="flex size-7 cursor-pointer items-center justify-center rounded-full bg-gray-900/5 dark:bg-gray-100/5"
 		>
 			@icon.WindowCloseIcon()
 		</button>

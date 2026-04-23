@@ -23,12 +23,12 @@ templ rankDeltaWidget(ctx context.Context, data rankDeltaWidgetData) {
 		if data.RankChange != nil {
 			// @shared.RankTag(*data.RankChange).ToTempl(ctx)
 		} else {
-			<span class="text-heading bg-neutral-secondary-soft px-1.5 py-0.5 dark:text-gray-100/90">
+			<span class="px-1.5 py-0.5 dark:text-gray-100/90 text-heading bg-neutral-secondary-soft">
 				Unknown
 			</span>
 		}
 		if data.Win {
-			<span class="bg-green-500 text-white px-1.5 py-0.5 rounded-sm">
+			<span class="rounded-sm bg-green-500 px-1.5 py-0.5 text-white">
 				if data.LPChange != nil {
 					{ fmt.Sprintf("%+d", *data.LPChange) }
 				} else {
@@ -37,7 +37,7 @@ templ rankDeltaWidget(ctx context.Context, data rankDeltaWidgetData) {
 			</span>
 		} else {
 			<div class="flex justify-end">
-				<div class="text-xs bg-red-500/80 text-white px-1 rounded">
+				<div class="rounded bg-red-500/80 px-1 text-xs text-white">
 					if data.LPChange != nil {
 						{ fmt.Sprintf("LOSS %+d", *data.LPChange) }
 					} else {

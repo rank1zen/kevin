@@ -9,8 +9,8 @@ type TableData struct {
 
 templ Table(ctx context.Context, data TableData) {
 	<div class="relative overflow-x-auto rounded-xl border border-default">
-		<table class="w-full text-left rounded-lg">
-			<thead class="rounded-lg bg-neutral-secondary border-default border-b text-body-subtle text-xs">
+		<table class="w-full rounded-lg text-left">
+			<thead class="rounded-lg border-b text-xs bg-neutral-secondary border-default text-body-subtle">
 				<tr>
 					<th scope="col" class="px-6 py-3 font-medium">
 						Position
@@ -26,7 +26,7 @@ templ Table(ctx context.Context, data TableData) {
 					</th>
 				</tr>
 			</thead>
-			<tbody class="text-body text-sm">
+			<tbody class="text-sm text-body">
 				for _, data := range data.Rows {
 					@Row(ctx, data)
 				}

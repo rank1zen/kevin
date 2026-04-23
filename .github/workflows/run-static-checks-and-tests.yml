@@ -10,57 +10,20 @@ on:
       - main
 
 jobs:
-  go-test:
-    name: Go Tests
+  ci-tasks:
+    name: CI Tasks
 
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: cachix/install-nix-action@v31
-
-      - uses: cachix/cachix-action@v16
-        with:
-          name: devenv
-
-      - name: Install devenv.sh
-        run: nix profile install nixpkgs#devenv
-
-      - name: Run Taskfile test
-        shell: devenv shell bash -- -e {0}
-        run: task test
-
-  static-go-checks:
-    name: Static Go Checks
+    timeout-minutes: 4
 
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: cachix/install-nix-action@v31
+      - uses: jdx/mise-action@v4
 
-      - uses: cachix/cachix-action@v16
-        with:
-          name: devenv
+      - name: Lint checks
+        run: mise run lint
 
-      - name: Install devenv.sh
-        run: nix profile install nixpkgs#devenv
-
-      - name: Check go.mod is tidy
-        shell: devenv shell bash -- -e {0}
-        run: |
-          go mod tidy
-          git diff --exit-code
-
-      - name: Check *_templ.go files are up-to-date
-        shell: devenv shell bash -- -e {0}
-        run: |
-          go tool templ generate
-          git diff --exit-code
-
-      - name: Run Taskfile lint
-        shell: devenv shell bash -- -e {0}
-        run: task lint
+      - name: Unit tests
+        run: mise run test

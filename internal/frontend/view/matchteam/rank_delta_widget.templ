@@ -31,7 +31,7 @@ templ rankDeltaWidget(ctx context.Context, data rankDeltaWidgetData) {
 		</div>
 		if data.Win {
 			<div class="flex justify-end">
-				<div class="text-xs bg-green-500/80 text-white px-1 rounded">
+				<div class="rounded bg-green-500/80 px-1 text-xs text-white">
 					if data.LPChange != nil {
 						{ fmt.Sprintf("WIN %+d", data.LPChange) }
 					} else {
@@ -41,7 +41,7 @@ templ rankDeltaWidget(ctx context.Context, data rankDeltaWidgetData) {
 			</div>
 		} else {
 			<div class="flex justify-end">
-				<div class="text-xs bg-red-500/80 text-white px-1 rounded">
+				<div class="rounded bg-red-500/80 px-1 text-xs text-white">
 					if data.LPChange != nil {
 						{ fmt.Sprintf("LOSS %+d", data.LPChange) }
 					} else {

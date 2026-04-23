@@ -6,10 +6,10 @@ type PageFooterData struct {
 }
 
 templ PageFooter(ctx context.Context, data PageFooterData) {
-	<footer class="pt-8 pb-16 bg-gray-50 dark:bg-gray-800">
-		<div class="container mx-auto px-4 text-gray-900 md:flex md:justify-between md:items-start md:space-x-8 dark:text-gray-100">
+	<footer class="bg-gray-50 pt-8 pb-16 dark:bg-gray-800">
+		<div class="container mx-auto px-4 text-gray-900 md:flex md:items-start md:justify-between md:space-x-8 dark:text-gray-100">
 			<div class="mb-6 md:mb-0">
-				<h3 class="font-semibold mb-3">
+				<h3 class="mb-3 font-semibold">
 					Links
 				</h3>
 				<ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
@@ -21,7 +21,7 @@ templ PageFooter(ctx context.Context, data PageFooterData) {
 				</ul>
 			</div>
 			<div class="mb-6 md:mb-0">
-				<h3 class="font-semibold mb-3">
+				<h3 class="mb-3 font-semibold">
 					Terms
 				</h3>
 				<ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
@@ -38,7 +38,7 @@ templ PageFooter(ctx context.Context, data PageFooterData) {
 				</ul>
 			</div>
 			<div class="mb-6 md:mb-0">
-				<h3 class="font-semibold mb-3">
+				<h3 class="mb-3 font-semibold">
 					Connect
 				</h3>
 				<ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">

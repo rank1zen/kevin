@@ -11,7 +11,7 @@ type ChampionWidgetData struct {
 }
 
 templ ChampionWidget(ctx context.Context, data ChampionWidgetData) {
-	<div class="flex flex-none gap-x-0.5 items-center">
+	<div class="flex flex-none items-center gap-x-0.5">
 		@shared.ChampionSprite(ctx, shared.ChampionSpriteData{
 			ChampionID: data.ChampionID,
 			Size:       1,
