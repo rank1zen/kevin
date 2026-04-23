@@ -13,9 +13,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal/config"
+	"github.com/rank1zen/kevin/internal/feature/profile"
+	dbProfile "github.com/rank1zen/kevin/internal/feature/profile/db"
 	"github.com/rank1zen/kevin/internal/log"
-	"github.com/rank1zen/kevin/internal/profile"
-	dbProfile "github.com/rank1zen/kevin/internal/profile/db"
 	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/rank1zen/kevin/internal/route"
 )

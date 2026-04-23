@@ -4,13 +4,13 @@ package route
 import (
 	"net/http"
 
-	"github.com/rank1zen/kevin/internal/profile"
-	"github.com/rank1zen/kevin/internal/profile/web/page/overview_page"
-	"github.com/rank1zen/kevin/internal/profile/web/partial/champion"
-	"github.com/rank1zen/kevin/internal/profile/web/partial/history_entry"
-	"github.com/rank1zen/kevin/internal/profile/web/partial/match_detail"
-	"github.com/rank1zen/kevin/internal/profile/web/partial/rank_card"
-	"github.com/rank1zen/kevin/internal/profile/web/partial/update"
+	"github.com/rank1zen/kevin/internal/feature/profile"
+	"github.com/rank1zen/kevin/internal/feature/profile/web/page/overview_page"
+	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/champion"
+	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/history_entry"
+	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/match_detail"
+	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/rank_card"
+	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/update"
 	"github.com/rank1zen/kevin/internal/riot"
 	"github.com/rank1zen/kevin/internal/web/page/not_found_page"
 )

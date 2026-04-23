@@ -1,0 +1,33 @@
+package overview_page
+
+import (
+	"context"
+	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/champion"
+	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/rank_card"
+)
+
+type sidebarData struct {
+}
+
+templ sidebar(ctx context.Context, data sidebarData) {
+	<div class="hidden w-2xs flex-none md:block">
+		<div class="py-3">
+			<div class="relative flex items-center py-5">
+				<h3 class="mr-3 flex-shrink leading-none font-semibold tracking-tight">Rank Graph</h3>
+				<div class="flex-grow border-t"></div>
+			</div>
+			<div class="my-2">
+				@rank_card.Loader(ctx, &rank_card.LoaderData{})
+			</div>
+		</div>
+		<div class="py-3">
+			<div class="relative flex items-center py-5">
+				<h3 class="mr-3 flex-shrink leading-none font-semibold tracking-tight">Past Week</h3>
+				<div class="flex-grow border-t"></div>
+			</div>
+			<div class="my-2">
+				@champion.Loader(ctx, &champion.LoaderData{})
+			</div>
+		</div>
+	</div>
+}

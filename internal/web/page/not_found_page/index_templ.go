@@ -10,9 +10,8 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"github.com/rank1zen/kevin/internal/frontend/component/page"
-	"github.com/rank1zen/kevin/internal/frontend/view/shared"
 	"github.com/rank1zen/kevin/internal/web/component/header_bar"
+	"github.com/rank1zen/kevin/internal/web/component/page"
 )
 
 type IndexData struct{}
@@ -114,10 +113,6 @@ func Index(ctx context.Context, data *IndexData) templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = shared.PageFooter(ctx, shared.PageFooterData{}).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
 				return nil
 			})
 			templ_7745c5c3_Err = page.Footer().Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)

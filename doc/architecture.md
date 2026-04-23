@@ -10,7 +10,8 @@ kevin/
 ├── internal/              # Private application code
 │   ├── feature/<feature>/ # Per feature packages
 │   ├── web/               # Web related
-│   │   ├── component/     # Reusable components (templui)
+│   │   ├── templui/       # Reusable components (templui)
+│   │   ├── component/     # Reusable components
 │   │   ├── block/         # Reusable UI blocks
 │   │   ├── partial/       # Loading UI blocks
 │   │   └── page/          # Full pages

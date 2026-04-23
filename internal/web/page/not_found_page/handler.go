@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/rank1zen/kevin/internal/frontend"
+	"github.com/rank1zen/kevin/internal/web"
 )
 
 type Handler struct{}
@@ -18,7 +18,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if err := c.Render(r.Context(), w); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		frontend.LogError(r, errors.New("templ error"))
+		web.LogError(r, errors.New("templ error"))
 		return
 	}
 }
