@@ -5,7 +5,6 @@ go 1.25.0
 require (
 	github.com/Oudwins/tailwind-merge-go v0.2.1
 	github.com/a-h/templ v0.3.1001
-	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6
 	github.com/jackc/tern/v2 v2.3.6
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
