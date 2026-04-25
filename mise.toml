@@ -19,3 +19,11 @@ run = [
     "rustywind --write . --output-css-file ./assets/css/output.css",
     "go tool templ generate",
 ]
+
+[tasks.build]
+description = "Build Docker image"
+usage = '''
+arg "<repository>" help="Image repository"
+flag "--tag <tag>" help="Image tag" default="latest"
+'''
+run = "docker build -t ${usage_repository}/backend:${usage_tag} --platform linux/amd64 ."
