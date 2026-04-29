@@ -1,4 +1,4 @@
-// app is responsible for the runtime.
+// Package app is responsible for the runtime of the binary.
 package app
 
 import (
