@@ -4,6 +4,34 @@
 go = "1.25"
 golangci-lint = "latest"
 
+[env]
+# Application settings
+PORT=7331
+KEVIN_ENV = { required = true }
+KEVIN_DATABASE_URL = { required = true }
+KEVIN_RIOT_API_KEY = { required = true }
+
+# GCP settings
+GCP_REGION = { required = true }
+GCP_PROJECT_ID = { required = true }
+
+# GCP Artifact Registry settings
+GCP_GAR_LOCATION = { required = true }
+GCP_GAR_REPOSITORY = { required = true }
+GCP_GAR_IMAGE = { required = true }
+GCP_GAR_TAG = { required = true }
+
+# GCP Cloud SQL settings
+GCP_CLOUDSQL_INSTANCE = { required = true }
+
+# GCP Secret Manager settings
+GCP_SECRET_KEVIN_DATABASE_URL = { required = true }
+GCP_SECRET_KEVIN_RIOT_API_KEY = { required = true }
+
+# Tern migrator settings
+TERN_CONFIG = "./tern.conf"
+TERN_MIGRATIONS = "./migration/migrations"
+
 [tasks.lint]
 description = "Lint source code"
 run = "golangci-lint run ./..."
@@ -19,72 +47,3 @@ run = [
     "rustywind --write . --output-css-file ./assets/css/output.css",
     "go tool templ generate",
 ]
-
-[tasks.build]
-description = "Build image"
-usage = '''
-arg "<environment>" help="Target environment" {
-  choices "dev" "staging" "prod"
-}
-flag "--gcp-project-id <gcp-project-id>" help="Google Cloud project id" env="GCP_PROJECT_ID"
-flag "--gcp-gar-location <gcp-gar-location>" help="Google Cloud Artifact Registry Location" env="GCP_GAR_LOCATION"
-flag "--tag <tag>" help="Image tag" default="latest"
-'''
-run = '''
-docker build . \
-    --tag ${usage_gcp_gar_location?}-docker.pkg.dev/${usage_gcp_project_id?}/${usage_environment?}-backend/${usage_environment?}-backend:${usage_tag?} \
-    --platform linux/amd64
-'''
-
-[tasks.push]
-description = "Push image"
-usage = '''
-arg "<environment>" help="Target environment" {
-  choices "staging" "prod"
-}
-flag "--gcp-project-id <gcp-project-id>" help="Google Cloud project id" env="GCP_PROJECT_ID"
-flag "--gcp-gar-location <gcp-gar-location>" help="Google Cloud Artifact Registry Location" env="GCP_GAR_LOCATION"
-flag "--tag <tag>" help="Image tag" default="latest"
-'''
-run = '''
-docker push ${usage_gcp_gar_location?}-docker.pkg.dev/${usage_gcp_project_id?}/${usage_environment?}-backend/${usage_environment?}-backend:${usage_tag?}
-'''
-
-[tasks.migrate]
-description = "Migrate database"
-usage = '''
-arg "<environment>" help="Target environment" {
-  choices "staging" "prod"
-}
-flag "--gcp-project-id <gcp-project-id>" help="Google Cloud project id" env="GCP_PROJECT_ID"
-flag "--gcp-gar-location <gcp-gar-location>" help="Google Cloud Artifact Registry Location" env="GCP_GAR_LOCATION"
-flag "--gcp-cloudsql-instance <gcp-cloudsql-instance>" help="Google Cloud SQL instance" env="GCP_CLOUDSQL_INSTANCE"
-flag "--tag <tag>" help="Image tag" default="latest"
-'''
-run = '''
-gcloud run jobs deploy "${usage_environment?}-migrate" \
-    --image ${usage_gcp_gar_location?}-docker.pkg.dev/${usage_gcp_project_id?}/${usage_environment?}-backend/${usage_environment?}-backend:${usage_tag?} \
-    --set-cloudsql-instances ${usage_gcp_cloudsql_instance?} \
-    --set-secrets "KEVIN_DATABASE_URL=${usage_environment?}-kevin-database-url:latest" \
-    --region ${usage_gcp_gar_location?} \
-    --command "tern" \
-    --args "migrate"
-
-gcloud run jobs execute "${usage_environment?}-migrate" \
-    --region ${usage_gcp_gar_location?} \
-    --wait
-'''
-
-[tasks.deploy-staging]
-description = "Deploy staging backend"
-usage = '''
-arg "<image>" help="Docker image"
-arg "<cloudsql-instance>" help="CloudSQL instance name" env="CLOUDSQL_INSTANCE"
-'''
-run = '''
-gcloud run deploy "staging-backend"\
-    --image= ${usage_image?} \
-    --set-cloudsql-instance ${usage_cloudsql-instance?} \
-    --set-secrets "DB_PASSWORD=db-password:latest,DB_USER=db-user:latest" \
-    --set-env-vars "DB_NAME=mydb,DB_HOST=127.0.0.1"
-'''

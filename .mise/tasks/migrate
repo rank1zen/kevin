@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#MISE description="Migrate Cloud SQL database"
+#USAGE flag "--gcp-region <gcp-region>" help="Region" env="GCP_REGION"
+#USAGE flag "--gcp-project-id <gcp-project-id>" help="Project ID" env="GCP_PROJECT_ID"
+#USAGE flag "--gcp-gar-location <gcp-gar-location>" help="Artifact Registry location" env="GCP_GAR_LOCATION"
+#USAGE flag "--gcp-gar-repository <gcp-gar-repository>" help="Artifact Registry repository" env="GCP_GAR_REPOSITORY"
+#USAGE flag "--gcp-gar-image <gcp-gar-image>" help="Artifact Registry image name" env="GCP_GAR_IMAGE"
+#USAGE flag "--gcp-gar-tag <gcp-gar-tag>" help="Artifact Registry image tag" env="GCP_GAR_TAG" default="latest"
+#USAGE flag "--gcp-cloudsql-instance <gcp-cloudsql-instance>" help="Cloud SQL instance" env="GCP_CLOUDSQL_INSTANCE"
+#USAGE flag "--gcp-secret-kevin-database-url <gcp-secret-kevin-database-url>" help="Secret Manager KEVIN_DATABASE_URL secret key"
+
+job_name="${usage_environment}-migrate"
+
+gcloud run jobs deploy "${job_name?}" \
+    --image "${usage_gcp_gar_location?}-docker.pkg.dev/${usage_gcp_project_id?}/${usage_gcp_gar_repository?}/${usage_gcp_gar_image?}:${usage_gcp_gar_tag?}" \
+    --set-cloudsql-instances "${usage_gcp_cloudsql_instance?}" \
+    --set-secrets "KEVIN_DATABASE_URL=${usage_gcp_secret_kevin_database_url?}" \
+    --region "${usage_gcp_region?}" \
+    --args "migrate"
+
+gcloud run jobs execute "${job_name?}" \
+    --region "${usage_gcp_region?}" \
+    --wait

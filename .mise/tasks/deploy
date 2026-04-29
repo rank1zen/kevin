@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#MISE description="Deploy Cloud Run service"
+#USAGE arg "<environment>" help="Target environment" { choices "staging" "prod" }
+#USAGE flag "--gcp-region <gcp-region>" help="Region" env="GCP_REGION"
+#USAGE flag "--gcp-image <gcp-image>" help="Image" env="GCP_IMAGE"
+#USAGE flag "--gcp-cloudsql-instance <gcp-cloudsql-instance>" help="Cloud SQL instance" env="GCP_CLOUDSQL_INSTANCE"
+#USAGE flag "--gcp-secret-database-url <gcp-secret-database-url>" help="Google Cloud Secret Manager Database URL secret name"
+
+service_name="${usage_environment}-backend"
+
+gcloud run deploy "staging-backend"\
+    --image= "${usage_image?}" \
+    --set-cloudsql-instance "${usage_cloudsql_instance?}" \
+    --set-secrets "DB_PASSWORD=db-password:latest,DB_USER=db-user:latest" \
+    --set-env-vars "DB_NAME=mydb,DB_HOST=127.0.0.1"
