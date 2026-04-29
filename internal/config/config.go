@@ -6,9 +6,8 @@ package config
 import (
 	"errors"
 	"fmt"
-	"net/url"
-	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/spf13/viper"
 )
 
@@ -116,30 +115,9 @@ func (c *Config) GetPort() int {
 }
 
 func validateDatabaseURL(raw string) error {
-	s := strings.TrimSpace(raw)
-	if s == "" {
-		return errors.New("url is not set")
-	}
-
-	u, err := url.Parse(s)
+	_, err := pgx.ParseConfig(raw)
 	if err != nil {
 		return err
-	}
-
-	// (5) Scheme whitelist
-	switch strings.ToLower(u.Scheme) {
-	case "postgres", "postgresql":
-	default:
-		return fmt.Errorf("url must use postgres/postgresql scheme, got %q", u.Scheme)
-	}
-
-	// (4) Required URL parts
-	if u.Host == "" {
-		return errors.New("url must include a host")
-	}
-	// Path should be /dbname
-	if u.Path == "" || u.Path == "/" {
-		return errors.New("url must include a database name in path")
 	}
 
 	return nil

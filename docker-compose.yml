@@ -2,9 +2,9 @@ services:
   db:
     image: postgres:18
     environment:
-      POSTGRES_USER: ${KEVIN_DB_USER}
-      POSTGRES_PASSWORD: ${KEVIN_DB_PASSWORD}
-      POSTGRES_DB: ${KEVIN_DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret1234
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     healthcheck:
@@ -15,10 +15,12 @@ services:
 
   migrate:
     build: .
-    env_file:
-      - .env
+    environment:
+      PORT: 7331
+      KEVIN_ENV: "development"
+      KEVIN_DATABASE_URL: "host=db user=postgres dbname=postgres password=secret1234"
+      KEVIN_RIOT_API_KEY: "RGA"
     depends_on:
       db:
         condition: service_healthy
-    entrypoint: /usr/local/bin/tern
     command: migrate
