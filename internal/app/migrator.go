@@ -33,7 +33,7 @@ func NewMigrator(ctx context.Context) *Migrator {
 	}
 	app.config = cfg
 
-	conn, err := pgx.Connect(ctx, cfg.GetDatabaseURL())
+	conn, err := pgx.Connect(ctx, cfg.DatabaseURL)
 	if err != nil {
 		app.errors = append(app.errors, fmt.Errorf("failed to connect to postgres: %w", err))
 		return app

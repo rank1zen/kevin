@@ -6,7 +6,7 @@ A lightweight League of Legends stats client.
 
 ## Quick Start
 
-Deploy Kevin locally using Docker for early testing and development:
+Deploy Kevin locally using Docker for early testing and Development:
 
 ### Prerequisites
 
@@ -70,7 +70,7 @@ docker run -d \
   -p 4001:4001 \
   -e KEVIN_RIOT_API_KEY="YOUR_RIOT_API_KEY_HERE" \
   -e KEVIN_POSTGRES_CONNECTION="postgresql://kevin:password@kevin-postgres:5432/kevin?sslmode=disable" \
-  -e KEVIN_ENV="development" \
+  -e KEVIN_ENV="Development" \
   --network host \
   kevin-frontend:latest
 ```
