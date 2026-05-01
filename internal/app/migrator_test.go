@@ -2,16 +2,14 @@ package app_test
 
 import (
 	"context"
-	"net/http"
 	"testing"
-	"time"
 
 	"github.com/rank1zen/kevin/internal/app"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
-func TestAppStartsAndResponds(t *testing.T) {
+func TestMigrator_Run(t *testing.T) {
 	ctx := context.Background()
 
 	pgContainer, err := postgres.Run(ctx,
@@ -36,26 +34,9 @@ func TestAppStartsAndResponds(t *testing.T) {
 	t.Setenv("KEVIN_ENV", "prod")
 	t.Setenv("PORT", "4099")
 
-	a := app.New(ctx)
+	a := app.NewMigrator(ctx)
 	require.Empty(t, a.Errors(), "app.New() should not have errors")
 
-	go a.Run(ctx)
-
-	require.Eventually(t, func() bool {
-		resp, err := http.Get("http://localhost:4099/healthz")
-		if err != nil {
-			return false
-		}
-		_ = resp.Body.Close()
-		return resp.StatusCode == http.StatusOK
-	},
-		10*time.Second,
-		100*time.Millisecond,
-		"server never became ready",
-	)
-
-	resp, err := http.Get("http://localhost:4099/healthz")
-	require.NoError(t, err)
-	defer func() { _ = resp.Body.Close() }()
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	code := a.Run(ctx)
+	require.Equal(t, 0, code)
 }

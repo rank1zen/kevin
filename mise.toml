@@ -4,6 +4,34 @@
 go = "1.25"
 golangci-lint = "latest"
 
+[env]
+# Application settings
+PORT=7331
+KEVIN_ENV="dev"
+KEVIN_DATABASE_URL=""
+KEVIN_RIOT_API_KEY=""
+
+# GCP settings
+GCP_REGION = { required = true }
+GCP_PROJECT_ID = { required = true }
+
+# GCP Artifact Registry settings
+GCP_GAR_LOCATION = { required = true }
+GCP_GAR_REPOSITORY = { required = true }
+GCP_GAR_IMAGE = { required = true }
+GCP_GAR_TAG = { required = true }
+
+# GCP Cloud SQL settings
+GCP_CLOUDSQL_INSTANCE = { required = true }
+
+# GCP Secret Manager settings
+GCP_SECRET_KEVIN_DATABASE_URL = { required = true }
+GCP_SECRET_KEVIN_RIOT_API_KEY = { required = true }
+
+# Tern migrator settings
+TERN_CONFIG = "./tern.conf"
+TERN_MIGRATIONS = "./migrations"
+
 [tasks.lint]
 description = "Lint source code"
 run = "golangci-lint run ./..."

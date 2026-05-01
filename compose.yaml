@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret1234
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  migrate:
+    build: .
+    environment:
+      PORT: 7331
+      KEVIN_ENV: "development"
+      KEVIN_DATABASE_URL: "host=db user=postgres dbname=postgres password=secret1234"
+      KEVIN_RIOT_API_KEY: "RGA"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: migrate
+
+  backend:
+    build: .
+    environment:
+      PORT: 7331
+      KEVIN_ENV: "development"
+      KEVIN_DATABASE_URL: "host=db user=postgres dbname=postgres password=secret1234"
+      KEVIN_RIOT_API_KEY: "RGA"
+    ports:
+      - "7331:7331"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    command: serve

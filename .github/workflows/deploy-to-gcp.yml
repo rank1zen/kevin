@@ -1,0 +1,99 @@
+name: Push to Google Cloud
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: staging-push
+  cancel-in-progress: false
+
+env:
+  GCP_REGION: ${{ vars.GCP_REGION }}
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_GAR_LOCATION: ${{vars.GCP_GAR_LOCATION}}
+  GCP_GAR_REPOSITORY: ${{vars.GCP_GAR_REPOSITORY}}
+  GCP_GAR_IMAGE: ${{github.repository}}
+  GCP_GAR_TAG: ${{github.sha}}
+  GCP_CLOUDSQL_INSTANCE: ${{vars.GCP_CLOUDSQL_INSTANCE}}
+  GCP_SECRET_KEVIN_DATABASE_URL: ${{vars.GCP_SECRET_KEVIN_DATABASE_URL}}
+  GCP_SECRET_KEVIN_RIOT_API_KEY: ${{vars.GCP_SECRET_KEVIN_RIOT_API_KEY}}
+
+jobs:
+  test:
+    name: Test source code
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - uses: jdx/mise-action@v4
+
+      - name: Lint checks
+        run: mise run lint
+
+      - name: Test source
+        run: 'mise run test'
+
+  push:
+    name: Push to Artifact Registry
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - name: Authenticate into Google
+        uses: 'google-github-actions/auth@v3'
+        if: github.event_name != 'pull_request'
+        with:
+          workload_identity_provider: '${{ vars.WIF_PROVIDER }}'
+
+      - name: Authenticate Docker to Artifact Registry
+        if: github.event_name != 'pull_request'
+        run: gcloud auth configure-docker ${{ env.GCP_GAR_LOCATION }}-docker.pkg.dev
+
+      - uses: jdx/mise-action@v4
+
+      - name: Build image for Artifact Registry
+        run: 'mise run build'
+
+      - name: Push image to Artifact Registry
+        if: github.event_name != 'pull_request'
+        run: 'mise run push'
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: push
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - name: Authenticate into Google
+        uses: 'google-github-actions/auth@v3'
+        with:
+          workload_identity_provider: '${{ vars.WIF_PROVIDER }}'
+
+      - uses: jdx/mise-action@v4
+
+      - name: Migrate Cloud SQL database
+        run: 'mise run migrate'
+
+      - name: Deploy to Cloud Run
+        run: 'mise run deploy'

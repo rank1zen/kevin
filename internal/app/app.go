@@ -1,4 +1,4 @@
-// app is responsible for the runtime.
+// Package app is responsible for the runtime of the binary.
 package app
 
 import (
@@ -41,14 +41,14 @@ func New(ctx context.Context) *App {
 	}
 	app.config = cfg
 
-	pool, err := connectPostgres(ctx, cfg.GetDatabaseURL())
+	pool, err := connectPostgres(ctx, cfg.DatabaseURL)
 	if err != nil {
 		app.errors = append(app.errors, fmt.Errorf("failed to connect to postgres: %w", err))
 		return app
 	}
 	app.postgresConn = pool
 
-	riotClient := riot.NewClient(cfg.GetRiotAPIKey())
+	riotClient := riot.NewClient(cfg.RiotAPIKey)
 	app.riotClient = riotClient
 
 	app.server = route.Router(
@@ -69,7 +69,7 @@ func (a *App) Run(ctx context.Context) int {
 	defer cancel()
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", a.config.GetPort()),
+		Addr:    fmt.Sprintf(":%d", a.config.Port),
 		Handler: a.server,
 	}
 
@@ -81,7 +81,7 @@ func (a *App) Run(ctx context.Context) int {
 		}
 	}()
 
-	a.logger.Info("server started", "address", a.config.GetPort(), "environment", a.config.IsDevelopment())
+	a.logger.Info("server started", "address", a.config.Port, "environment", a.config.Environment)
 
 	select {
 	case err := <-serverErrCh:

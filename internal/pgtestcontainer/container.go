@@ -3,13 +3,13 @@ package pgtestcontainer
 import (
 	"context"
 	"log"
-	"os"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jackc/tern/v2/migrate"
+	"github.com/rank1zen/kevin/migrations"
 	pg "github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
@@ -21,7 +21,7 @@ type PGInstance struct {
 
 // NewPGInstance sets up a postgres server in a docker container. It will use
 // the current schema version.
-func NewPGInstance(ctx context.Context, migrationsPath string) *PGInstance {
+func NewPGInstance(ctx context.Context) *PGInstance {
 	const (
 		pgDBName   = "postgres_test"
 		pgUser     = "kevin"
@@ -50,7 +50,7 @@ func NewPGInstance(ctx context.Context, migrationsPath string) *PGInstance {
 		pgURL,
 	}
 
-	pgInstance.migrateSchema(ctx, migrationsPath)
+	pgInstance.migrateSchema(ctx)
 
 	if err := pgInstance.container.Snapshot(ctx, pg.WithSnapshotName("test-snapshot")); err != nil {
 		log.Fatalf("creating snapshot: %s", err)
@@ -76,7 +76,7 @@ func (p *PGInstance) SetupConn(ctx context.Context, t testing.TB) *pgxpool.Pool 
 	return conn
 }
 
-func (p *PGInstance) migrateSchema(ctx context.Context, migrationsPath string) {
+func (p *PGInstance) migrateSchema(ctx context.Context) {
 	conn, err := pgx.Connect(ctx, p.pgURL)
 	if err != nil {
 		log.Fatal(err)
@@ -91,7 +91,7 @@ func (p *PGInstance) migrateSchema(ctx context.Context, migrationsPath string) {
 		log.Fatal(err)
 	}
 
-	if err := m.LoadMigrations(os.DirFS(migrationsPath)); err != nil {
+	if err := m.LoadMigrations(migrations.Migrations); err != nil {
 		log.Fatal(err)
 	}
 

@@ -8,12 +8,10 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-RUN CGO_ENABLED=0 go install github.com/jackc/tern/v2@latest
-
 # what about images and templ files
 COPY ./ ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /kevin ./cmd/kevin
+RUN CGO_ENABLED=0 GOOS=linux go build -o /kevin .
 
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
 
@@ -21,11 +19,6 @@ WORKDIR /
 
 # Copy main executable
 COPY --from=build-stage /kevin /kevin
-
-# Copy tern and dependencies
-COPY --from=build-stage /go/bin/tern /usr/local/bin/tern
-COPY migrations /migrations
-COPY tern.conf /tern.conf
 
 EXPOSE 4001
 
