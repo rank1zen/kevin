@@ -7,9 +7,9 @@ golangci-lint = "latest"
 [env]
 # Application settings
 PORT=7331
-KEVIN_ENV = { required = true }
-KEVIN_DATABASE_URL = { required = true }
-KEVIN_RIOT_API_KEY = { required = true }
+KEVIN_ENV="dev"
+KEVIN_DATABASE_URL=""
+KEVIN_RIOT_API_KEY=""
 
 # GCP settings
 GCP_REGION = { required = true }
@@ -30,7 +30,7 @@ GCP_SECRET_KEVIN_RIOT_API_KEY = { required = true }
 
 # Tern migrator settings
 TERN_CONFIG = "./tern.conf"
-TERN_MIGRATIONS = "./migration/migrations"
+TERN_MIGRATIONS = "./migrations"
 
 [tasks.lint]
 description = "Lint source code"

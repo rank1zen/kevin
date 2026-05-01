@@ -12,17 +12,20 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-  GCP_GAR_LOCATION: ${{ vars.GCP_GAR_LOCATION }}
-  GCP_GAR_REPOSITORY: ${{ vars.GCP_REPOSITORY }}
-  GCP_GAR_IMAGE: ${{ github.repository }}
-  GCP_GAR_TAG: ${{ github.sha }}
-  GCP_SERVICE: ${{ vars.GCP_SERVICE }}
   GCP_REGION: ${{ vars.GCP_REGION }}
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_GAR_LOCATION: ${{vars.GCP_GAR_LOCATION}}
+  GCP_GAR_REPOSITORY: ${{vars.GCP_GAR_REPOSITORY}}
+  GCP_GAR_IMAGE: ${{github.repository}}
+  GCP_GAR_TAG: ${{github.sha}}
+  GCP_CLOUDSQL_INSTANCE: ${{vars.GCP_CLOUDSQL_INSTANCE}}
+  GCP_SECRET_KEVIN_DATABASE_URL: ${{vars.GCP_SECRET_KEVIN_DATABASE_URL}}
+  GCP_SECRET_KEVIN_RIOT_API_KEY: ${{vars.GCP_SECRET_KEVIN_RIOT_API_KEY}}
+
 
 jobs:
   push:
-    name: Push to Google Cloud
+    name: Push to Artifact Registry
 
     runs-on: ubuntu-latest
 
@@ -35,27 +38,19 @@ jobs:
         uses: 'actions/checkout@v4'
 
       - name: Authenticate into Google
-        id: auth
         uses: 'google-github-actions/auth@v3'
         with:
-          token_format: 'access_token'
           workload_identity_provider: '${{ vars.WIF_PROVIDER }}'
-          service_account: '${{ vars.WIF_SERVICE_ACCOUNT }}'
 
       - name: Authenticate Docker to Artifact Registry
-        id: docker-auth
-        uses: 'docker/login-action@v3'
-        with:
-          username: 'oauth2accesstoken'
-          password: '${{ steps.auth.outputs.access_token }}'
-          registry: '${{ env.GAR_LOCATION }}-docker.pkg.dev'
+        run: gcloud auth configure-docker ${{ env.GCP_GAR_LOCATION }}-docker.pkg.dev
 
       - uses: jdx/mise-action@v4
 
       - name: Test source
         run: 'mise run test'
 
-      - name: Build image
+      - name: Build image for Artifact Registry
         run: 'mise run build'
 
       - name: Push image to Artifact Registry
@@ -77,12 +72,9 @@ jobs:
         uses: 'actions/checkout@v4'
 
       - name: Authenticate into Google
-        id: auth
         uses: 'google-github-actions/auth@v3'
         with:
-          token_format: 'access_token'
           workload_identity_provider: '${{ vars.WIF_PROVIDER }}'
-          service_account: '${{ vars.WIF_SERVICE_ACCOUNT }}'
 
       - uses: jdx/mise-action@v4
 
