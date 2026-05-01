@@ -15,6 +15,15 @@ func setBaseEnv(t *testing.T) {
 	t.Setenv("PORT", "8080")
 }
 
+func clearEnv(t *testing.T) {
+	t.Helper()
+
+	t.Setenv("KEVIN_DATABASE_URL", "")
+	t.Setenv("KEVIN_RIOT_API_KEY", "")
+	t.Setenv("KEVIN_ENV", "")
+	t.Setenv("PORT", "")
+}
+
 func TestNewConfig_ValuesAreSet(t *testing.T) {
 	setBaseEnv(t)
 	t.Setenv("KEVIN_DATABASE_URL", "postgres://user:pass@localhost:5432/kevin")
@@ -28,6 +37,7 @@ func TestNewConfig_ValuesAreSet(t *testing.T) {
 	require.Equal(t, "postgres://user:pass@localhost:5432/kevin", cfg.DatabaseURL)
 }
 func TestNewConfig_DefaultValuesAreSet(t *testing.T) {
+	clearEnv(t)
 	t.Setenv("KEVIN_DATABASE_URL", "postgres://user:pass@localhost:5432/kevin")
 	t.Setenv("KEVIN_RIOT_API_KEY", "test-key")
 

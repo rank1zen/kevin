@@ -72,7 +72,7 @@ func (c *Config) validate() error {
 	}
 
 	if c.Environment != Development && c.Environment != Staging && c.Environment != Production {
-		message := fmt.Sprintf("KEVIN_ENV must be either '%s' or '%s'", Development, Production)
+		message := fmt.Sprintf("KEVIN_ENV must be either '%s' or '%s' '%s'", Development, Production, Staging)
 		errs = append(errs, errors.New(message))
 	}
 

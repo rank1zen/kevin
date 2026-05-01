@@ -33,7 +33,7 @@ func TestAppStartsAndResponds(t *testing.T) {
 
 	t.Setenv("KEVIN_DATABASE_URL", connStr)
 	t.Setenv("KEVIN_RIOT_API_KEY", "test-key")
-	t.Setenv("KEVIN_ENV", "production")
+	t.Setenv("KEVIN_ENV", "prod")
 	t.Setenv("PORT", "4099")
 
 	a := app.New(ctx)
