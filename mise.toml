@@ -6,44 +6,28 @@ golangci-lint = "latest"
 
 [env]
 # Application settings
-PORT=7331
-KEVIN_ENV="dev"
-KEVIN_DATABASE_URL=""
-KEVIN_RIOT_API_KEY=""
+KEVIN_PORT = 7331
+KEVIN_ENV = "dev"
+KEVIN_DATABASE_URL = ""
+KEVIN_RIOT_API_KEY = ""
 
 # GCP settings
-GCP_REGION = { required = true }
-GCP_PROJECT_ID = { required = true }
+GCP_REGION = ""
+GCP_PROJECT_ID = ""
 
 # GCP Artifact Registry settings
-GCP_GAR_LOCATION = { required = true }
-GCP_GAR_REPOSITORY = { required = true }
-GCP_GAR_IMAGE = { required = true }
-GCP_GAR_TAG = { required = true }
+GCP_GAR_LOCATION = ""
+GCP_GAR_REPOSITORY = ""
+GCP_GAR_IMAGE = ""
+GCP_GAR_TAG = ""
 
 # GCP Cloud SQL settings
-GCP_CLOUDSQL_INSTANCE = { required = true }
+GCP_CLOUDSQL_INSTANCE = ""
 
 # GCP Secret Manager settings
-GCP_SECRET_KEVIN_DATABASE_URL = { required = true }
-GCP_SECRET_KEVIN_RIOT_API_KEY = { required = true }
+GCP_SECRET_KEVIN_DATABASE_URL = ""
+GCP_SECRET_KEVIN_RIOT_API_KEY = ""
 
 # Tern migrator settings
 TERN_CONFIG = "./tern.conf"
 TERN_MIGRATIONS = "./migrations"
-
-[tasks.lint]
-description = "Lint source code"
-run = "golangci-lint run ./..."
-
-[tasks.test]
-description = "Run unit tests"
-run = "go test -short ./..."
-
-[tasks.generate]
-description = "Generate Templ and Tailwind CSS"
-run = [
-    "tailwindcss -i ./assets/css/input.css -o ./assets/css/output.css",
-    "rustywind --write . --output-css-file ./assets/css/output.css",
-    "go tool templ generate",
-]

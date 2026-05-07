@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #MISE description="Migrate Cloud SQL database"
-#USAGE flag "--gcp-region <gcp-region>" help="Region" env="GCP_REGION"
+#USAGE flag "--port <port>" env="KEVIN_PORT"
+#USAGE flag "--env <env>" env="KEVIN_ENV"
 #USAGE flag "--gcp-project-id <gcp-project-id>" help="Project ID" env="GCP_PROJECT_ID"
+#USAGE flag "--gcp-region <gcp-region>" help="Region" env="GCP_REGION"
 #USAGE flag "--gcp-gar-location <gcp-gar-location>" help="Artifact Registry location" env="GCP_GAR_LOCATION"
 #USAGE flag "--gcp-gar-repository <gcp-gar-repository>" help="Artifact Registry repository" env="GCP_GAR_REPOSITORY"
 #USAGE flag "--gcp-gar-image <gcp-gar-image>" help="Artifact Registry image name" env="GCP_GAR_IMAGE"
@@ -10,18 +12,13 @@
 #USAGE flag "--gcp-secret-kevin-database-url <gcp-secret-kevin-database-url>" help="Secret Manager KEVIN_DATABASE_URL secret key" env="GCP_SECRET_KEVIN_DATABASE_URL"
 #USAGE flag "--gcp-secret-kevin-riot-api-key <gcp-secret-kevin-riot-api-key>" help="Secret Manager KEVIN_RIOT_API_KEY secret key" env="GCP_SECRET_KEVIN_RIOT_API_KEY"
 
-set -e
-
-job_name="${usage_gcp_gar_image?}-migrate"
-
-gcloud run jobs deploy "${job_name?}" \
-    --image "${usage_gcp_gar_location?}-docker.pkg.dev/${usage_gcp_project_id?}/${usage_gcp_gar_repository?}/${usage_gcp_gar_image?}:${usage_gcp_gar_tag?}" \
-    --set-cloudsql-instances "${usage_gcp_cloudsql_instance?}" \
-    --set-secrets "KEVIN_DATABASE_URL=${usage_gcp_secret_kevin_database_url?},KEVIN_RIOT_API_KEY=${usage_gcp_secret_kevin_riot_api_key?}" \
-    --set-env-vars "KEVIN_ENV=dev,KEVIN_PORT=7331" \
-    --region "${usage_gcp_region?}" \
-    --args "migrate"
-
-gcloud run jobs execute "${job_name?}" \
-    --region "${usage_gcp_region?}" \
-    --wait
+gcloud run jobs deploy "${usage_gcp_gar_image?}-migrate" \
+  --project "${usage_gcp_project_id?}" \
+  --region "${usage_gcp_region?}" \
+  --image "${usage_gcp_gar_location?}-docker.pkg.dev/${usage_gcp_project_id?}/${usage_gcp_gar_repository?}/${usage_gcp_gar_image?}:${usage_gcp_gar_tag?}" \
+  --set-cloudsql-instances "${usage_gcp_cloudsql_instance?}" \
+  --set-secrets "KEVIN_DATABASE_URL=${usage_gcp_secret_kevin_database_url?},KEVIN_RIOT_API_KEY=${usage_gcp_secret_kevin_riot_api_key?}" \
+  --set-env-vars "KEVIN_ENV=${usage_env?},KEVIN_PORT=${usage_port?}" \
+  --execute-now \
+  --wait \
+  --args "migrate"
