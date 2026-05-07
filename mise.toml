@@ -6,27 +6,27 @@ golangci-lint = "latest"
 
 [env]
 # Application settings
-KEVIN_PORT = 7331
-KEVIN_ENV = "dev"
-KEVIN_DATABASE_URL = ""
-KEVIN_RIOT_API_KEY = ""
+KEVIN_PORT = { required = true }
+KEVIN_ENV = { required = true }
+KEVIN_DATABASE_URL = { required = true }
+KEVIN_RIOT_API_KEY = { required = true }
 
 # GCP settings
-GCP_REGION = ""
-GCP_PROJECT_ID = ""
+GCP_REGION = { required = true }
+GCP_PROJECT_ID = { required = true }
 
 # GCP Artifact Registry settings
-GCP_GAR_LOCATION = ""
-GCP_GAR_REPOSITORY = ""
-GCP_GAR_IMAGE = ""
-GCP_GAR_TAG = ""
+GCP_GAR_LOCATION = { required = true }
+GCP_GAR_REPOSITORY = { required = true }
+GCP_GAR_IMAGE = { required = true }
+GCP_GAR_TAG = { required = true }
 
 # GCP Cloud SQL settings
-GCP_CLOUDSQL_INSTANCE = ""
+GCP_CLOUDSQL_INSTANCE = { required = true }
 
 # GCP Secret Manager settings
-GCP_SECRET_KEVIN_DATABASE_URL = ""
-GCP_SECRET_KEVIN_RIOT_API_KEY = ""
+GCP_SECRET_KEVIN_DATABASE_URL = { required = true }
+GCP_SECRET_KEVIN_RIOT_API_KEY = { required = true }
 
 # Tern migrator settings
 TERN_CONFIG = "./tern.conf"
