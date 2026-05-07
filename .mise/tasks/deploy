@@ -19,4 +19,5 @@ gcloud run deploy "${usage_gcp_gar_image?}-service"\
   --set-cloudsql-instances "${usage_gcp_cloudsql_instance?}" \
   --set-secrets "KEVIN_DATABASE_URL=${usage_gcp_secret_kevin_database_url?},KEVIN_RIOT_API_KEY=${usage_gcp_secret_kevin_riot_api_key?}" \
   --set-env-vars "KEVIN_ENV=${usage_env?},KEVIN_PORT=${usage_port?}" \
+  --allow-unathenticated \
   --args "serve"
