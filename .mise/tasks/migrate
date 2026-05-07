@@ -18,7 +18,7 @@ gcloud run jobs deploy "${usage_gcp_gar_image?}-migrate" \
   --image "${usage_gcp_gar_location?}-docker.pkg.dev/${usage_gcp_project_id?}/${usage_gcp_gar_repository?}/${usage_gcp_gar_image?}:${usage_gcp_gar_tag?}" \
   --set-cloudsql-instances "${usage_gcp_cloudsql_instance?}" \
   --set-secrets "KEVIN_DATABASE_URL=${usage_gcp_secret_kevin_database_url?},KEVIN_RIOT_API_KEY=${usage_gcp_secret_kevin_riot_api_key?}" \
-  --set-env-vars "KEVIN_ENV=${usage_gcp_kevin_env?},KEVIN_PORT=${usage_gcp_kevin_port?}" \
+  --set-env-vars "KEVIN_ENV=${usage_env?},KEVIN_PORT=${usage_port?}" \
   --execute-now \
   --wait \
   --args "migrate"
