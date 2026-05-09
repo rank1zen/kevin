@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JsonSchemaMappingsProjectConfiguration">
+    <state>
+      <map>
+        <entry key="ACP Schema">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="ACP Schema" />
+              <option name="relativePathToSchema" value="jar://$APPLICATION_PLUGINS_DIR$/ml-llm/lib/modules/intellij.ml.llm.agents.acp.json.jar!/schemas/acp.schema.json" />
+              <option name="applicationDefined" value="true" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="path" value="mise.local.toml" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
+      </map>
+    </state>
+  </component>
+</project>
