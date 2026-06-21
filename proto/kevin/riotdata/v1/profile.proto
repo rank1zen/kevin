@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package profile.v1;
+package kevin.riotdata.v1;
 
 message Profile {
   string summoner_name = 1;
