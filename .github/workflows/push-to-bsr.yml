@@ -1,0 +1,23 @@
+name: Push to BSR
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  delete:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  push:
+    name: Push to BSR
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: bufbuild/buf-action@v1
+        with:
+          token: ${{ secrets.BUF_TOKEN }}

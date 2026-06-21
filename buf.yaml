@@ -1,0 +1,4 @@
+version: v2
+modules:
+  - path: proto
+    name: buf.build/kevin-labs/riotdata

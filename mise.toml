@@ -1,5 +1,6 @@
 [tools]
 "aqua:tailwindlabs/tailwindcss" = "latest"
+buf = "latest"
 "cargo:rustywind" = "latest"
 go = "1.25"
 golangci-lint = "latest"
