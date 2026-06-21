@@ -11,7 +11,9 @@ permissions:
   pull-requests: write
 
 jobs:
-  buf:
+  push:
+    name: Push to BSR
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
