@@ -2,8 +2,6 @@ package profile
 
 import (
 	"time"
-
-	"github.com/rank1zen/kevin/internal"
 )
 
 // Profile is a summoner's profile. PUUID is unique and immutable. Name +
@@ -44,7 +42,7 @@ type Match struct {
 	ChampionLevel          int
 	TeamPosition           string
 	SummonerIDs            [2]int
-	Runes                  internal.RunePage
+	Runes                  RuneTree
 	Items                  [7]int
 	Kills, Deaths, Assists int
 	KillParticipation      float32

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
@@ -182,7 +181,7 @@ func getCounterPartIndex(index int) int {
 	return index + 5
 }
 
-var teamPositions = map[string]internal.TeamPosition{
+var teamPositions = map[string]TeamPosition{
 	"TOP":     0,
 	"JUNGLE":  1,
 	"MIDDLE":  2,
@@ -190,7 +189,7 @@ var teamPositions = map[string]internal.TeamPosition{
 	"UTILITY": 4,
 }
 
-func convertRiotTeamPosition(s string) internal.TeamPosition {
+func convertRiotTeamPosition(s string) TeamPosition {
 	pos, ok := teamPositions[s]
 	if !ok {
 		panic(fmt.Sprintf("team position %s is not valid", s))
@@ -199,9 +198,9 @@ func convertRiotTeamPosition(s string) internal.TeamPosition {
 	return pos
 }
 
-type RunePageOption func(*internal.RunePage) error
+type RunePageOption func(*Runetree) error
 
-func newRunePage(opts ...RunePageOption) (runes internal.RunePage) {
+func newRunePage(opts ...RunePageOption) (runes Runetree) {
 	for _, f := range opts {
 		_ = f(&runes)
 	}
@@ -209,7 +208,7 @@ func newRunePage(opts ...RunePageOption) (runes internal.RunePage) {
 }
 
 func withRiotPerks(perks *riot.MatchPerks) RunePageOption {
-	return func(runes *internal.RunePage) error {
+	return func(runes *Runetree) error {
 		runes.PrimaryTree = perks.Styles[0].Style
 		runes.PrimaryKeystone = perks.Styles[0].Selections[0].Perk
 		runes.PrimaryA = perks.Styles[0].Selections[1].Perk

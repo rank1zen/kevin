@@ -3,7 +3,6 @@ package match
 import (
 	"time"
 
-	"github.com/rank1zen/kevin/internal"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 
@@ -24,9 +23,9 @@ type Participant struct {
 	TeamID                 int
 	ChampionID             int
 	ChampionLevel          int
-	TeamPosition           internal.TeamPosition
+	TeamPosition           TeamPosition
 	SummonerIDs            [2]int
-	Runes                  internal.RunePage
+	Runes                  Runetree
 	Items                  [7]int
 	Kills, Deaths, Assists int
 	KillParticipation      float32
@@ -74,9 +73,9 @@ type ParticipantDetail struct {
 	TeamID                 int
 	ChampionID             int
 	ChampionLevel          int
-	TeamPosition           internal.TeamPosition
+	TeamPosition           TeamPosition
 	SummonerIDs            [2]int
-	Runes                  internal.RunePage
+	Runes                  Runetree
 	Items                  [7]int
 	Kills, Deaths, Assists int
 	KillParticipation      float32
