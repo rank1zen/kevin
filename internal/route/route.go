@@ -5,14 +5,7 @@ import (
 	"net/http"
 
 	"github.com/rank1zen/kevin/internal/feature/profile"
-	"github.com/rank1zen/kevin/internal/feature/profile/web/page/overview_page"
-	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/champion"
-	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/history_entry"
-	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/match_detail"
-	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/rank_card"
-	"github.com/rank1zen/kevin/internal/feature/profile/web/partial/update"
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/web/page/not_found_page"
 )
 
 func Router(
@@ -33,19 +26,9 @@ func Router(
 	profileRoutes(router, profileService)
 
 	router.Handle("GET /assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
-	router.Handle("/", not_found_page.NewHandler())
 
 	return router
 }
 
 func profileRoutes(router *http.ServeMux, profileService *profile.ProfileService) {
-	// Pages
-	router.Handle("GET /profile/{riotID}/{$}", overview_page.NewHandler(profileService))
-
-	// Partials
-	router.Handle("GET /partial/rank_card.RankCard/{$}", rank_card.NewHandler(profileService))
-	router.Handle("GET /partial/profile.HistoryEntry", history_entry.NewHandler(profileService))
-	router.Handle("GET /partial/profile.ChampionList", champion.NewHandler(*profileService))
-	router.Handle("GET /partial/profile.MatchDetailBox", match_detail.NewHandler(*profileService))
-	router.Handle("POST /partial/profile.UpdateProfile", update.NewHandler(*profileService))
 }
