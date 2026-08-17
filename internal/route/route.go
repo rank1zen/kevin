@@ -4,7 +4,7 @@ package route
 import (
 	"net/http"
 
-	"github.com/rank1zen/kevin/internal/feature/profile"
+	"github.com/rank1zen/kevin/internal/profile"
 	"github.com/rank1zen/kevin/internal/riot"
 )
 

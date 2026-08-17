@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rank1zen/kevin/internal/feature/profile"
+	"github.com/rank1zen/kevin/internal/profile"
 )
 
 type DB struct {
