@@ -1,0 +1,248 @@
+syntax = "proto3";
+
+package kevin.lolservice.v1;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+// ProfileService provides player profiles and match history.
+service ProfileService {
+  // GetProfile retrieves the profile of a player by their name and tag.
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {}
+
+  // RefreshProfile refreshes the profile of a player by their puuid.
+  rpc RefreshProfile(RefreshProfileRequest) returns (RefreshProfileResponse) {}
+
+  // SearchProfile searches for players by their name or tag.
+  rpc SearchProfile(SearchProfileRequest) returns (SearchProfileResponse) {}
+
+  // GetMatch retrieves a match by its ID.
+  rpc GetMatch(GetMatchRequest) returns (GetMatchResponse) {}
+
+  // GetMatchHistory retrieves the match history of a player by their puuid.
+  rpc GetMatchHistory(GetMatchHistoryRequest) returns (GetMatchHistoryResponse) {}
+
+  // GetRankHistory retrieves the rank history of a player by their puuid.
+  rpc GetRankHistory(GetRankHistoryRequest) returns (GetRankHistoryResponse) {}
+
+  // GetChampionAggregate retrieves the champion aggregate of a player by their puuid.
+  rpc GetChampionAggregate(GetChampionAggregateRequest) returns (GetChampionAggregateResponse) {}
+}
+
+message GetProfileRequest {
+  string region = 1;
+  string name = 2;
+  string tag = 3;
+}
+
+message GetProfileResponse {
+  string region = 1;
+  string puuid = 2;
+  string name = 3;
+  string tag = 4;
+  int32 summoner_level = 5;
+  int32 profile_icon_id = 6;
+  Rank rank = 7;
+}
+
+message RefreshProfileRequest {
+  string puuid = 1;
+}
+
+message RefreshProfileResponse {
+  string region = 1;
+  string puuid = 2;
+  string name = 3;
+  string tag = 4;
+  int32 summoner_level = 5;
+  int32 profile_icon_id = 6;
+  Rank rank = 7;
+}
+
+message SearchProfileRequest {
+  string query = 1;
+}
+
+message SearchProfileResponse {
+  repeated SearchResult results = 1;
+}
+
+message GetMatchHistoryRequest {
+  string puuid = 1;
+  google.protobuf.Timestamp timestamp_range_start = 2;
+  google.protobuf.Timestamp timestamp_range_end = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message GetMatchHistoryResponse {
+  repeated MatchHistory matches = 1;
+  string next_page_token = 2;
+}
+
+message GetMatchRequest {
+  string region = 1;
+  string match_id = 2;
+}
+
+message GetMatchResponse {
+  string region = 1;
+  string match_id = 2;
+  google.protobuf.Timestamp date = 3;
+  google.protobuf.Duration duration = 4;
+  string version = 5;
+  int32 winner_id = 6;
+  repeated Participant participants = 7;
+}
+
+message GetRankHistoryRequest {
+  string puuid = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message GetRankHistoryResponse {
+  repeated RankHistory ranks = 1;
+  int32 total_results = 2;
+}
+
+message GetChampionAggregateRequest {
+  string puuid = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message GetChampionAggregateResponse {
+  string puuid = 1;
+  int32 champion_id = 2;
+  int32 games_played = 3;
+  int32 games_won = 4;
+  int32 games_lost = 5;
+  int32 league_points_delta = 6;
+  float average_kills = 7;
+  float average_deaths = 8;
+  float average_assists = 9;
+  float average_kill_participation = 10;
+  float average_creep_score = 11;
+  float average_creep_score_per_minute = 12;
+  float average_damage_dealt = 13;
+  float average_damage_taken = 14;
+  float average_damage_delta_counterpart = 15;
+  float average_damage_share = 16;
+  float average_gold_earned = 17;
+  float average_gold_delta_counterpart = 18;
+  float average_gold_share = 19;
+  float average_vision_score = 20;
+  float average_control_wards_bought = 21;
+}
+
+message Participant {
+  string puuid = 1;
+  string match_id = 2;
+  int32 team_id = 3;
+  int32 participant_id = 4;
+  int32 champion_id = 5;
+  int32 champion_level = 6;
+  string team_position = 7;
+  SummonerSpell summoner_spell = 8;
+  SummonerRunePage rune_page = 9;
+  SummonerItem item = 10;
+  int32 kills = 11;
+  int32 deaths = 12;
+  int32 assists = 13;
+  float kill_participation = 14;
+  int32 creep_score = 15;
+  float creep_score_per_minute = 16;
+  int32 damage_dealt = 17;
+  int32 damage_taken = 18;
+  int32 damage_delta_counterpart = 19;
+  float damage_share = 20;
+  int32 gold_earned = 21;
+  int32 gold_delta_counterpart = 22;
+  float gold_share = 23;
+  int32 vision_score = 24;
+  int32 control_wards_bought = 25;
+  Rank rank = 26;
+}
+
+message SummonerSpell {
+  repeated int32 spell_ids = 1;
+}
+
+message SummonerRunePage {
+  int32 primary_tree_id = 1;
+  int32 primary_keystone_id = 2;
+  int32 primary_a_id = 3;
+  int32 primary_b_id = 4;
+  int32 primary_c_id = 5;
+  int32 secondary_tree_id = 6;
+  int32 secondary_a_id = 7;
+  int32 secondary_b_id = 8;
+  int32 tertiary_offense_id = 9;
+  int32 tertiary_flex_id = 10;
+  int32 tertiary_defense_id = 11;
+}
+
+message SummonerItem {
+  repeated int32 item_ids = 1;
+}
+
+message MatchHistory {
+  string region = 1;
+  string match_id = 2;
+  string puuid = 3;
+  google.protobuf.Timestamp date = 4;
+  google.protobuf.Duration duration = 5;
+  string version = 6;
+  int32 winner_id = 7;
+  int32 team_id = 8;
+  int32 participant_id = 9;
+  int32 champion_id = 10;
+  int32 champion_level = 11;
+  string team_position = 12;
+  SummonerSpell summoner_spell = 13;
+  SummonerRunePage rune_page = 14;
+  SummonerItem item = 15;
+  int32 kills = 16;
+  int32 deaths = 17;
+  int32 assists = 18;
+  float kill_participation = 19;
+  int32 creep_score = 20;
+  float creep_score_per_minute = 21;
+  int32 damage_dealt = 22;
+  int32 damage_taken = 23;
+  int32 damage_delta_counterpart = 24;
+  float damage_share = 25;
+  int32 gold_earned = 26;
+  int32 gold_delta_counterpart = 27;
+  float gold_share = 28;
+  int32 vision_score = 29;
+  int32 control_wards_bought = 30;
+  Rank rank = 31;
+}
+
+message Rank {
+  string tier = 1;
+  string rank = 2;
+  int32 league_points = 3;
+}
+
+message RankHistory {
+  string region = 1;
+  string rank_id = 2;
+  string puuid = 3;
+  google.protobuf.Timestamp date = 4;
+  string tier = 5;
+  string rank = 6;
+  int32 league_points = 7;
+}
+
+message SearchResult {
+  string region = 1;
+  string puuid = 2;
+  string name = 3;
+  string tag = 4;
+  int32 summoner_level = 5;
+  int32 profile_icon_id = 6;
+  Rank rank = 7;
+}

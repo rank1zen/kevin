@@ -11,13 +11,14 @@ import (
 	"syscall"
 	"time"
 
+	"buf.build/gen/go/kevin-labs/riotdata/connectrpc/go/kevin/riotdata/v1/riotdatav1connect"
+	"connectrpc.com/connect"
+	"connectrpc.com/validate"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal/config"
 	"github.com/rank1zen/kevin/internal/log"
 	"github.com/rank1zen/kevin/internal/profile"
-	dbProfile "github.com/rank1zen/kevin/internal/profile/db"
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/route"
 )
 
 type App struct {
@@ -51,10 +52,27 @@ func New(ctx context.Context) *App {
 	riotClient := riot.NewClient(cfg.RiotAPIKey)
 	app.riotClient = riotClient
 
-	app.server = route.Router(
-		riotClient,
-		profile.NewProfileService(riotClient, dbProfile.NewStore(pool)),
+	profileHandler := profile.ProfileServiceHandler{}
+	mux := http.NewServeMux()
+	path, handler := riotdatav1connect.NewProfileServiceHandler(
+		profileHandler,
+		// Validation via Protovalidate is almost always recommended
+		connect.WithInterceptors(validate.NewInterceptor()),
 	)
+	mux.Handle(path, handler)
+
+	p := new(http.Protocols)
+	p.SetHTTP1(true)
+	// Use h2c so we can serve HTTP/2 without TLS.
+	p.SetUnencryptedHTTP2(true)
+
+	s := http.Server{
+		Addr:      "localhost:8080",
+		Handler:   mux,
+		Protocols: p,
+	}
+
+	app.server = s.Handler
 
 	return app
 }
