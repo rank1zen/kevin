@@ -11,9 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	"buf.build/gen/go/kevin-labs/riotdata/connectrpc/go/kevin/riotdata/v1/riotdatav1connect"
-	"connectrpc.com/connect"
-	"connectrpc.com/validate"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal/config"
 	"github.com/rank1zen/kevin/internal/log"
@@ -52,14 +49,10 @@ func New(ctx context.Context) *App {
 	riotClient := riot.NewClient(cfg.RiotAPIKey)
 	app.riotClient = riotClient
 
-	profileHandler := profile.ProfileServiceHandler{}
+	profileHandler := profile.Handler{}
+
 	mux := http.NewServeMux()
-	path, handler := riotdatav1connect.NewProfileServiceHandler(
-		profileHandler,
-		// Validation via Protovalidate is almost always recommended
-		connect.WithInterceptors(validate.NewInterceptor()),
-	)
-	mux.Handle(path, handler)
+	routeProfileService(mux, profileHandler)
 
 	p := new(http.Protocols)
 	p.SetHTTP1(true)

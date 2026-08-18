@@ -3,6 +3,7 @@ module github.com/rank1zen/kevin
 go 1.25.0
 
 require (
+	buf.build/gen/go/kevin-labs/lol-service/connectrpc/go v1.20.0-20260818044132-00bea6e8be87.1
 	buf.build/gen/go/kevin-labs/riotdata/connectrpc/go v1.20.0-20260621153410-c88bb04b6c99.1
 	connectrpc.com/connect v1.20.0
 	connectrpc.com/validate v0.6.0
@@ -15,6 +16,7 @@ require (
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.9-20250912141014-52f32327d4b0.1 // indirect
+	buf.build/gen/go/kevin-labs/lol-service/protocolbuffers/go v1.36.11-20260818044132-00bea6e8be87.1 // indirect
 	buf.build/gen/go/kevin-labs/riotdata/protocolbuffers/go v1.36.11-20260621153410-c88bb04b6c99.1 // indirect
 	buf.build/go/protovalidate v1.0.0 // indirect
 	cel.dev/expr v0.24.0 // indirect
