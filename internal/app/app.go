@@ -13,11 +13,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal/config"
-	"github.com/rank1zen/kevin/internal/feature/profile"
-	dbProfile "github.com/rank1zen/kevin/internal/feature/profile/db"
 	"github.com/rank1zen/kevin/internal/log"
+	"github.com/rank1zen/kevin/internal/profile"
 	"github.com/rank1zen/kevin/internal/riot"
-	"github.com/rank1zen/kevin/internal/route"
 )
 
 type App struct {
@@ -51,10 +49,23 @@ func New(ctx context.Context) *App {
 	riotClient := riot.NewClient(cfg.RiotAPIKey)
 	app.riotClient = riotClient
 
-	app.server = route.Router(
-		riotClient,
-		profile.NewProfileService(riotClient, dbProfile.NewStore(pool)),
-	)
+	profileHandler := profile.Handler{}
+
+	mux := http.NewServeMux()
+	routeProfileService(mux, profileHandler)
+
+	p := new(http.Protocols)
+	p.SetHTTP1(true)
+	// Use h2c so we can serve HTTP/2 without TLS.
+	p.SetUnencryptedHTTP2(true)
+
+	s := http.Server{
+		Addr:      "localhost:8080",
+		Handler:   mux,
+		Protocols: p,
+	}
+
+	app.server = s.Handler
 
 	return app
 }
