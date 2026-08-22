@@ -18,9 +18,15 @@ terraform {
 }
 
 provider "google" {
-  project     = "kevin-lol-service-staging"
-  region      = "northamerica-northeast2"
-  zone        = "northamerica-northeast2-b"
+  project = "kevin-lol-service-staging"
+  region  = "northamerica-northeast2"
+  zone    = "northamerica-northeast2-b"
+}
+
+resource "google_artifact_registry_repository" "my-repo" {
+  repository_id = "my-repository"
+  description   = "example docker repository"
+  format        = "DOCKER"
 }
 
 resource "google_sql_database_instance" "main" {
