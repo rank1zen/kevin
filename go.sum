@@ -4,10 +4,6 @@ buf.build/gen/go/kevin-labs/lol-service/connectrpc/go v1.20.0-20260818044132-00b
 buf.build/gen/go/kevin-labs/lol-service/connectrpc/go v1.20.0-20260818044132-00bea6e8be87.1/go.mod h1:OF8qMeyNfGx+BjYopWuksn6IY3aJHR0EJuFkHJX07fo=
 buf.build/gen/go/kevin-labs/lol-service/protocolbuffers/go v1.36.11-20260818044132-00bea6e8be87.1 h1:smeqJ+16/CTBQb7k0LuNAq+tHvHYcO0GT04XRIlSkr0=
 buf.build/gen/go/kevin-labs/lol-service/protocolbuffers/go v1.36.11-20260818044132-00bea6e8be87.1/go.mod h1:QIXmLAqEs0Vt9OBkQ16HM+hMKdslcZyvvMve/LL0bHY=
-buf.build/gen/go/kevin-labs/riotdata/connectrpc/go v1.20.0-20260621153410-c88bb04b6c99.1 h1:7FeVOk3JZqhlKTFSCS1E7X7YZckLP2GB5tXWnrGLEoM=
-buf.build/gen/go/kevin-labs/riotdata/connectrpc/go v1.20.0-20260621153410-c88bb04b6c99.1/go.mod h1:aXJCnf95t3G9f39C5dkk2dNh6v+isIRtiwaE1tU7K14=
-buf.build/gen/go/kevin-labs/riotdata/protocolbuffers/go v1.36.11-20260621153410-c88bb04b6c99.1 h1:I4w+dNmKiLyXDx7pJGfKaVOGBBcIDnl3to/Igcp0V8Q=
-buf.build/gen/go/kevin-labs/riotdata/protocolbuffers/go v1.36.11-20260621153410-c88bb04b6c99.1/go.mod h1:B7jBtWKYQnGlxCJI3f4EoNxpSB4+Kx0kOBdHO2pnSuo=
 buf.build/go/protovalidate v1.0.0 h1:IAG1etULddAy93fiBsFVhpj7es5zL53AfB/79CVGtyY=
 buf.build/go/protovalidate v1.0.0/go.mod h1:KQmEUrcQuC99hAw+juzOEAmILScQiKBP1Oc36vvCLW8=
 cel.dev/expr v0.24.0 h1:56OvJKSH3hDGL0ml5uSxZmz3/3Pq4tJ+fb1unVLAFcY=
