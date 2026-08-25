@@ -4,12 +4,12 @@ create domain riot_puuid as char(78);
 
 create table Summoner
 (
-    id              uuid primary key default uuidv7(),
+    id              uuid        not null primary key default uuidv7(),
     puuid           riot_puuid  not null,
     name            text        not null,
     tagline         text        not null,
     summoner_level  int         not null,
-    profile_icon_id int         not null,
+    profile_icon_id text        not null,
     last_updated    timestamptz not null,
 
     unique (puuid)
