@@ -17,13 +17,14 @@ create table Summoner
 
 create table Rank
 (
-    id            uuid       not null primary key default uuidv7(),
-    puuid         riot_puuid not null,
-    wins          int        not null,
-    losses        int        not null,
-    tier          text       not null,
-    division      text       not null,
-    league_points int        not null,
+    id            uuid        not null primary key default uuidv7(),
+    puuid         riot_puuid  not null,
+    wins          int         not null,
+    losses        int         not null,
+    tier          text        not null,
+    division      text        not null,
+    league_points int         not null,
+    last_updated  timestamptz not null,
 
     unique (puuid)
 );
