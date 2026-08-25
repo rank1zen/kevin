@@ -2,18 +2,21 @@ package store
 
 import (
 	"context"
+	"time"
+	"uuid"
 
 	"github.com/jackc/pgx/v5"
 )
 
 type Rank struct {
-	ID           string `db:"id"`
-	PUUID        string `db:"puuid"`
-	Wins         int    `db:"wins"`
-	Losses       int    `db:"losses"`
-	Tier         string `db:"tier"`
-	Division     string `db:"division"`
-	LeaguePoints int    `db:"league_points"`
+	ID           uuid.UUID `db:"id"`
+	PUUID        string    `db:"puuid"`
+	Wins         int       `db:"wins"`
+	Losses       int       `db:"losses"`
+	Tier         string    `db:"tier"`
+	Division     string    `db:"division"`
+	LeaguePoints int       `db:"league_points"`
+	LastUpdated  time.Time `db:"last_updated"`
 }
 
 type CreateRank struct {
@@ -23,6 +26,7 @@ type CreateRank struct {
 	Tier         string
 	Division     string
 	LeaguePoints int
+	LastUpdated  time.Time
 }
 
 type UpdateRank struct {
@@ -31,6 +35,7 @@ type UpdateRank struct {
 	Tier         string
 	Division     string
 	LeaguePoints int
+	LastUpdated  time.Time
 }
 
 type RankStore struct {
@@ -45,7 +50,7 @@ func NewRankStore(tx DBTX) *RankStore {
 
 func (s *RankStore) GetRankByPUUID(ctx context.Context, puuid string) (*Rank, error) {
 	rows, err := s.tx.Query(ctx, `
-		select id, puuid, wins, losses, tier, division, league_points
+		select id, puuid, wins, losses, tier, division, league_points, last_updated
 		from Rank
 		where puuid = @puuid;
 	`, pgx.StrictNamedArgs{
@@ -60,9 +65,9 @@ func (s *RankStore) GetRankByPUUID(ctx context.Context, puuid string) (*Rank, er
 
 func (s *RankStore) CreateRank(ctx context.Context, req CreateRank) (*Rank, error) {
 	rows, err := s.tx.Query(ctx, `
-		insert into Rank (puuid, wins, losses, tier, division, league_points)
-		values (@puuid, @wins, @losses, @tier, @division, @league_points)
-		returning id, puuid, wins, losses, tier, division, league_points;
+		insert into Rank (puuid, wins, losses, tier, division, league_points, last_updated)
+		values (@puuid, @wins, @losses, @tier, @division, @league_points, @last_updated)
+		returning id, puuid, wins, losses, tier, division, league_points, last_updated;
 	`, pgx.StrictNamedArgs{
 		"puuid":         req.PUUID,
 		"wins":          req.Wins,
@@ -70,6 +75,7 @@ func (s *RankStore) CreateRank(ctx context.Context, req CreateRank) (*Rank, erro
 		"tier":          req.Tier,
 		"division":      req.Division,
 		"league_points": req.LeaguePoints,
+		"last_updated":  req.LastUpdated,
 	})
 	if err != nil {
 		return nil, err
@@ -81,9 +87,9 @@ func (s *RankStore) CreateRank(ctx context.Context, req CreateRank) (*Rank, erro
 func (s *RankStore) UpdateRankByPUUID(ctx context.Context, puuid string, req UpdateRank) (*Rank, error) {
 	rows, err := s.tx.Query(ctx, `
 		update Rank
-		set wins = @wins, losses = @losses, tier = @tier, division = @division, league_points = @league_points
+		set wins = @wins, losses = @losses, tier = @tier, division = @division, league_points = @league_points, last_updated = @last_updated
 		where puuid = @puuid
-		returning id, puuid, wins, losses, tier, division, league_points;
+		returning id, puuid, wins, losses, tier, division, league_points, last_updated;
 	`, pgx.StrictNamedArgs{
 		"puuid":         puuid,
 		"wins":          req.Wins,
@@ -91,21 +97,7 @@ func (s *RankStore) UpdateRankByPUUID(ctx context.Context, puuid string, req Upd
 		"tier":          req.Tier,
 		"division":      req.Division,
 		"league_points": req.LeaguePoints,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[Rank])
-}
-
-func (s *RankStore) DeleteRankByPUUID(ctx context.Context, puuid string) (*Rank, error) {
-	rows, err := s.tx.Query(ctx, `
-		delete from Rank
-		where puuid = @puuid
-		returning id, puuid, wins, losses, tier, division, league_points;
-	`, pgx.StrictNamedArgs{
-		"puuid": puuid,
+		"last_updated":  req.LastUpdated,
 	})
 	if err != nil {
 		return nil, err

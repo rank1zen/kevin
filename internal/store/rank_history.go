@@ -3,12 +3,13 @@ package store
 import (
 	"context"
 	"time"
+	"uuid"
 
 	"github.com/jackc/pgx/v5"
 )
 
 type RankHistory struct {
-	ID           string     `db:"id"`
+	ID           uuid.UUID  `db:"id"`
 	PUUID        string     `db:"puuid"`
 	ValidFrom    time.Time  `db:"valid_from"`
 	ValidTo      *time.Time `db:"valid_to"`
@@ -50,7 +51,7 @@ func NewRankHistoryStore(tx DBTX) *RankHistoryStore {
 	}
 }
 
-func (s *RankHistoryStore) GetRankHistoryByID(ctx context.Context, id string) (*RankHistory, error) {
+func (s *RankHistoryStore) GetRankHistoryByID(ctx context.Context, id uuid.UUID) (*RankHistory, error) {
 	rows, err := s.tx.Query(ctx, `
 		select id, puuid, valid_from, valid_to, wins, losses, tier, division, league_points
 		from RankHistory
@@ -87,7 +88,7 @@ func (s *RankHistoryStore) CreateRankHistory(ctx context.Context, req CreateRank
 	return pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[RankHistory])
 }
 
-func (s *RankHistoryStore) UpdateRankHistoryByID(ctx context.Context, id string, req UpdateRankHistory) (*RankHistory, error) {
+func (s *RankHistoryStore) UpdateRankHistoryByID(ctx context.Context, id uuid.UUID, req UpdateRankHistory) (*RankHistory, error) {
 	rows, err := s.tx.Query(ctx, `
 		update RankHistory
 		set valid_from = @valid_from, valid_to = @valid_to, wins = @wins, losses = @losses, tier = @tier, division = @division, league_points = @league_points
@@ -110,7 +111,7 @@ func (s *RankHistoryStore) UpdateRankHistoryByID(ctx context.Context, id string,
 	return pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[RankHistory])
 }
 
-func (s *RankHistoryStore) DeleteRankHistoryByID(ctx context.Context, id string) (*RankHistory, error) {
+func (s *RankHistoryStore) DeleteRankHistoryByID(ctx context.Context, id uuid.UUID) (*RankHistory, error) {
 	rows, err := s.tx.Query(ctx, `
 		delete from RankHistory
 		where id = @id

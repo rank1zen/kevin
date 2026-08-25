@@ -2,30 +2,32 @@ package store
 
 import (
 	"context"
+	"time"
+	"uuid"
 
 	"github.com/jackc/pgx/v5"
 )
 
 type Participant struct {
-	ID              string   `db:"id"`
-	MatchID         string   `db:"match_id"`
-	PUUID           string   `db:"puuid"`
-	TeamID          string   `db:"team_id"`
-	TeamPosition    string   `db:"team_position"`
-	ChampionID      string   `db:"champion_id"`
-	ChampionLevel   int      `db:"champion_level"`
-	SummonerIDs     []string `db:"summoner_ids"`
-	RuneIDs         []string `db:"rune_ids"`
-	ItemIDs         []string `db:"item_ids"`
-	Kills           int      `db:"kills"`
-	Deaths          int      `db:"deaths"`
-	Assists         int      `db:"assists"`
-	CreepScore      int      `db:"creep_score"`
-	DamageDealt     int      `db:"damage_dealt"`
-	DamageTaken     int      `db:"damage_taken"`
-	GoldEarned      int      `db:"gold_earned"`
-	VisionScore     int      `db:"vision_score"`
-	PinkWardsBought int      `db:"pink_wards_bought"`
+	ID              uuid.UUID `db:"id"`
+	MatchID         string    `db:"match_id"`
+	PUUID           string    `db:"puuid"`
+	TeamID          string    `db:"team_id"`
+	TeamPosition    string    `db:"team_position"`
+	ChampionID      string    `db:"champion_id"`
+	ChampionLevel   int       `db:"champion_level"`
+	SummonerIDs     []string  `db:"summoner_ids"`
+	RuneIDs         []string  `db:"rune_ids"`
+	ItemIDs         []string  `db:"item_ids"`
+	Kills           int       `db:"kills"`
+	Deaths          int       `db:"deaths"`
+	Assists         int       `db:"assists"`
+	CreepScore      int       `db:"creep_score"`
+	DamageDealt     int       `db:"damage_dealt"`
+	DamageTaken     int       `db:"damage_taken"`
+	GoldEarned      int       `db:"gold_earned"`
+	VisionScore     int       `db:"vision_score"`
+	PinkWardsBought int       `db:"pink_wards_bought"`
 }
 
 type CreateParticipant struct {
@@ -47,6 +49,14 @@ type CreateParticipant struct {
 	GoldEarned      int
 	VisionScore     int
 	PinkWardsBought int
+}
+
+type GetParticipantByPUUIDPageParams struct {
+	Ascending bool
+
+	Size     int
+	LastID   uuid.UUID
+	LastDate time.Time
 }
 
 type ParticipantStore struct {
@@ -114,38 +124,6 @@ func (s *ParticipantStore) GetParticipantByMatchID(ctx context.Context, matchID 
 		where match_id = @match_id;
 	`, pgx.StrictNamedArgs{
 		"match_id": matchID,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[Participant])
-}
-
-type PageParam struct {
-	Size   int
-	LastID string
-	Total  int
-}
-
-type OrderParam struct {
-	Date bool
-}
-
-func (s *ParticipantStore) GetParticipantByPUUID(
-	ctx context.Context,
-	puuid string,
-	page PageParam,
-	order OrderParam,
-) ([]*Participant, error) {
-	rows, err := s.tx.Query(ctx, `
-		select id, match_id, puuid, team_id, team_position, champion_id, champion_level, summoner_ids, rune_ids, item_ids, kills, deaths, assists, creep_score, damage_dealt, damage_taken, gold_earned, vision_score, pink_wards_bought
-		from Participant
-		order by date
-		where puuid = @puuid and id > @last_id
-		limit @size;
-	`, pgx.StrictNamedArgs{
-		"puuid": puuid,
 	})
 	if err != nil {
 		return nil, err
