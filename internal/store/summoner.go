@@ -23,6 +23,7 @@ type CreateSummoner struct {
 	Tagline       string
 	SummonerLevel int
 	ProfileIconID string
+	LastUpdated   time.Time
 }
 
 type UpdateSummoner struct {
@@ -30,6 +31,7 @@ type UpdateSummoner struct {
 	Tagline       string
 	SummonerLevel int
 	ProfileIconID string
+	LastUpdated   time.Time
 }
 
 type SummonerStore struct {
@@ -44,7 +46,7 @@ func NewSummonerStore(tx DBTX) *SummonerStore {
 
 func (s *SummonerStore) GetSummonerByPUUID(ctx context.Context, puuid string) (*Summoner, error) {
 	rows, err := s.tx.Query(ctx, `
-		select id, puuid, name, tagline, summoner, profile_icon_id, last_updated
+		select id, puuid, name, tagline, summoner_level, profile_icon_id, last_updated
 		from Summoner
 		where puuid = @puuid;
 	`, pgx.StrictNamedArgs{
@@ -59,8 +61,8 @@ func (s *SummonerStore) GetSummonerByPUUID(ctx context.Context, puuid string) (*
 
 func (s *SummonerStore) CreateSummoner(ctx context.Context, req CreateSummoner) (*Summoner, error) {
 	rows, err := s.tx.Query(ctx, `
-		insert into Summoner (puuid, name, tagline, summoner_level, profile_icon_id)
-		values (@puuid, @name, @tagline, @summoner_level, @profile_icon_id)
+		insert into Summoner (puuid, name, tagline, summoner_level, profile_icon_id, last_updated)
+		values (@puuid, @name, @tagline, @summoner_level, @profile_icon_id, @last_updated)
 		returning id, puuid, name, tagline, summoner_level, profile_icon_id, last_updated;
 	`, pgx.StrictNamedArgs{
 		"puuid":           req.PUUID,
@@ -68,6 +70,7 @@ func (s *SummonerStore) CreateSummoner(ctx context.Context, req CreateSummoner) 
 		"tagline":         req.Tagline,
 		"summoner_level":  req.SummonerLevel,
 		"profile_icon_id": req.ProfileIconID,
+		"last_updated":    req.LastUpdated,
 	})
 	if err != nil {
 		return nil, err
@@ -79,7 +82,7 @@ func (s *SummonerStore) CreateSummoner(ctx context.Context, req CreateSummoner) 
 func (s *SummonerStore) UpdateSummonerByPUUID(ctx context.Context, puuid string, req UpdateSummoner) (*Summoner, error) {
 	rows, err := s.tx.Query(ctx, `
 		update Summoner
-		set name = @name, tagline = @tagline, summoner_level = @summoner_level, profile_icon_id = @profile_icon_id
+		set name = @name, tagline = @tagline, summoner_level = @summoner_level, profile_icon_id = @profile_icon_id, last_updated = @last_updated
 		where puuid = @puuid
 		returning id, puuid, name, tagline, summoner_level, profile_icon_id, last_updated;
 	`, pgx.StrictNamedArgs{
@@ -88,6 +91,7 @@ func (s *SummonerStore) UpdateSummonerByPUUID(ctx context.Context, puuid string,
 		"tagline":         req.Tagline,
 		"summoner_level":  req.SummonerLevel,
 		"profile_icon_id": req.ProfileIconID,
+		"last_updated":    req.LastUpdated,
 	})
 	if err != nil {
 		return nil, err

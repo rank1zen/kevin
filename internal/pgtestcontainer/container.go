@@ -69,7 +69,7 @@ func (p *PGInstance) SetupTx(t testing.TB) pgx.Tx {
 	}
 
 	t.Cleanup(func() {
-		err := tx.Rollback(t.Context())
+		err := tx.Rollback(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
