@@ -3,12 +3,13 @@ package store
 import (
 	"context"
 	"time"
+	"uuid"
 
 	"github.com/jackc/pgx/v5"
 )
 
 type Summoner struct {
-	ID            string    `db:"id"`
+	ID            uuid.UUID `db:"id"`
 	PUUID         string    `db:"puuid"`
 	Name          string    `db:"name"`
 	Tagline       string    `db:"tagline"`
