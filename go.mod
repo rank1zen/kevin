@@ -1,12 +1,13 @@
 module github.com/rank1zen/kevin
 
-go 1.25.0
+go 1.27
 
 require (
 	buf.build/gen/go/kevin-labs/lol-service/connectrpc/go v1.20.0-20260818044132-00bea6e8be87.1
 	buf.build/gen/go/kevin-labs/lol-service/protocolbuffers/go v1.36.11-20260818044132-00bea6e8be87.1
 	connectrpc.com/connect v1.20.0
 	connectrpc.com/validate v0.6.0
+	github.com/jackc/pgx/v5 v5.9.1
 	github.com/jackc/tern/v2 v2.3.6
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
@@ -102,17 +103,13 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
 	golang.org/x/exp v0.0.0-20250911091902-df9299821621 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250922171735-9219d122eba9 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250922171735-9219d122eba9 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
-
-require (
-	github.com/jackc/pgx/v5 v5.9.1
-	golang.org/x/sync v0.20.0 // indirect
 )
 
 tool github.com/air-verse/air

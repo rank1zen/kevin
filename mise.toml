@@ -2,7 +2,7 @@
 "aqua:tailwindlabs/tailwindcss" = "latest"
 buf = "latest"
 "cargo:rustywind" = "latest"
-go = "1.25"
+go = "1.27"
 golangci-lint = "latest"
 
 [env]

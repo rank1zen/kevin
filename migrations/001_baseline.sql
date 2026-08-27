@@ -1,29 +1,34 @@
 -- Write your migrate up statements here
 
+create extension if not exists pg_trgm;
+
 create domain riot_puuid as char(78);
 
 create table Summoner
 (
-    id              uuid primary key default uuidv7(),
+    id              uuid        not null primary key default uuidv7(),
     puuid           riot_puuid  not null,
+    region          text        not null,
     name            text        not null,
     tagline         text        not null,
     summoner_level  int         not null,
-    profile_icon_id int         not null,
+    profile_icon_id text        not null,
     last_updated    timestamptz not null,
 
-    unique (puuid)
+    unique (puuid),
+    unique (region, name, tagline)
 );
 
 create table Rank
 (
-    id            uuid       not null primary key default uuidv7(),
-    puuid         riot_puuid not null,
-    wins          int        not null,
-    losses        int        not null,
-    tier          text       not null,
-    division      text       not null,
-    league_points int        not null,
+    id            uuid        not null primary key default uuidv7(),
+    puuid         riot_puuid  not null,
+    wins          int         not null,
+    losses        int         not null,
+    tier          text        not null,
+    division      text        not null,
+    league_points int         not null,
+    last_updated  timestamptz not null,
 
     unique (puuid)
 );
@@ -44,6 +49,7 @@ create table RankHistory
 create table Match
 (
     id        uuid        not null primary key default uuidv7(),
+    region    text        not null,
     match_id  text        not null,
     version   text        not null,
     date      timestamptz not null,

@@ -15,18 +15,18 @@ import (
 
 type PGInstance struct {
 	container *pg.PostgresContainer
-
-	pgURL string
+	pool      *pgxpool.Pool
+	pgURL     string
 }
 
-// NewPGInstance sets up a postgres server in a docker container. It will use
+// NewPGInstance sets up a Postgres server in a docker container. It will use
 // the current schema version.
 func NewPGInstance(ctx context.Context) *PGInstance {
 	const (
 		pgDBName   = "postgres_test"
 		pgUser     = "kevin"
 		pgPassword = "secret"
-		pgImage    = "docker.io/postgres:16-alpine"
+		pgImage    = "docker.io/postgres:18-alpine"
 	)
 
 	container, err := pg.Run(ctx, pgImage,
@@ -46,34 +46,36 @@ func NewPGInstance(ctx context.Context) *PGInstance {
 	}
 
 	pgInstance := &PGInstance{
-		container,
-		pgURL,
+		container: container,
+		pgURL:     pgURL,
 	}
 
 	pgInstance.migrateSchema(ctx)
 
-	if err := pgInstance.container.Snapshot(ctx, pg.WithSnapshotName("test-snapshot")); err != nil {
-		log.Fatalf("creating snapshot: %s", err)
+	pool, err := pgxpool.New(ctx, pgInstance.pgURL)
+	if err != nil {
+		log.Fatal(err)
 	}
+	pgInstance.pool = pool
 
 	return pgInstance
 }
 
-func (p *PGInstance) SetupConn(ctx context.Context, t testing.TB) *pgxpool.Pool {
-	conn, err := pgxpool.New(ctx, p.pgURL)
+// SetupTx starts a new database transaction for a test. It is safe to be used in parallel.
+func (p *PGInstance) SetupTx(t testing.TB) pgx.Tx {
+	tx, err := p.pool.Begin(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		conn.Close()
-
-		if err := p.container.Restore(ctx); err != nil {
+		err := tx.Rollback(context.Background())
+		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
-	return conn
+	return tx
 }
 
 func (p *PGInstance) migrateSchema(ctx context.Context) {
