@@ -103,3 +103,27 @@ func TestRankStore_UpdateRankByPUUID(t *testing.T) {
 		}
 	})
 }
+
+func TestRankStore_GetRankByPUUIDs(t *testing.T) {
+	t.Parallel()
+
+	tx := DefaultPGInstance.SetupTx(t)
+	rankStore := store.NewRankStore(tx)
+
+	_, err := rankStore.CreateRank(t.Context(), store.CreateRank{
+		PUUID: ExamplePUUID,
+	})
+	require.NoError(t, err)
+
+	_, err = rankStore.CreateRank(t.Context(), store.CreateRank{
+		PUUID: ExamplePUUID2,
+	})
+	require.NoError(t, err)
+
+	t.Run("should get all ranks", func(t *testing.T) {
+		ranks, err := rankStore.GetRankByPUUIDs(t.Context(), []string{ExamplePUUID, ExamplePUUID2})
+		if assert.NoError(t, err) && assert.Len(t, ranks, 2) {
+			assert.ElementsMatch(t, []string{ranks[0].PUUID, ranks[1].PUUID}, []string{ExamplePUUID, ExamplePUUID2})
+		}
+	})
+}

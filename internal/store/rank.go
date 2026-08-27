@@ -105,3 +105,18 @@ func (s *RankStore) UpdateRankByPUUID(ctx context.Context, puuid string, req Upd
 
 	return pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[Rank])
 }
+
+func (s *RankStore) GetRankByPUUIDs(ctx context.Context, puuids []string) ([]*Rank, error) {
+	rows, err := s.tx.Query(ctx, `
+		select id, puuid, wins, losses, tier, division, league_points, last_updated
+		from Rank
+		where puuid = ANY(@puuids);
+	`, pgx.StrictNamedArgs{
+		"puuids": puuids,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[Rank])
+}
