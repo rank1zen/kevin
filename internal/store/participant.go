@@ -131,3 +131,19 @@ func (s *ParticipantStore) GetParticipantByMatchID(ctx context.Context, matchID 
 
 	return pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[Participant])
 }
+
+func (s *ParticipantStore) GetParticipantByPUUIDAndMatchIDs(ctx context.Context, puuid string, matchIDs []string) ([]*Participant, error) {
+	rows, err := s.tx.Query(ctx, `
+		select id, match_id, puuid, team_id, team_position, champion_id, champion_level, summoner_ids, rune_ids, item_ids, kills, deaths, assists, creep_score, damage_dealt, damage_taken, gold_earned, vision_score, pink_wards_bought
+		from Participant
+		where puuid = @puuid and match_id = any(@match_ids)
+	`, pgx.StrictNamedArgs{
+		"puuid":     puuid,
+		"match_ids": matchIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[Participant])
+}

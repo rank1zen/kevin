@@ -10,6 +10,7 @@ import (
 
 type Match struct {
 	ID       uuid.UUID     `db:"id"`
+	Region   string        `db:"region"`
 	MatchID  string        `db:"match_id"`
 	Version  string        `db:"version"`
 	Date     time.Time     `db:"date"`
@@ -18,6 +19,7 @@ type Match struct {
 }
 
 type CreateMatch struct {
+	Region   string
 	MatchID  string
 	Version  string
 	Date     time.Time
@@ -45,7 +47,7 @@ func NewMatchStore(tx DBTX) *MatchStore {
 
 func (s *MatchStore) GetMatchByMatchID(ctx context.Context, matchID string) (*Match, error) {
 	rows, err := s.tx.Query(ctx, `
-		select id, match_id, version, date, duration, winner_id
+		select id, region, match_id, version, date, duration, winner_id
 		from Match
 		where match_id = @match_id;
 	`, pgx.StrictNamedArgs{
@@ -60,10 +62,11 @@ func (s *MatchStore) GetMatchByMatchID(ctx context.Context, matchID string) (*Ma
 
 func (s *MatchStore) CreateMatch(ctx context.Context, req CreateMatch) (*Match, error) {
 	rows, err := s.tx.Query(ctx, `
-		insert into Match (match_id, version, date, duration, winner_id)
-		values (@match_id, @version, @date, @duration, @winner_id)
-		returning id, match_id, version, date, duration, winner_id;
+		insert into Match (region, match_id, version, date, duration, winner_id)
+		values (@region, @match_id, @version, @date, @duration, @winner_id)
+		returning id, region, match_id, version, date, duration, winner_id;
 	`, pgx.StrictNamedArgs{
+		"region":    req.Region,
 		"match_id":  req.MatchID,
 		"version":   req.Version,
 		"date":      req.Date,
@@ -95,9 +98,9 @@ func (s *MatchStore) GetMatchByPUUID(
 	}
 
 	var sql = `
-		select m.id, m.match_id, m.version, m.date, m.duration, m.winner_id
+		select m.id, m.region, m.match_id, m.version, m.date, m.duration, m.winner_id
 		from Match m
-		join Participant p on p.match_id = m.match_id
+		join Participant p on m.match_id = p.match_id
 	`
 
 	args := pgx.StrictNamedArgs{}

@@ -6,13 +6,15 @@ create table Summoner
 (
     id              uuid        not null primary key default uuidv7(),
     puuid           riot_puuid  not null,
+    region          text        not null,
     name            text        not null,
     tagline         text        not null,
     summoner_level  int         not null,
     profile_icon_id text        not null,
     last_updated    timestamptz not null,
 
-    unique (puuid)
+    unique (puuid),
+    unique (region, name, tagline)
 );
 
 create table Rank
@@ -45,6 +47,7 @@ create table RankHistory
 create table Match
 (
     id        uuid        not null primary key default uuidv7(),
+    region    text        not null,
     match_id  text        not null,
     version   text        not null,
     date      timestamptz not null,
