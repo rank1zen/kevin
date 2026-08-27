@@ -31,16 +31,6 @@ type CreateRankHistory struct {
 	LeaguePoints int
 }
 
-type UpdateRankHistory struct {
-	ValidFrom    time.Time
-	ValidTo      *time.Time
-	Wins         int
-	Losses       int
-	Tier         string
-	Division     string
-	LeaguePoints int
-}
-
 type RankHistoryStore struct {
 	tx DBTX
 }
@@ -88,40 +78,20 @@ func (s *RankHistoryStore) CreateRankHistory(ctx context.Context, req CreateRank
 	return pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[RankHistory])
 }
 
-func (s *RankHistoryStore) UpdateRankHistoryByID(ctx context.Context, id uuid.UUID, req UpdateRankHistory) (*RankHistory, error) {
+func (s *RankHistoryStore) GetRankHistoryByPUUID(ctx context.Context, puuid string, start, end time.Time) ([]*RankHistory, error) {
 	rows, err := s.tx.Query(ctx, `
-		update RankHistory
-		set valid_from = @valid_from, valid_to = @valid_to, wins = @wins, losses = @losses, tier = @tier, division = @division, league_points = @league_points
-		where id = @id
-		returning id, puuid, valid_from, valid_to, wins, losses, tier, division, league_points;
+		select id, puuid, valid_from, valid_to, wins, losses, tier, division, league_points
+		from RankHistory
+		where puuid = @puuid and valid_from >= @start and valid_from <= @end
+		order by valid_from desc;
 	`, pgx.StrictNamedArgs{
-		"id":            id,
-		"valid_from":    req.ValidFrom,
-		"valid_to":      req.ValidTo,
-		"wins":          req.Wins,
-		"losses":        req.Losses,
-		"tier":          req.Tier,
-		"division":      req.Division,
-		"league_points": req.LeaguePoints,
+		"puuid": puuid,
+		"start": start,
+		"end":   end,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[RankHistory])
-}
-
-func (s *RankHistoryStore) DeleteRankHistoryByID(ctx context.Context, id uuid.UUID) (*RankHistory, error) {
-	rows, err := s.tx.Query(ctx, `
-		delete from RankHistory
-		where id = @id
-		returning id, puuid, valid_from, valid_to, wins, losses, tier, division, league_points;
-	`, pgx.StrictNamedArgs{
-		"id": id,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[RankHistory])
+	return pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[RankHistory])
 }

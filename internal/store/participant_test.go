@@ -81,3 +81,52 @@ func TestParticipantStore_GetParticipantByPUUIDAndMatchIDs(t *testing.T) {
 		}
 	})
 }
+
+func TestParticipantStore_AggregateAverageParticipantForChampionIDByPUUID(t *testing.T) {
+	t.Parallel()
+
+	tx := DefaultPGInstance.SetupTx(t)
+
+	matchStore := store.NewMatchStore(tx)
+	participantStore := store.NewParticipantStore(tx)
+
+	_, err := matchStore.CreateMatch(t.Context(), store.CreateMatch{
+		MatchID: "NA1_123",
+	})
+	require.NoError(t, err)
+
+	_, err = matchStore.CreateMatch(t.Context(), store.CreateMatch{
+		MatchID: "NA1_456",
+	})
+	require.NoError(t, err)
+
+	_, err = participantStore.CreateParticipant(t.Context(), store.CreateParticipant{
+		MatchID:     "NA1_123",
+		PUUID:       ExamplePUUID,
+		ChampionID:  "test-champion",
+		ItemIDs:     make([]string, 0),
+		SummonerIDs: make([]string, 0),
+		RuneIDs:     make([]string, 0),
+		Kills:       1,
+	})
+	require.NoError(t, err)
+
+	_, err = participantStore.CreateParticipant(t.Context(), store.CreateParticipant{
+		MatchID:     "NA1_456",
+		PUUID:       ExamplePUUID,
+		ChampionID:  "test-champion",
+		ItemIDs:     make([]string, 0),
+		SummonerIDs: make([]string, 0),
+		RuneIDs:     make([]string, 0),
+		Kills:       6,
+	})
+	require.NoError(t, err)
+
+	t.Run("should return correct average kills", func(t *testing.T) {
+		averageKills, err := participantStore.AggregateAverageParticipantForChampionIDByPUUID(t.Context(), ExamplePUUID)
+		if assert.NoError(t, err) && assert.Len(t, averageKills, 1) {
+			assert.Equal(t, "test-champion", averageKills[0].ChampionID)
+			assert.EqualValues(t, 3.5, averageKills[0].Kills)
+		}
+	})
+}

@@ -30,6 +30,21 @@ type Participant struct {
 	PinkWardsBought int       `db:"pink_wards_bought"`
 }
 
+type AggregateAverageParticipantForChampionID struct {
+	PUUID           string  `db:"puuid"`
+	ChampionID      string  `db:"champion_id"`
+	ChampionLevel   float32 `db:"champion_level"`
+	Kills           float32 `db:"kills"`
+	Deaths          float32 `db:"deaths"`
+	Assists         float32 `db:"assists"`
+	CreepScore      float32 `db:"creep_score"`
+	DamageDealt     float32 `db:"damage_dealt"`
+	DamageTaken     float32 `db:"damage_taken"`
+	GoldEarned      float32 `db:"gold_earned"`
+	VisionScore     float32 `db:"vision_score"`
+	PinkWardsBought float32 `db:"pink_wards_bought"`
+}
+
 type CreateParticipant struct {
 	MatchID         string
 	PUUID           string
@@ -146,4 +161,24 @@ func (s *ParticipantStore) GetParticipantByPUUIDAndMatchIDs(ctx context.Context,
 	}
 
 	return pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[Participant])
+}
+
+func (s *ParticipantStore) AggregateAverageParticipantForChampionIDByPUUID(ctx context.Context, puuid string) ([]*AggregateAverageParticipantForChampionID, error) {
+	rows, err := s.tx.Query(
+		ctx,
+		`
+		select puuid, champion_id, avg(champion_level) as champion_level, avg(kills) as kills, avg(deaths) as deaths, avg(assists) as assists, avg(creep_score) as creep_score, avg(damage_dealt) as damage_dealt, avg(damage_taken) as damage_taken, avg(gold_earned) as gold_earned, avg(vision_score) as vision_score, avg(pink_wards_bought) as pink_wards_bought
+		from Participant
+		where puuid = @puuid
+		group by puuid, champion_id;
+		`,
+		pgx.StrictNamedArgs{
+			"puuid": puuid,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[AggregateAverageParticipantForChampionID])
 }
