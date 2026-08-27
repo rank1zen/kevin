@@ -122,3 +122,21 @@ func (s *SummonerStore) GetSummonerByRegionNameTag(ctx context.Context, region, 
 
 	return pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[Summoner])
 }
+
+func (s *SummonerStore) SearchSummoner(ctx context.Context, query string) ([]*Summoner, error) {
+	rows, err := s.tx.Query(ctx, `
+		select id, puuid, region, name, tagline, summoner_level, profile_icon_id, last_updated
+		from Summoner
+		where name % @query or tagline % @query
+		order by greatest(similarity(name, @query), similarity(tagline, @query) * 0.5) desc
+		limit 20
+	`, pgx.StrictNamedArgs{
+		"query": query,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[Summoner])
+}

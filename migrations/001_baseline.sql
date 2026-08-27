@@ -1,5 +1,7 @@
 -- Write your migrate up statements here
 
+create extension if not exists pg_trgm;
+
 create domain riot_puuid as char(78);
 
 create table Summoner

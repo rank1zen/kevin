@@ -121,3 +121,39 @@ func TestSummonerStore_GetSummonerByRegionNameTag(t *testing.T) {
 		}
 	})
 }
+
+func TestSummonerStore_SearchSummoner(t *testing.T) {
+	t.Parallel()
+
+	tx := DefaultPGInstance.SetupTx(t)
+
+	summonerStore := store.NewSummonerStore(tx)
+
+	_, err := summonerStore.CreateSummoner(t.Context(), store.CreateSummoner{
+		PUUID:   ExamplePUUID,
+		Name:    "Apple Sauce",
+		Tagline: "NA1",
+	})
+	require.NoError(t, err)
+
+	_, err = summonerStore.CreateSummoner(t.Context(), store.CreateSummoner{
+		PUUID:   ExamplePUUID2,
+		Name:    "Appl Sauce",
+		Tagline: "NA1",
+	})
+	require.NoError(t, err)
+
+	t.Run("should get summoner by first part", func(t *testing.T) {
+		results, err := summonerStore.SearchSummoner(t.Context(), "Apple")
+		if assert.NoError(t, err) && assert.Len(t, results, 2) {
+			assert.ElementsMatch(t, []string{ExamplePUUID, ExamplePUUID2}, []string{results[0].PUUID, results[1].PUUID})
+		}
+	})
+
+	t.Run("should get summoners with second part", func(t *testing.T) {
+		results, err := summonerStore.SearchSummoner(t.Context(), "Sauce")
+		if assert.NoError(t, err) && assert.Len(t, results, 2) {
+			assert.ElementsMatch(t, []string{ExamplePUUID, ExamplePUUID2}, []string{results[0].PUUID, results[1].PUUID})
+		}
+	})
+}
