@@ -59,7 +59,7 @@ func TestMatchGetMatchList(t *testing.T) {
 	*options.EndTime = 1751687999
 	*options.Queue = 420
 
-	matches, err := client.Match.GetMatchList(ctx, riot.RegionNA1, OrrangePUUID.String(), options)
+	matches, err := client.Match.GetMatchList(ctx, riot.RegionNA1, OrrangePUUID, options)
 	require.NoError(t, err)
 
 	assert.Len(t, matches, 20)

@@ -21,11 +21,11 @@ type Summoner struct {
 // Riot API docs: https://developer.riotgames.com/apis#summoner-v4/GET_getByPUUID
 //
 // GET /lol/summoner/v4/summoners/by-puuid/{encryptedPUUID}
-func (m *SummonerService) GetSummoner(ctx context.Context, region Region, puuid string) (*Summoner, error) {
+func (m *SummonerService) GetSummoner(ctx context.Context, region string, puuid string) (*Summoner, error) {
 	endpoint := fmt.Sprintf("/lol/summoner/v4/summoners/by-puuid/%s", puuid)
 
 	req := &internal.Request{
-		BaseURL:  region.host(),
+		BaseURL:  regionHost(region),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}

@@ -62,11 +62,11 @@ type LiveGameCustomizationObject struct {
 // Riot API docs: https://developer.riotgames.com/apis#spectator-v5/GET_getCurrentGameInfoByPuuid
 //
 // GET /lol/spectator/v5/active-games/by-summoner/{encryptedPUUID}
-func (m *SpectatorService) GetLiveMatch(ctx context.Context, region Region, puuid string) (*LiveMatch, error) {
+func (m *SpectatorService) GetLiveMatch(ctx context.Context, region string, puuid string) (*LiveMatch, error) {
 	endpoint := fmt.Sprintf("/lol/spectator/v5/active-games/by-summoner/%s", puuid)
 
 	req := &internal.Request{
-		BaseURL:  region.host(),
+		BaseURL:  regionHost(region),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}

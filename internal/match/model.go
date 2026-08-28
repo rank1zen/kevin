@@ -2,8 +2,6 @@ package match
 
 import (
 	"time"
-
-	"github.com/rank1zen/kevin/internal/riot"
 )
 
 // Match represents a record of a ranked match.
@@ -18,7 +16,7 @@ type Match struct {
 
 // Participant represents a record of a summoner in a ranked match.
 type Participant struct {
-	PUUID                  riot.PUUID
+	PUUID                  string
 	MatchID                string
 	TeamID                 int
 	ChampionID             int
@@ -68,7 +66,7 @@ type MatchDetail struct {
 
 // ParticipantDetail is the details relating to a participant record.
 type ParticipantDetail struct {
-	PUUID                  riot.PUUID
+	PUUID                  string
 	MatchID                string
 	TeamID                 int
 	ChampionID             int

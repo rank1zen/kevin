@@ -15,76 +15,10 @@ const (
 	QueueTypeRankedFlexTT  = "RANKED_FLEX_TT"
 )
 
-type Tier string
-
-func (t Tier) String() string {
-	var tier string
-	switch t {
-	case TierIron:
-		tier = "Iron"
-	case TierBronze:
-		tier = "Bronze"
-	case TierSilver:
-		tier = "Silver"
-	case TierGold:
-		tier = "Gold"
-	case TierPlatinum:
-		tier = "Platinum"
-	case TierEmerald:
-		tier = "Emerald"
-	case TierDiamond:
-		tier = "Diamond"
-	case TierMaster:
-		tier = "Master"
-	case TierGrandmaster:
-		tier = "Grandmaster"
-	case TierChallenger:
-		tier = "Challenger"
-	}
-	return tier
-}
-
-const (
-	TierIron        Tier = "IRON"
-	TierBronze      Tier = "BRONZE"
-	TierSilver      Tier = "SILVER"
-	TierGold        Tier = "GOLD"
-	TierPlatinum    Tier = "PLATINUM"
-	TierEmerald     Tier = "EMERALD"
-	TierDiamond     Tier = "DIAMOND"
-	TierMaster      Tier = "MASTER"
-	TierGrandmaster Tier = "GRANDMASTER"
-	TierChallenger  Tier = "CHALLENGER"
-)
-
-type Division string
-
-func (r Division) String() string {
-	var tier string
-	switch r {
-	case Division1:
-		tier = "I"
-	case Division2:
-		tier = "II"
-	case Division3:
-		tier = "III"
-	case Division4:
-		tier = "IV"
-	}
-	return tier
-}
-
-const (
-	Division1 Division = "I"
-	Division2 Division = "II"
-	Division3 Division = "III"
-	Division4 Division = "IV"
-)
-
 type LeagueList []LeagueEntry
 
 type LeagueEntry struct {
-	Division     Division          `json:"rank"`
+	Division     string            `json:"rank"`
 	FreshBlood   bool              `json:"freshBlood"`
 	HotStreak    bool              `json:"hotStreak"`
 	Inactive     bool              `json:"inactive"`
@@ -94,14 +28,14 @@ type LeagueEntry struct {
 	MiniSeries   *LeagueMiniSeries `json:"miniSeries"`
 	QueueType    string            `json:"queueType"`
 	SummonerID   string            `json:"summonerId"`
-	Tier         Tier              `json:"tier"`
+	Tier         string            `json:"tier"`
 	Veteran      bool              `json:"veteran"`
 	Wins         int               `json:"wins"`
 }
 
 type LeagueMiniSeries struct {
 	Losses   int    `json:"losses"`
-	Progress string `json:"progess"`
+	Progress string `json:"progress"`
 	Target   int    `json:"target"`
 	Wins     int    `json:"wins"`
 }
@@ -111,11 +45,11 @@ type LeagueMiniSeries struct {
 // Riot API docs: https://developer.riotgames.com/apis#league-v4/GET_getLeagueEntriesByPUUID
 //
 // GET /lol/league/v4/entries/by-puuid/{encryptedPUUID}
-func (m *LeagueService) GetLeagueEntriesByPUUID(ctx context.Context, region Region, puuid string) (LeagueList, error) {
+func (m *LeagueService) GetLeagueEntriesByPUUID(ctx context.Context, region string, puuid string) (LeagueList, error) {
 	endpoint := fmt.Sprintf("/lol/league/v4/entries/by-puuid/%v", puuid)
 
 	req := &internal.Request{
-		BaseURL:  region.host(),
+		BaseURL:  regionHost(region),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}

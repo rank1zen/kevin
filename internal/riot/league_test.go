@@ -32,7 +32,7 @@ func TestLeagueGetLeagueEntriesByPUUID(t *testing.T) {
 
 	defer server.Close()
 
-	entries, err := client.League.GetLeagueEntriesByPUUID(ctx, riot.RegionNA1, OrrangePUUID.String())
+	entries, err := client.League.GetLeagueEntriesByPUUID(ctx, riot.RegionNA1, OrrangePUUID)
 
 	require.NoError(t, err)
 
@@ -50,12 +50,12 @@ func TestLeagueGetLeagueEntriesByPUUID(t *testing.T) {
 		},
 		{
 			Name:     "expects correct name for orrange",
-			Expected: riot.TierEmerald,
+			Expected: "EMERALD",
 			Actual:   soloq.Tier,
 		},
 		{
 			Name:     "expects correct name for orrange",
-			Expected: riot.Division4,
+			Expected: "IV",
 			Actual:   soloq.Division,
 		},
 	} {

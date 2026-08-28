@@ -33,12 +33,12 @@ type MatchListOptions struct {
 // MatchList is a list of match ids.
 type MatchList []string
 
-// GetMatchIDsByPUUID returns a list of match ids by puuid.
+// GetMatchList returns a list of match ids by puuid.
 //
 // Riot API docs: https://developer.riotgames.com/apis#match-v5/GET_getMatchIdsByPUUID
 //
 // GET /lol/match/v5/matches/by-puuid/{puuid}/ids
-func (m *MatchService) GetMatchList(ctx context.Context, region Region, puuid string, opts MatchListOptions) (MatchList, error) {
+func (m *MatchService) GetMatchList(ctx context.Context, region string, puuid string, opts MatchListOptions) (MatchList, error) {
 	endpoint := fmt.Sprintf("/lol/match/v5/matches/by-puuid/%s/ids", puuid)
 
 	query := url.Values{}
@@ -60,7 +60,7 @@ func (m *MatchService) GetMatchList(ctx context.Context, region Region, puuid st
 	}
 
 	req := &internal.Request{
-		BaseURL:  region.continentHost(),
+		BaseURL:  continentHost(region),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 		Query:    query,
@@ -273,11 +273,11 @@ type MatchObjective struct {
 // Riot API docs: https://developer.riotgames.com/apis#match-v5/GET_getMatch
 //
 // GET /lol/match/v5/matches/{matchId}
-func (m *MatchService) GetMatch(ctx context.Context, region Region, matchID string) (*Match, error) {
+func (m *MatchService) GetMatch(ctx context.Context, region string, matchID string) (*Match, error) {
 	endpoint := fmt.Sprintf("/lol/match/v5/matches/%s", matchID)
 
 	req := &internal.Request{
-		BaseURL:  region.continentHost(),
+		BaseURL:  continentHost(region),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}
@@ -444,11 +444,11 @@ type TimelinePosition struct {
 // Riot API docs: https://developer.riotgames.com/apis#match-v5/GET_getTimeline
 //
 // GET /lol/match/v5/matches/{matchId}/timeline
-func (m *MatchService) GetTimeline(ctx context.Context, region Region, id string) (*Timeline, error) {
+func (m *MatchService) GetTimeline(ctx context.Context, region string, id string) (*Timeline, error) {
 	endpoint := fmt.Sprintf("/lol/match/v5/matches/%s/timeline", id)
 
 	req := &internal.Request{
-		BaseURL:  region.continentHost(),
+		BaseURL:  continentHost(region),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}
