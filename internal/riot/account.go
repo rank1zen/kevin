@@ -12,29 +12,22 @@ import (
 // Riot API docs: https://developer.riotgames.com/apis#account-v1
 type AccountService service
 
-// PUUID is a 78 character global identifier for a Riot account.
-type PUUID string
-
-func (id PUUID) String() string {
-	return string(id)
-}
-
 type Account struct {
-	PUUID    PUUID  `json:"puuid"`
+	PUUID    string `json:"puuid"`
 	GameName string `json:"gameName"`
 	TagLine  string `json:"tagLine"`
 }
 
-// GetAccountByPuuid returns a account by puuid.
+// GetAccountByPUUID returns a account by puuid.
 //
 // Riot API docs: https://developer.riotgames.com/apis#account-v1/GET_getByPuuid
 //
 // GET /riot/account/v1/accounts/by-puuid/{puuid}
-func (m *AccountService) GetAccountByPUUID(ctx context.Context, region Region, puuid string) (*Account, error) {
+func (m *AccountService) GetAccountByPUUID(ctx context.Context, region string, puuid string) (*Account, error) {
 	endpoint := fmt.Sprintf("/riot/account/v1/accounts/by-puuid/%s", puuid)
 
 	req := &internal.Request{
-		BaseURL:  region.continentHost(),
+		BaseURL:  continentHost(region),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}
@@ -56,11 +49,11 @@ func (m *AccountService) GetAccountByPUUID(ctx context.Context, region Region, p
 // Riot API docs: https://developer.riotgames.com/apis#account-v1/GET_getByRiotId
 //
 // GET /riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}
-func (m *AccountService) GetAccountByRiotID(ctx context.Context, region Region, gameName, tagLine string) (*Account, error) {
+func (m *AccountService) GetAccountByRiotID(ctx context.Context, region string, gameName, tagLine string) (*Account, error) {
 	endpoint := fmt.Sprintf("/riot/account/v1/accounts/by-riot-id/%s/%s", gameName, tagLine)
 
 	req := &internal.Request{
-		BaseURL:  region.continentHost(),
+		BaseURL:  continentHost(region),
 		Endpoint: endpoint,
 		APIKey:   m.client.apiKey,
 	}
