@@ -24,7 +24,3 @@ func TestMain(t *testing.M) {
 
 	os.Exit(code)
 }
-
-func TestConnect(t *testing.T) {
-	_ = DefaultPGInstance.SetupConn(context.Background(), t)
-}

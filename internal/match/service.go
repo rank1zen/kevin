@@ -32,7 +32,7 @@ func (s *MatchService) GetMatchDetail(ctx context.Context, req GetMatchDetailReq
 
 	if !found {
 		// If the match is new, fetch it from Riot API and record it
-		riotMatch, err := s.riot.Match.GetMatch(ctx, riot.Region(req.Region), req.MatchID)
+		riotMatch, err := s.riot.Match.GetMatch(ctx, req.Region, req.MatchID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch match from Riot API: %w", err)
 		}
@@ -121,7 +121,7 @@ func mapMatch(riotMatch *riot.Match) *Match {
 		}
 
 		participant := Participant{
-			PUUID:                riot.PUUID(riotParticipant.PUUID),
+			PUUID:                riotParticipant.PUUID,
 			MatchID:              riotMatch.Metadata.MatchID,
 			TeamID:               riotParticipant.TeamID,
 			ChampionID:           riotParticipant.ChampionID,
