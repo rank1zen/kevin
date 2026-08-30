@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/rank1zen/kevin/internal/app"
+	"github.com/rank1zen/kevin/internal/runtime"
 	"github.com/spf13/cobra"
 )
 
@@ -14,8 +14,18 @@ var migrateCmd = &cobra.Command{
 	Short: "Migrate to current schema version",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		a := app.NewMigrator(ctx)
-		os.Exit(a.Run(ctx))
+
+		cfg, err := runtime.NewConfig()
+		if err != nil {
+			panic(err)
+		}
+
+		rt, err := runtime.NewMigrationRuntime(ctx, cfg)
+		if err != nil {
+			panic(err)
+		}
+
+		os.Exit(rt.Run(ctx))
 	},
 }
 
