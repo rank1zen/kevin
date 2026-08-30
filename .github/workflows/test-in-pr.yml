@@ -11,25 +11,8 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    environment:
-      name: staging
-      deployment: false
-
-    env:
-      KEVIN_PORT: ${{ vars.KEVIN_PORT }}
-      KEVIN_ENV: ${{ vars.KEVIN_ENV }}
-      GCP_REGION: ${{ vars.GCP_REGION }}
-      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-      GCP_GAR_LOCATION: ${{ vars.GCP_GAR_LOCATION }}
-      GCP_GAR_REPOSITORY: ${{vars.GCP_GAR_REPOSITORY}}
-      GCP_GAR_IMAGE: ${{vars.GCP_GAR_IMAGE}}
-      GCP_GAR_TAG: ${{github.sha}}
-      GCP_CLOUDSQL_INSTANCE: ${{vars.GCP_CLOUDSQL_INSTANCE}}
-      GCP_SECRET_KEVIN_DATABASE_URL: ${{vars.GCP_SECRET_KEVIN_DATABASE_URL}}
-      GCP_SECRET_KEVIN_RIOT_API_KEY: ${{vars.GCP_SECRET_KEVIN_RIOT_API_KEY}}
-
     steps:
-      - uses: 'actions/checkout@v4'
+      - uses: 'actions/checkout@v7'
 
       - uses: 'jdx/mise-action@v4'
 
