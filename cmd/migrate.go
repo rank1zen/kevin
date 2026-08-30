@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/rank1zen/kevin/internal/app"
+	"github.com/rank1zen/kevin/internal/runtime"
 	"github.com/spf13/cobra"
 )
 
@@ -12,16 +12,20 @@ import (
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "Migrate to current schema version",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		a := app.NewMigrator(ctx)
-		os.Exit(a.Run(ctx))
+
+		cfg, err := runtime.NewConfig()
+		if err != nil {
+			panic(err)
+		}
+
+		rt, err := runtime.NewMigrationRuntime(ctx, cfg)
+		if err != nil {
+			panic(err)
+		}
+
+		os.Exit(rt.Run(ctx))
 	},
 }
 

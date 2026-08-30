@@ -7,6 +7,7 @@ require (
 	buf.build/gen/go/kevin-labs/lol-service/protocolbuffers/go v1.36.11-20260818044132-00bea6e8be87.1
 	connectrpc.com/connect v1.20.0
 	connectrpc.com/validate v0.6.0
+	github.com/avast/retry-go/v5 v5.0.0
 	github.com/jackc/pgx/v5 v5.9.1
 	github.com/jackc/tern/v2 v2.3.6
 	github.com/spf13/cobra v1.10.2
