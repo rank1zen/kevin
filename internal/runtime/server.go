@@ -12,6 +12,9 @@ func initializeServer(cfg Config) *http.Server {
 
 	mux := http.NewServeMux()
 
+	routeHealthz(mux)
+	routeReadyz(mux)
+
 	routeProfileService(mux, profileHandler)
 
 	p := new(http.Protocols)

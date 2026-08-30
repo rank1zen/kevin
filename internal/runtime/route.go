@@ -8,6 +8,14 @@ import (
 	"connectrpc.com/validate"
 )
 
+func routeHealthz(mux *http.ServeMux) {
+	mux.Handle("/healthz", http.HandlerFunc(HandleHealthz))
+}
+
+func routeReadyz(mux *http.ServeMux) {
+	mux.Handle("/readyz", http.HandlerFunc(HandleReadyz))
+}
+
 func routeProfileService(mux *http.ServeMux, handler lolservicev1connect.ProfileServiceHandler) {
 	path, httpHandler := lolservicev1connect.NewProfileServiceHandler(
 		handler,

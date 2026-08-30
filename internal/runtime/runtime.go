@@ -41,7 +41,7 @@ func (r *Runtime) Run(ctx context.Context) int {
 		}
 	}()
 
-	r.logger.Info("server started", "address", r.config.Port, "environment", r.config.Environment)
+	r.logger.Info("server started", "port", r.config.Port, "environment", r.config.Environment)
 
 	select {
 	case err := <-serverErrCh:
@@ -67,6 +67,11 @@ func (r *Runtime) Run(ctx context.Context) int {
 // startUpRuntime initializes all runtime dependencies from the provided config.
 func startUpRuntime(ctx context.Context, config *Config) (*Runtime, error) {
 	logger := slog.Default()
+
+	err := validateConfigForRuntime(config)
+	if err != nil {
+		return nil, err
+	}
 
 	riotClient := riot.NewClient(config.RiotAPIKey)
 
