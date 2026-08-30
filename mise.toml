@@ -1,9 +1,7 @@
 [tools]
-"aqua:tailwindlabs/tailwindcss" = "latest"
-buf = "latest"
-"cargo:rustywind" = "latest"
 go = "1.27"
-golangci-lint = "latest"
+golangci-lint = "2.13.2"
+buf = "1.72.0"
 
 [env]
 # Application settings
