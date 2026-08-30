@@ -1,10 +1,6 @@
 package runtime
 
 import (
-	"errors"
-	"fmt"
-
-	"github.com/jackc/pgx/v5"
 	"github.com/spf13/viper"
 )
 
@@ -16,79 +12,70 @@ const (
 
 // Config holds all application-level configurations.
 type Config struct {
+	// DatabaseURL is the URL of the database.
 	DatabaseURL string `mapstructure:"KEVIN_DATABASE_URL"`
-	RiotAPIKey  string `mapstructure:"KEVIN_RIOT_API_KEY"`
+
+	// RiotAPIKey is the API key for the Riot Games API.
+	RiotAPIKey string `mapstructure:"KEVIN_RIOT_API_KEY"`
+
+	// Environment is the environment in which the application is running. Defaults to Production.
 	Environment string `mapstructure:"KEVIN_ENV"`
-	Port        int    `mapstructure:"KEVIN_PORT"`
+
+	// Port is the port on which the server will listen. Defaults to 7331.
+	Port int `mapstructure:"KEVIN_PORT"`
 }
 
-// NewConfig loads configuration from environment variables.
 func NewConfig() (*Config, error) {
 	v := viper.New()
 
-	if err := v.BindEnv("KEVIN_RIOT_API_KEY"); err != nil {
-		return nil, fmt.Errorf("failed to bind KEVIN_RIOT_API_KEY: %w", err)
-	}
-
-	if err := v.BindEnv("KEVIN_DATABASE_URL"); err != nil {
-		return nil, fmt.Errorf("failed to bind KEVIN_DATABASE_URL: %w", err)
-	}
-
-	if err := v.BindEnv("KEVIN_ENV"); err != nil {
-		return nil, fmt.Errorf("failed to bind KEVIN_ENV: %w", err)
-	}
-
-	if err := v.BindEnv("KEVIN_PORT", "PORT", "KEVIN_PORT"); err != nil {
-		return nil, fmt.Errorf("failed to bind PORT: %w", err)
-	}
-
-	config := Config{
-		Port:        7331,
-		Environment: Development,
-	}
-	if err := v.Unmarshal(&config); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal from viper: %w", err)
-	}
-
-	if err := config.validate(); err != nil {
-		return nil, fmt.Errorf("invalid configuration: %w", err)
-	}
-
-	return &config, nil
-}
-
-func (c *Config) validate() error {
-	var errs []error
-
-	if c.RiotAPIKey == "" {
-		errs = append(errs, errors.New("KEVIN_RIOT_API_KEY is not set"))
-	}
-
-	if err := validateDatabaseURL(c.DatabaseURL); err != nil {
-		errs = append(errs, fmt.Errorf("KEVIN_DATABASE_URL: %w", err))
-	}
-
-	if c.Environment != Development && c.Environment != Staging && c.Environment != Production {
-		message := fmt.Sprintf("KEVIN_ENV must be either '%s' or '%s' '%s'", Development, Production, Staging)
-		errs = append(errs, errors.New(message))
-	}
-
-	if 1024 > c.Port || c.Port > 65535 {
-		errs = append(errs, errors.New("PORT must be between 1024 and 65535"))
-	}
-
-	if len(errs) > 0 {
-		return errors.Join(errs...)
-	}
-
-	return nil
-}
-
-func validateDatabaseURL(raw string) error {
-	_, err := pgx.ParseConfig(raw)
+	err := v.BindEnv("KEVIN_RIOT_API_KEY")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	err = v.BindEnv("KEVIN_DATABASE_URL")
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.BindEnv("KEVIN_ENV")
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.BindEnv("KEVIN_PORT", "PORT", "KEVIN_PORT")
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &Config{
+		Environment: Production,
+		Port:        7331,
+	}
+
+	err = v.Unmarshal(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return mergeToDefaultConfig(cfg), nil
+}
+
+func mergeToDefaultConfig(cfg *Config) *Config {
+	var environment = Production
+	if cfg.Environment == Production || cfg.Environment == Development || cfg.Environment == Staging {
+		environment = cfg.Environment
+	}
+
+	var port = 7331
+	if cfg.Port != 0 {
+		port = cfg.Port
+	}
+
+	return &Config{
+		DatabaseURL: cfg.DatabaseURL,
+		RiotAPIKey:  cfg.RiotAPIKey,
+		Environment: environment,
+		Port:        port,
+	}
 }

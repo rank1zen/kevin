@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rank1zen/kevin/internal/riot"
 )
@@ -89,4 +90,27 @@ func (r *Runtime) tearDown() {
 	if r.pgxPool != nil {
 		r.pgxPool.Close()
 	}
+}
+
+func validateConfigForRuntime(cfg *Config) error {
+	var errs []error
+
+	if cfg.RiotAPIKey == "" {
+		errs = append(errs, errors.New("KEVIN_RIOT_API_KEY is not set"))
+	}
+
+	if cfg.DatabaseURL == "" {
+		errs = append(errs, errors.New("database url is required"))
+	}
+
+	_, err := pgx.ParseConfig(cfg.DatabaseURL)
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+
+	return nil
 }

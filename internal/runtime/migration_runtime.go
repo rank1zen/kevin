@@ -2,6 +2,8 @@ package runtime
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
@@ -43,23 +45,49 @@ func (r *MigrationRuntime) tearDown(ctx context.Context) {
 }
 
 // startU initializes all runtime dependencies from the provided config.
-func startUpMigrationRuntime(ctx context.Context, config *Config) (*MigrationRuntime, error) {
+func startUpMigrationRuntime(ctx context.Context, cfg *Config) (*MigrationRuntime, error) {
 	logger := slog.Default()
+	logger.Info("starting migration runtime")
 
-	pgxConn, err := initializePgxConn(ctx, *config)
+	err := validateConfigForMigrationRuntime(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("invalid config: %w", err)
+	}
+
+	pgxConn, err := initializePgxConn(ctx, *cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	migrator, err := initializeMigrator(ctx, *config, pgxConn)
+	migrator, err := initializeMigrator(ctx, *cfg, pgxConn)
 	if err != nil {
 		return nil, err
 	}
 
+	logger.Info("migration runtime initialized successfully")
 	return &MigrationRuntime{
-		config:   config,
+		config:   cfg,
 		logger:   logger,
 		pgxConn:  pgxConn,
 		migrator: migrator,
 	}, nil
+}
+
+func validateConfigForMigrationRuntime(cfg *Config) error {
+	var errs []error
+
+	if cfg.DatabaseURL == "" {
+		errs = append(errs, errors.New("database url is required"))
+	}
+
+	_, err := pgx.ParseConfig(cfg.DatabaseURL)
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+
+	return nil
 }

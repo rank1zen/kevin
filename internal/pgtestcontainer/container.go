@@ -105,3 +105,7 @@ func (p *PGInstance) migrateSchema(ctx context.Context) {
 func (p *PGInstance) Terminate(ctx context.Context) error {
 	return p.container.Terminate(ctx)
 }
+
+func (p *PGInstance) GetConnectionString() string {
+	return p.pgURL
+}
