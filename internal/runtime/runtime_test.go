@@ -3,7 +3,6 @@ package runtime_test
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -48,12 +47,9 @@ func TestRuntime_Run(t *testing.T) {
 				if err != nil {
 					return false
 				}
-				defer func(Body io.ReadCloser) {
-					err := Body.Close()
-					if err != nil {
-
-					}
-				}(res.Body)
+				defer func() {
+					_ = res.Body.Close()
+				}()
 
 				return res.StatusCode == http.StatusOK
 			},

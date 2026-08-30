@@ -1,4 +1,4 @@
-name: Test code quality
+name: Test Code Quality
 
 on:
   pull_request:
@@ -6,33 +6,24 @@ on:
       - main
 
 jobs:
-  test:
-    name: Test source code
-
+  lint:
+    name: Lint Source Code
     runs-on: ubuntu-latest
-
-    environment:
-      name: staging
-      deployment: false
-
-    env:
-      KEVIN_PORT: ${{ vars.KEVIN_PORT }}
-      KEVIN_ENV: ${{ vars.KEVIN_ENV }}
-      GCP_REGION: ${{ vars.GCP_REGION }}
-      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-      GCP_GAR_LOCATION: ${{ vars.GCP_GAR_LOCATION }}
-      GCP_GAR_REPOSITORY: ${{vars.GCP_GAR_REPOSITORY}}
-      GCP_GAR_IMAGE: ${{vars.GCP_GAR_IMAGE}}
-      GCP_GAR_TAG: ${{github.sha}}
-      GCP_CLOUDSQL_INSTANCE: ${{vars.GCP_CLOUDSQL_INSTANCE}}
-      GCP_SECRET_KEVIN_DATABASE_URL: ${{vars.GCP_SECRET_KEVIN_DATABASE_URL}}
-      GCP_SECRET_KEVIN_RIOT_API_KEY: ${{vars.GCP_SECRET_KEVIN_RIOT_API_KEY}}
-
     steps:
-      - uses: 'actions/checkout@v4'
+      - uses: 'actions/checkout@v7'
+      - uses: 'actions/setup-go@v6'
+        with:
+          go-version: '1.27'
+      - uses: 'golangci/golangci-lint-action@v9'
+        with:
+          version: 'v2.13'
 
-      - uses: 'jdx/mise-action@v4'
-
-      - run: 'mise run lint'
-
-      - run: 'mise run test'
+  test:
+    name: Test Source Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 'actions/checkout@v7'
+      - uses: 'actions/setup-go@v6'
+        with:
+          go-version: '1.27'
+      - run: 'go test ./...'
