@@ -16,7 +16,8 @@ import (
 type Runtime struct {
 	config *Config
 
-	logger     *slog.Logger
+	logger *slog.Logger
+
 	pgxPool    *pgxpool.Pool
 	riotClient *riot.Client
 

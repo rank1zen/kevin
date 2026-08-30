@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -34,4 +35,32 @@ func initializePostgres(ctx context.Context, cfg Config) (*pgxpool.Pool, error) 
 		return nil, fmt.Errorf("failed to initialize postgres: %w", err)
 	}
 	return pool, nil
+}
+
+func initializePgxConn(ctx context.Context, cfg Config) (*pgx.Conn, error) {
+	pgxCfg, err := pgx.ParseConfig(cfg.DatabaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse postgres config: %w", err)
+	}
+
+	conn, err := retry.NewWithData[*pgx.Conn](
+		retry.Attempts(5),
+		retry.Delay(100*time.Millisecond),
+	).Do(func() (*pgx.Conn, error) {
+		conn, err := pgx.ConnectConfig(ctx, pgxCfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create postgres connection: %w", err)
+		}
+
+		if err := conn.Ping(ctx); err != nil {
+			return nil, fmt.Errorf("failed to ping postgres: %w", err)
+		}
+
+		return conn, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize postgres: %w", err)
+	}
+
+	return conn, nil
 }
