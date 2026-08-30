@@ -10,8 +10,6 @@ import (
 
 type Handler struct {
 	lolservicev1connect.UnimplementedProfileServiceHandler
-
-	service *Service
 }
 
 func (s Handler) GetProfile(ctx context.Context, c *connect.Request[lolservicev1.GetProfileRequest]) (*connect.Response[lolservicev1.GetProfileResponse], error) {
