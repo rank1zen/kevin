@@ -19,3 +19,5 @@ tmp
 mise.local.toml
 
 vendor
+
+.terraform
